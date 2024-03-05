@@ -104,7 +104,7 @@ tmp <- mp3 |>
 
 
 mp_extend <- function(mptable, startage=18, endyear=2154, baseyear=2010){
-  # will extend any mp table that
+  # will extend any mp table with additional ages or years
 
   mptablex <- mptable |>
     arrange(gender, year, age) |>

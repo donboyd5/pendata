@@ -48,6 +48,8 @@ library(pendata)
 
 summary(mp2018)
 head(mp2018)
+tail(mp2018)
+
 
 ```
 
