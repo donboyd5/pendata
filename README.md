@@ -34,14 +34,14 @@ This package contains pension-related data:
 The package also includes tools to convert data from the package’s
 formats to selected other formats.
 
-## Example
+## Examples
 
-This is a basic example which shows you how to solve a common problem:
+Look at the mp2018 data.
 
 ``` r
 library(pendata)
 
-data(package="pendata")
+# data(package="pendata")
 
 summary(mp2018)
 #>     gender               year           age            mp           
@@ -51,4 +51,12 @@ summary(mp2018)
 #>                     Mean   :1992   Mean   : 70   Mean   : 0.006712  
 #>                     3rd Qu.:2013   3rd Qu.: 95   3rd Qu.: 0.012200  
 #>                     Max.   :2034   Max.   :120   Max.   : 0.073500
+head(mp2018)
+#>   gender year age     mp
+#> 1 female 1951  20 0.0667
+#> 2 female 1951  21 0.0691
+#> 3 female 1951  22 0.0710
+#> 4 female 1951  23 0.0724
+#> 5 female 1951  24 0.0732
+#> 6 female 1951  25 0.0735
 ```

@@ -37,16 +37,17 @@ This package contains pension-related data:
 
 The package also includes tools to convert data from the package's formats to selected other formats.
 
-## Example
+## Examples
 
-This is a basic example which shows you how to solve a common problem:
+Look at the mp2018 data.
 
 ```{r example}
 library(pendata)
 
-data(package="pendata")
+# data(package="pendata")
 
 summary(mp2018)
+head(mp2018)
 
 ```
 
