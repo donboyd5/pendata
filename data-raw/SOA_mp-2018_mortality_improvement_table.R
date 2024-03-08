@@ -1,11 +1,15 @@
 
+# SOA Mortality improvement tables mp-2018.
+
+# This program gets the Society of Actuaries mortality improvement
+# table MP-2018 and saves a raw version of it (i.e., with the data exactly
+# as provided by SOA) as a long dataframe.
+
 
 # setup -------------------------------------------------------------------
 
 draw <- here::here("data-raw")
-
 source(path(draw, "libraries.r"))
-
 
 
 # mortality improvement scales ----
@@ -54,73 +58,26 @@ mp2018 <- bind_rows(dfm |>
 usethis::use_data(mp2018, overwrite = TRUE)
 
 
+# Check: extend mp2018 to more ages and years ------------------------------------
 
-# extend mp2018 to more ages and years ------------------------------------
-
-# extend mp1
 # mp1 <- readRDS(fs::path(draw, "mp-2018.rds"))
+# mp1 <- mp2018
 
-mp1 <- mp2018
+mp1 <- pendata::mp2018
+skim(mp1) # 1951-2034, ages 20-120
 
-add_younger <- function(df){
-  addrows <- bind_rows(df[1, ],
-                       df[1, ])|>
-    mutate(age=18:19)
+# extend years to 2154, age down to 18, and index to baseyear 2010
+mp2 <- pendata::extend_mp(mp1, startage=18, endyear=2154, baseyear=2010)
+skim(mp2)
 
-  bind_rows(addrows, df) # return the new, longer data frame
-}
+mp2 |>
+  filter(year %in% 2009:2011, gender=="female", age %in% 18:21)
 
-df <- mp1 |> filter(gender=="female", age==22); endyear <- 2039
-
-add_years <- function(df, endyear){
-  current_endyear <- max(df$year)
-
-  ultimate_rate <- df |>
-    filter(year==current_endyear) |>
-    pull(mp)
-
-  add_rows <- tibble(year=(current_endyear + 1):endyear,
-                     mp=ultimate_rate)
-
-  bind_rows(df, add_rows)
-}
-
-mp2 <- mp1 |>
-  arrange(gender, year, age) |>
-  reframe(add_younger(pick(everything())), .by=c(gender, year)) |>
-  reframe(add_years(pick(everything()), endyear=2154), .by=c(gender, age)) |>
-  arrange(gender, age, year) |>
-  mutate(mpc=cumprod(1 - mp), .by=c(gender, age)) # cumulative improvement from earliest year to latest
-
-tmp <- mp2 |>
-  filter(gender=="male", age==18)
-
-# great - now we can get cumulative improvement from earliest year to latest, for each gender-age group
-# adjusted value is ratio of raw value and the anchor point in base year
-base_year <- 2010
-
-mp3 <- mp2 |>
-  mutate(mpcadj=mpc / mpc[year==base_year], .by=c(gender, age))
-
-tmp <- mp3 |>
-  filter(gender=="male", age==18)
-
-
-mp_extend <- function(mptable, startage=18, endyear=2154, baseyear=2010){
-  # will extend any mp table with additional ages or years
-
-  mptablex <- mptable |>
-    arrange(gender, year, age) |>
-    reframe(add_younger(pick(everything())), .by=c(gender, year)) |>
-    reframe(add_years(pick(everything()), endyear), .by=c(gender, age)) |>
-    arrange(gender, age, year) |>
-    mutate(mpc=cumprod(1 - mp), .by=c(gender, age)) |> # cumulative improvement from earliest year to latest
-    mutate(mpcadj=mpc / mpc[year==baseyear], .by=c(gender, age)) # rebase
-
-  mptablex
-}
-
-mp3 <- mp_extend(mp1, startage=18, endyear=2154, baseyear=2010)
+glimpse(mp2)
+ht(mp2)
+count(mp2, gender)
+count(mp2, age) |> ht()
+count(mp2, year) |> ht()
 
 
 
