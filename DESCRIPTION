@@ -9,26 +9,10 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 Imports: 
-    btools,
-    DT,
-    fs,
-    gridExtra,
-    gt,
-    gtExtras,
-    janitor,
-    kableExtra,
-    knitr, 
-    lubridate,
-    openxlsx,
-    patchwork,
+    dplyr,
     rlang, 
-    RColorBrewer,
-    readxl,
-    scales,
-    skimr,
-    tidyverse,
-    vroom,
-    zoo
+    tidyselect
 Depends: 
     R (>= 2.10)
 LazyData: true
+Suggests:

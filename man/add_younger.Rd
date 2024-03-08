@@ -7,11 +7,12 @@
 add_younger(df, startage = 18)
 }
 \arguments{
-\item{df}{dataframe where the fist column is age and the rows have mortality
-improvement.}
+\item{df}{Dataframe. First column is age; rows have mortality improvement.}
+
+\item{startage}{Numeric. Desired starting age for mp dataframe.}
 }
 \value{
-longer dataframe that has additional rows prepended.
+Dataframe. Original dataframe with additional rows prepended.
 }
 \description{
 This function makes copies of the youngest age in a mortality improvement
@@ -19,7 +20,6 @@ dataframe to create identical rows but with younger ages. The dataframe can
 be grouped and rows added to each group.
 }
 \examples{
-library(tidyverse)
 library(pendata)
 data(package="pendata")
 mp2018 |>

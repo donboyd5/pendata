@@ -7,20 +7,18 @@
 add_years(df, endyear)
 }
 \arguments{
-\item{df}{dataframe where the fist column is age and the rows have mortality
-improvement.}
+\item{df}{Dataframe. First column is age; rows have mortality improvement.}
 
-\item{endyear}{integer year that will be the new last year}
+\item{endyear}{Numeric. New last year.}
 }
 \value{
-longer dataframe that has additional rows appended.
+Dataframe. Extended dataframe with additional rows appended.
 }
 \description{
 Repeat the final row in a dataframe (or dataframe group), with the year
 increased by 1 with each new row.
 }
 \examples{
-library(tidyverse)
 library(pendata)
 data(package="pendata")
 extended <- mp2018 |>

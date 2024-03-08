@@ -2,9 +2,11 @@
 
 # setup -------------------------------------------------------------------
 
-source(here::here("R", "libraries.r"))
-
 draw <- here::here("data-raw")
+
+source(path(draw, "libraries.r"))
+
+
 
 # mortality improvement scales ----
 

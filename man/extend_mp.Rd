@@ -7,19 +7,23 @@
 extend_mp(mptable, startage = 18, endyear = 2154, baseyear = 2010)
 }
 \arguments{
-\item{mptable}{Numeric. Price of a single fruit.}
+\item{mptable}{Numeric. Mortality improvement table to be extended. Must
+contain columns age, gender, mp, and year.}
 
-\item{startage}{Numeric. Number of fruits.}
+\item{startage}{Numeric. Desired starting age for mp dataframe.}
+
+\item{endyear}{Numeric. Desired end year for mp dataframe.}
+
+\item{baseyear}{Numeric. Year mortality rate should be indexed to.}
 }
 \value{
-Numeric. Total price.
+Dataframe. Extended mortality improvement table.
 }
 \description{
 Extend a mortality improvement table with more ages and years, index the
 cumulative mp rate to a baseyear.
 }
 \examples{
-library(tidyverse)
 library(pendata)
 data(package="pendata")
 xmp <- mp2018 |>
