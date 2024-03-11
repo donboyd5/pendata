@@ -8,9 +8,8 @@
 
 # setup -------------------------------------------------------------------
 
+source(here::here("data-raw", "libraries.r"))
 draw <- here::here("data-raw")
-source(path(draw, "libraries.r"))
-
 
 # mortality improvement scales ----
 
@@ -35,6 +34,9 @@ download.file(urates,
 
 # system.time(df1 <- read_excel(fpath, sheet = "Male"))
 # system.time(df1 <- read_excel(fpath, sheet = "Male", range="A2:CG103")) # much faster
+
+udoc <- "https://www.soa.org/49964f/globalassets/assets/files/resources/experience-studies/2018/mortality-improvement-scale-mp-2018.pdf"
+urates <- "https://www.soa.org/493456/globalassets/assets/files/resources/experience-studies/2018/mortality-improvement-scale-mp-2018-rates.xlsx"
 fpath <- path(draw, path_file(urates))
 dfm <- read_excel(fpath, sheet = "Male", range = "A2:CG103")
 dff <- read_excel(fpath, sheet = "Female", range = "A2:CG103")
