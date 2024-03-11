@@ -7,4 +7,4 @@
 
 *.rds
 
-*djb*
+*djb* # ignore files that I make notes in
