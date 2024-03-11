@@ -6,7 +6,9 @@
 .quarto
 
 *.rds
-**/*_djb* # ignore files that I make notes in
+
+# ignore files that I make notes in
+*_djb*
 
 
-data-raw/systems/frs/Florida FRS inputs_djb.xlsx
+
