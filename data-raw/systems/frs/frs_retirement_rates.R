@@ -12,10 +12,23 @@ dxi <- fs::path(dfrs, "Reports", "extracted inputs")
 
 # get data ----------------------------------------------------------------
 
-
 fpath <- fs::path(dxi, "normal retirement tier 1.xlsx")
 
 normal_retirement_tier_1_table_ <- read_excel(fpath)
+
+# create lists of column names
+column_base <- c("regular_k12_instructional", "regular_nonk12_instructional",
+  "special_risk_all", "elected_officers", "senior_management")
+
+gender <- c("female", "male")
+
+combine <- function(prefixes, suffixes){
+  outer(prefixes, suffixes, FUN = paste, sep = "_") |>
+    t() |>
+    c()
+}
+
+combine(column_base, gender)
 
 
 # Retirement rate tables source: Florida FRS model input.R
