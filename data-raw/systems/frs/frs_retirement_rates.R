@@ -1,5 +1,38 @@
 
 
+# About -------------------------------------------------------------------
+
+# Get retirement rates from xlsx files created by Reason, such as:
+#   normal retirement tier 1.xlsx
+#   normal retirement tier 2.xlsx
+#   ...
+
+
+
+# TODO --------------------------------------------------------------------
+
+# (1) Figure out what the column vname is and means. It may be a variant on
+# employee class and may need to be made consistent with the class
+# variable in other files.
+
+# Here are counts in the final file, as of 3/13/2024:
+
+# > count(frs$retirement_rates, vname)
+# # A tibble: 8 × 2
+# vname                            n
+# <chr>                        <int>
+# 1 elected_officers               244
+# 2 other                          144
+# 3 regular_k12_instructional      278
+# 4 regular_nonk12_instructional   388
+# 5 senior_management              244
+# 6 special_risk_all               244
+# 7 special_risk_leo               144
+# 8 special_risk_xleo              144
+
+# (2) move the combine function into a functions_utility.R file.
+
+
 # setup -------------------------------------------------------------------
 
 source(here::here("data-raw", "libraries.r"))
@@ -88,11 +121,11 @@ get_retrates <- function(info, rrpath=dxi){
 
     df2 <- df1 |>
       slice(first_data_row:last_data_row) |>
-      mutate(system="frs", rtype=info$fnbase, tier=tier) |>
-      pivot_longer(cols=-c(system, rtype, tier, agec),
+      mutate(system="frs", retirement_type=info$fnbase, tier=tier) |>
+      pivot_longer(cols=-c(system, retirement_type, tier, agec),
                    values_to = "rate") |>
       filter(!is.na(rate)) |>
-      select(system, rtype, tier, name, agec, rate)
+      select(system, retirement_type, tier, name, agec, rate)
 
     df2
   }
@@ -129,13 +162,13 @@ rr2 <- rrraw |>
   uncount(reps) |> # 10 copies of each 70-79 record
   mutate(age=as.numeric(agec),
          rate=as.numeric(rate)) |>
-  mutate(age=ifelse(agec=="70-79", 70:79, age), .by=c(system, rtype, tier, vname, gender))
+  mutate(age=ifelse(agec=="70-79", 70:79, age), .by=c(system, retirement_type, tier, vname, gender))
 count(rr2, agec, age)
 
 ht(rr2)
 
 rr3 <- rr2 |>
-  select(system, rtype, tier, vname, gender, age, rate)
+  select(system, retirement_type, tier, vname, gender, age, rate)
 
 ht(rr3)
 skim(rr3)
