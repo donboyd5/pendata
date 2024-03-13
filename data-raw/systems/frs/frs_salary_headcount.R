@@ -1,8 +1,9 @@
+# About -------------------------------------------------------------------
 
 # frs: Florida Retirement System
 
 # This program gets salary and headcount tables for FRS, from an
-# Excel workbook that Reason created.
+# Excel workbook (Florida FRS inputs.xlsx) that Reason created.
 
 
 # The format of the salary growth table is:
@@ -15,6 +16,9 @@
 # The format of the salary and headcount table is:
 
 
+# TODO --------------------------------------------------------------------
+
+
 # setup -------------------------------------------------------------------
 
 source(here::here("data-raw", "libraries.R"))
@@ -25,7 +29,7 @@ dfrs <- fs::path(draw, "systems", "frs")
 source(fs::path(dfrs, "frs_constants.R"))
 frs_constants
 
-FileName <- 'Florida FRS inputs.xlsx'
+FileName <- "Florida FRS inputs.xlsx"r
 
 
 # functions ---------------------------------------------------------------
@@ -89,12 +93,12 @@ ht(salgrowth2)
 # save salary growth table now because we may want option of using different
 # salary growths -- that might be better done in the model
 
-saveRDS(salgrowth2, path(dfrs, "salary_growth.rds"))
+saveRDS(salgrowth2, path(dfrs, "salary_growth_raw.rds"))
 
 
 # extend salary growth table to max yos and calculate cumulative growth -------
 # cumprod(1 + lag(.x, default = 0))
-salgrowth2 <- readRDS(path(dfrs, "salary_growth.rds"))
+salgrowth2 <- readRDS(path(dfrs, "salary_growth_raw.rds"))
 salgrowthx <- crossing(salgrowth2 |>
                          select(system, class),
                        yos=0:frs_constants$yos_max) |>
@@ -105,7 +109,7 @@ salgrowthx <- crossing(salgrowth2 |>
   mutate(cumprod_increase=cumprod(1 + lag(salgrowth, default = 0))) |>
   ungroup()
 
-saveRDS(salgrowthx, path(dfrs, "salary_growth_extended.rds"))
+saveRDS(salgrowthx, path(dfrs, "salary_growth.rds"))
 
 
 
@@ -188,7 +192,7 @@ saveRDS(salary_headcount_table, path(dfrs, "salary_headcount_raw.rds"))
 # create final salary_headcount table ----
 # desired final columns:
 # system, class, entry_year, entry_age, age, yos, count, entry_salary
-sg1 <- readRDS(path(dfrs, "salary_growth_extended.rds"))
+sg1 <- readRDS(path(dfrs, "salary_growth.rds"))
 sh1 <- readRDS(path(dfrs, "salary_headcount_raw.rds"))
 
 salary_headcount <- sh1 |>
@@ -213,7 +217,7 @@ entrant_profile <- salary_headcount |>
 saveRDS(entrant_profile, path(dfrs, "entrant_profile.rds"))
 
 
-# Truong's code DO NOT ACCIDENTALLY RUN ----------------------------
+# Truong's code below, commented out ----------------------------
 
 # Truong gets:
 #   salary growth
@@ -233,22 +237,22 @@ saveRDS(entrant_profile, path(dfrs, "entrant_profile.rds"))
 
 
 
-salary_growth_table_ <- read_excel(FileName, sheet = "Salary Growth")
-
-regular_salary_table_ <- read_excel(FileName, sheet="Salary Distribution Regular")
-regular_headcount_table_ <- read_excel(FileName, sheet="HeadCount Distribution Regular") %>%
-  mutate(across(everything(), ~replace(.x, is.na(.x), 0)))
-
-regular_salary_headcount_table <- get_salary_headcount_table(
-  regular_salary_table_,
-  regular_headcount_table_,
-  salary_growth_table,
-  "regular")$salary_headcount_table
-
-regular_entrant_profile_table <- get_salary_headcount_table(
-  regular_salary_table_,
-  regular_headcount_table_,
-  salary_growth_table, "regular")$entrant_profile
+# salary_growth_table_ <- read_excel(FileName, sheet = "Salary Growth")
+#
+# regular_salary_table_ <- read_excel(FileName, sheet="Salary Distribution Regular")
+# regular_headcount_table_ <- read_excel(FileName, sheet="HeadCount Distribution Regular") %>%
+#   mutate(across(everything(), ~replace(.x, is.na(.x), 0)))
+#
+# regular_salary_headcount_table <- get_salary_headcount_table(
+#   regular_salary_table_,
+#   regular_headcount_table_,
+#   salary_growth_table,
+#   "regular")$salary_headcount_table
+#
+# regular_entrant_profile_table <- get_salary_headcount_table(
+#   regular_salary_table_,
+#   regular_headcount_table_,
+#   salary_growth_table, "regular")$entrant_profile
 
 # after getting the raw data, Truong's key function is get_salary_headcount_table
 # he calls it as follows:
@@ -261,7 +265,7 @@ regular_entrant_profile_table <- get_salary_headcount_table(
 # We account for the Investment Plan (DC plan) head count by inflating the DB head count by the ratio of total system head count to DB head count
 
 # ECO, ESO, and Judges head counts are processed separately as the ACFR does not provide detailed head counts for these classes
-eco_eso_judges_active_member_adjustment_ratio <- eco_eso_judges_total_active_member_ / sum(eco_headcount_table_[-1] + eso_headcount_table_[-1] + judges_headcount_table_[-1])
+# eco_eso_judges_active_member_adjustment_ratio <- eco_eso_judges_total_active_member_ / sum(eco_headcount_table_[-1] + eso_headcount_table_[-1] + judges_headcount_table_[-1])
 
 # total active members (for grossing up) are defined in lines 160+ of Florida FRS model input.R
 # they come from numbered page 163 of the ACFR
@@ -274,56 +278,56 @@ eco_eso_judges_active_member_adjustment_ratio <- eco_eso_judges_total_active_mem
 
 
 
-get_salary_headcount_table <- function(salary_table, headcount_table, salary_growth_table, class_name){
-
-  class_name <- str_replace(class_name, " ", "_")
-
-  if (!class_name %in% c("eco", "eso", "judges")) {
-    assign("total_active_member", get(paste0(class_name, "_total_active_member_")))
-  } else {
-    assign("total_active_member", get("eco_eso_judges_total_active_member_"))
-  }
-
-  salary_growth_table <- salary_growth_table %>%
-    select(yos, contains(class_name)) %>%
-    rename(cumprod_salary_increase = 2)
-
-  salary_table_long <- salary_table %>%
-    pivot_longer(cols = -1, names_to = "yos", values_to = "salary")
-
-  headcount_table_long <- headcount_table %>%
-    pivot_longer(cols = -1, names_to = "yos", values_to = "count") %>%
-    mutate(
-      active_member_adjustment_ratio = if_else(str_detect(class_name, "eco|eso|judges"), eco_eso_judges_active_member_adjustment_ratio,
-                                               total_active_member / sum(count, na.rm = T)),
-      count = count * active_member_adjustment_ratio
-    ) %>%
-    select(-active_member_adjustment_ratio)
-
-  salary_headcount_table <- salary_table_long %>%
-    left_join(headcount_table_long) %>%
-    mutate(
-      yos = as.numeric(yos),
-      start_year = start_year_,
-      entry_age = age - yos,
-      entry_year = start_year - yos) %>%
-    filter(!is.na(salary), entry_age >= 18) %>%
-    left_join(salary_growth_table) %>%
-    mutate(entry_salary = salary / cumprod_salary_increase) %>%
-    select(entry_year, entry_age, age, yos, count, entry_salary)
-
-  entrant_profile <- salary_headcount_table %>%
-    filter(entry_year == max(entry_year)) %>%
-    mutate(entrant_dist = count/sum(count)) %>%
-    select(entry_age, entry_salary, entrant_dist) %>%
-    rename(start_sal = entry_salary)
-
-  output <- list(
-    salary_headcount_table = salary_headcount_table,
-    entrant_profile = entrant_profile)
-
-  return(output)
-}
+# get_salary_headcount_table <- function(salary_table, headcount_table, salary_growth_table, class_name){
+#
+#   class_name <- str_replace(class_name, " ", "_")
+#
+#   if (!class_name %in% c("eco", "eso", "judges")) {
+#     assign("total_active_member", get(paste0(class_name, "_total_active_member_")))
+#   } else {
+#     assign("total_active_member", get("eco_eso_judges_total_active_member_"))
+#   }
+#
+#   salary_growth_table <- salary_growth_table %>%
+#     select(yos, contains(class_name)) %>%
+#     rename(cumprod_salary_increase = 2)
+#
+#   salary_table_long <- salary_table %>%
+#     pivot_longer(cols = -1, names_to = "yos", values_to = "salary")
+#
+#   headcount_table_long <- headcount_table %>%
+#     pivot_longer(cols = -1, names_to = "yos", values_to = "count") %>%
+#     mutate(
+#       active_member_adjustment_ratio = if_else(str_detect(class_name, "eco|eso|judges"), eco_eso_judges_active_member_adjustment_ratio,
+#                                                total_active_member / sum(count, na.rm = T)),
+#       count = count * active_member_adjustment_ratio
+#     ) %>%
+#     select(-active_member_adjustment_ratio)
+#
+#   salary_headcount_table <- salary_table_long %>%
+#     left_join(headcount_table_long) %>%
+#     mutate(
+#       yos = as.numeric(yos),
+#       start_year = start_year_,
+#       entry_age = age - yos,
+#       entry_year = start_year - yos) %>%
+#     filter(!is.na(salary), entry_age >= 18) %>%
+#     left_join(salary_growth_table) %>%
+#     mutate(entry_salary = salary / cumprod_salary_increase) %>%
+#     select(entry_year, entry_age, age, yos, count, entry_salary)
+#
+#   entrant_profile <- salary_headcount_table %>%
+#     filter(entry_year == max(entry_year)) %>%
+#     mutate(entrant_dist = count/sum(count)) %>%
+#     select(entry_age, entry_salary, entrant_dist) %>%
+#     rename(start_sal = entry_salary)
+#
+#   output <- list(
+#     salary_headcount_table = salary_headcount_table,
+#     entrant_profile = entrant_profile)
+#
+#   return(output)
+# }
 
 
 

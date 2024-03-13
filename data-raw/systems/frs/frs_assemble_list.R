@@ -20,7 +20,7 @@ dfrs <- fs::path(draw, "systems", "frs")
 
 # get list with the desired tables -------------------------------------------------------------------
 
-files <- c("mortality_rates", "mortality_improvement", "salary_growth_extended",
+files <- c("mortality_rates", "mortality_improvement", "salary_growth",
            "salary_headcount", "entrant_profile", "retirement_rates") |> sort()
 
 f <- function(file){
