@@ -2,8 +2,8 @@
 
 # frs: Florida Retirement System
 
-# This program gets salary and headcount tables for FRS, from an
-# Excel workbook (Florida FRS inputs.xlsx) that Reason created.
+# Get salary and headcount tables for FRS, from an Excel workbook (Florida FRS
+# inputs.xlsx) that Reason created.
 
 
 # The format of the salary growth table is:
@@ -29,7 +29,7 @@ dfrs <- fs::path(draw, "systems", "frs")
 source(fs::path(dfrs, "frs_constants.R"))
 frs_constants
 
-FileName <- "Florida FRS inputs.xlsx"r
+FileName <- "Florida FRS inputs.xlsx"
 
 
 # functions ---------------------------------------------------------------
