@@ -146,7 +146,7 @@ glimpse(rrates_raw)
 saveRDS(rrates_raw, path(dfrs, "rrates_raw.rds"))
 
 
-# clean retirement rates --------------------------------------------------
+# clean and save retirement rates -------------------------------------------
 # see  Florida FRS benefit model.R clean_retire_rate_table
 rrraw <- readRDS(path(dfrs, "rrates_raw.rds"))
 ht(rrraw)
