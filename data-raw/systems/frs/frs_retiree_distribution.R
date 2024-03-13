@@ -14,6 +14,9 @@
 
 # Read as text, convert to desired types.
 
+# Reverse engineer spreadsheet, get source data and calculate annual from that,
+# giving us the ability to use different interpolation methods.
+
 
 # setup -------------------------------------------------------------------
 
