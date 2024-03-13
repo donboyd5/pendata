@@ -21,7 +21,7 @@ dfrs <- fs::path(draw, "systems", "frs")
 # get list with the desired tables -------------------------------------------------------------------
 
 files <- c("mortality_rates", "mortality_improvement", "salary_growth",
-           "salary_headcount", "entrant_profile", "retirement_rates") |> sort()
+           "salary_headcount", "entrant_profile", "retirement_rates", "termination_rates") |> sort()
 
 f <- function(file){
   fpath <- path(dfrs, paste0(file, ".rds"))
@@ -39,5 +39,6 @@ frs$mortality_improvement |> ht()
 frs$retirement_rates |> ht()
 frs$salary_growth |> ht()
 frs$salary_headcount |> ht()
+frs$termination_rates |> ht()
 
 usethis::use_data(frs, overwrite = TRUE)
