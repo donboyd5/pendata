@@ -2,7 +2,7 @@
 # frs: Florida Retirement System
 
 # This program gets mortality tables for FRS, from an
-# Excel workbook that Reason created.
+# Excel workbook (pub-2010-headcount-mort-rates.xlsx) that Reason created.
 
 
 # setup -------------------------------------------------------------------
@@ -19,11 +19,11 @@ get_mort <- function(sheet, fullpath){
   # read a single frs mortality table from a given sheet
   # create a long mortality table
 
-  # each sheet has the class (e.g., teacher, safety, etc.) in A2
-  class <- read_excel(fullpath, sheet = sheet, range="A2", col_names = "class") |>
-    pull(class) |>
+  # each sheet has the plan (e.g., teacher, safety, etc.) in A2
+  plan <- read_excel(fullpath, sheet = sheet, range="A2", col_names = "plan") |>
+    pull(plan) |>
     str_to_lower()
-  print(class)
+  print(plan)
 
   # get the raw mortality table, which we will clean
   mort1 <- suppressMessages(
@@ -71,10 +71,10 @@ get_mort <- function(sheet, fullpath){
     mutate(age=as.integer(age)) |>
     pivot_longer(-age, values_to = "rate") |>
     # here's where the double underscore is helpful
-    separate(name, into=c("emptype", "gender"), sep = "__") |>
-    mutate(class=class, rate=as.numeric(rate)) |>
-    select(class, emptype, gender, age, rate) |>
-    arrange(class, emptype, gender, age)
+    separate(name, into=c("beneficiary_type", "gender"), sep = "__") |>
+    mutate(plan=plan, rate=as.numeric(rate)) |>
+    select(plan, beneficiary_type, gender, age, rate) |>
+    arrange(plan, beneficiary_type, gender, age)
 
   mort3 # return a long mortality table for a single sheet
 }
@@ -96,10 +96,10 @@ mort <- sheets |>
   pivot_longer(cols=c(male, female, all),
                names_to = "gender", values_to = "rate") |>
   mutate(system="frs") |>
-  select(system, class, emptype, gender, age, rate)
+  select(system, plan, beneficiary_type, gender, age, rate)
 
-count(mort, class)
-count(mort, emptype)
+count(mort, plan)
+count(mort, beneficiary_type)
 count(mort, gender)
 names(mort)
 ht(mort)
