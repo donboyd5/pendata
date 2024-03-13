@@ -1,4 +1,16 @@
 
+# About -------------------------------------------------------------------
+
+# Assemble all of the dataframes and other objects for a single retirement
+# system into a list that has the same name as the system, and save it to
+# the data folder so that it will be available to package users.
+
+
+# TODO --------------------------------------------------------------------
+
+# Possibly convert this program to a function and put it in a
+# functions_utilities.R file, so that it can be used for any system.
+
 # setup -------------------------------------------------------------------
 
 source(here::here("data-raw", "libraries.r"))
