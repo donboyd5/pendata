@@ -1,3 +1,9 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
 # Constructing data for Florida FRS
 
 -   The `.R` files in this folder create individual `.rds` data files that will not be released with the `pendata` package. These `.rds` files are used to create a list of data objects, called `frs`, that will be saved in the `../data` folder and released with the package.
