@@ -26,7 +26,7 @@ source(here::here("data-raw", "libraries.R"))
 draw <- here::here("data-raw")
 
 dfrs <- fs::path(draw, "systems", "frs")
-source(fs::path(dfrs, "frs_constants.R"))
+source(fs::path(dfrs, "constants.R"))
 frs_constants
 
 FileName <- "Florida FRS inputs.xlsx"
@@ -35,8 +35,8 @@ FileName <- "Florida FRS inputs.xlsx"
 # functions ---------------------------------------------------------------
 
 get_class <- function(class_tabname){
-  # map class tabnames to the names that Reason uses in the model
-  # example: get_class(c("Sen Man", "Judge"))
+  # map Excel sheet names that represent classes to the class names that Reason
+  # uses in the model example: get_class(c("Sen Man", "Judge"))
 
   class_mapping <- c(regular="Regular", special="Special", admin="Admin",
                      eco="Eco", eso="Eso", judges="Judge",
