@@ -20,10 +20,11 @@ dfrs <- fs::path(draw, "systems", "frs")
 
 # get list with the desired tables -------------------------------------------------------------------
 
-files <- c("mortality_rates", "mortality_improvement", "salary_growth",
-           "salary_headcount", "entrant_profile", "retiree_distribution",
-           "retirement_rates",
-           "termination_rates") |> sort()
+files <- c(
+  "current_amort_layers", "init_funding_data",
+  "mortality_rates", "mortality_improvement", "salary_growth",
+  "salary_headcount", "entrant_profile", "retiree_distribution",
+  "retirement_rates", "termination_rates") |> sort()
 
 f <- function(file){
   fpath <- path(dfrs, paste0(file, ".rds"))
@@ -36,6 +37,8 @@ frs <- files |>
   purrr::map(f)
 
 names(frs)
+frs$current_amort_layers |> ht()
+frs$init_funding_data |> ht()
 frs$mortality_rates |> ht()
 frs$mortality_improvement |> ht()
 frs$retiree_distribution |> ht()
