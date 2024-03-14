@@ -7,6 +7,7 @@
 <!-- badges: end -->
 
 Pension data for the Reason-Rockefeller pension policy analysis tool.
+For issues that need consideration, see [this](issues.rmd).
 
 ## Installation
 
@@ -52,19 +53,23 @@ summary(mp2018)
 #>                     3rd Qu.:2013   3rd Qu.: 95   3rd Qu.: 0.012200  
 #>                     Max.   :2034   Max.   :120   Max.   : 0.073500
 head(mp2018)
-#>   gender year age     mp
-#> 1 female 1951  20 0.0667
-#> 2 female 1951  21 0.0691
-#> 3 female 1951  22 0.0710
-#> 4 female 1951  23 0.0724
-#> 5 female 1951  24 0.0732
-#> 6 female 1951  25 0.0735
+#> # A tibble: 6 × 4
+#>   gender  year   age     mp
+#>   <chr>  <int> <int>  <dbl>
+#> 1 female  1951    20 0.0667
+#> 2 female  1951    21 0.0691
+#> 3 female  1951    22 0.071 
+#> 4 female  1951    23 0.0724
+#> 5 female  1951    24 0.0732
+#> 6 female  1951    25 0.0735
 tail(mp2018)
-#>       gender year age mp
-#> 16963   male 2034 115  0
-#> 16964   male 2034 116  0
-#> 16965   male 2034 117  0
-#> 16966   male 2034 118  0
-#> 16967   male 2034 119  0
-#> 16968   male 2034 120  0
+#> # A tibble: 6 × 4
+#>   gender  year   age    mp
+#>   <chr>  <int> <int> <dbl>
+#> 1 male    2034   115     0
+#> 2 male    2034   116     0
+#> 3 male    2034   117     0
+#> 4 male    2034   118     0
+#> 5 male    2034   119     0
+#> 6 male    2034   120     0
 ```

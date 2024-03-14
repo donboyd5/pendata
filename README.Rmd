@@ -16,9 +16,10 @@ knitr::opts_chunk$set(
 # pendata
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
-Pension data for the Reason-Rockefeller pension policy analysis tool.
+Pension data for the Reason-Rockefeller pension policy analysis tool. For issues that need consideration, see [this](issues.rmd).
 
 ## Installation
 
@@ -31,9 +32,9 @@ devtools::install_github("donboyd5/pendata")
 
 This package contains pension-related data:
 
-- **Commonly used actuarial tables** from authoritative sources, such as the Society of Actuaries' (SOA) MP-2018 mortality improvement scale.
+-   **Commonly used actuarial tables** from authoritative sources, such as the Society of Actuaries' (SOA) MP-2018 mortality improvement scale.
 
-- **System-specific data**. The package includes mortality tables and other data specific to the Florida Retirement System (FRS). We will add data from additional plans. The package takes raw data from individual pension systems in formats that vary from system to system, and converts it to a consistent format that is consistent from system to system. For example, mortality tables follow a common format and are consistent with the format used for SOA tables.
+-   **System-specific data**. The package includes mortality tables and other data specific to the Florida Retirement System (FRS). We will add data from additional plans. The package takes raw data from individual pension systems in formats that vary from system to system, and converts it to a consistent format that is consistent from system to system. For example, mortality tables follow a common format and are consistent with the format used for SOA tables.
 
 The package also includes tools to convert data from the package's formats to selected other formats.
 
@@ -52,4 +53,3 @@ tail(mp2018)
 
 
 ```
-
