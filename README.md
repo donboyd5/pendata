@@ -7,7 +7,8 @@
 <!-- badges: end -->
 
 Pension data for the Reason-Rockefeller pension policy analysis tool.
-For issues that need consideration, see [this](issues.md).
+
+<!-- For issues that need consideration, see [this](data-raw/misc/issues.md). -->
 
 ## Installation
 
