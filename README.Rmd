@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: end -->
 
-Pension data for the Reason-Rockefeller pension policy analysis tool. For issues that need consideration, see [this](issues.rmd).
+Pension data for the Reason-Rockefeller pension policy analysis tool. For issues that need consideration, see [this](issues.md).
 
 ## Installation
 
