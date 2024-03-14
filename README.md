@@ -8,6 +8,11 @@
 
 Pension data for the Reason-Rockefeller pension policy analysis tool.
 
+For documentation on how to create the data released with this package,
+see the README.md files in each pension system’s folder. For example,
+the documentation for building data for the Florida Retirement System
+(FRS) is [here](data-raw/systems/frs/README.md).
+
 <!-- For issues that need consideration, see [this](data-raw/misc/issues.md). -->
 
 ## Installation
