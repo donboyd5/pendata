@@ -58,15 +58,15 @@ glimpse(salgrowth2)
 skim(salgrowth2)
 ht(salgrowth2)
 
-# save salary growth table now because we may want option of using different
+# ?? save salary growth table now because we may want option of using different
 # salary growths -- that might be better done in the model
-
-saveRDS(salgrowth2, path(dfrs, "salary_growth_raw.rds"))
+# saveRDS(salgrowth2, path(dfrs, "salary_growth_raw.rds"))
 
 
 # extend salary growth table to max yos and calculate cumulative growth -------
 # cumprod(1 + lag(.x, default = 0))
-salgrowth2 <- readRDS(path(dfrs, "salary_growth_raw.rds"))
+# salgrowth2 <- readRDS(path(dfrs, "salary_growth_raw.rds"))
+
 salgrowthx <- crossing(salgrowth2 |>
                          select(system, class),
                        yos=0:frs_constants$yos_max) |>

@@ -1,19 +1,26 @@
----
-output: github_document
----
 
-# Notes on how "Florida FRS benefit model.R" relates to pendata
+# Notes on how the Reason FRS model relates to pendata
+
+## Termination rates
+
+## Retirement rates
+
+## Headcount
+
+## Salary
 
 ## Salary growth
 
--   Truong reads salary growth rates in "Florida FRS model input.R" line 180
+- Truong reads salary growth rates in “Florida FRS model input.R” line
+  180
 
--   He extends salary growth to OUR maximum yos in "Florida FRS benefit model.R" lines 6-9 by carrying the last yos growth rate (yos=70) forward to all subsequent yos (up to 70)
+- He extends salary growth to OUR maximum yos in “Florida FRS benefit
+  model.R” lines 6-9 by carrying the last yos growth rate (yos=70)
+  forward to all subsequent yos (up to 70)
 
--   I do all of this in salary_growth.R
+- I do all of this in salary_growth.R
 
-```{r eval=FALSE}
-
+``` r
 #Calculate salary cumulative growth 
 salary_growth_table <- salary_growth_table_ %>% 
   bind_rows(tibble(yos = (max(salary_growth_table_$yos)+1):max(yos_range_))) %>% 
@@ -21,12 +28,15 @@ salary_growth_table <- salary_growth_table_ %>%
   mutate(across(contains("salary"), ~ cumprod(1 + lag(.x, default = 0)), .names = "cumprod_{.col}"), .keep = "unused")
 ```
 
-
 ## Salary-headcount table
 
+- Truong reads raw salary-headcount data in “Florida FRS model input.R”.
+  See lines 182-208
 
-```{r eval=FALSE}
+- These counts do not include DC plan headcount. He adjusts headcount
+  data upward
 
+``` r
 #Joining headcount data, salary data, and salary growth data
 #We account for the Investment Plan (DC plan) head count by inflating the DB head count by the ratio of total system head count to DB head count
 #ECO, ESO, and Judges head counts are processed separately as the ACFR does not provide detailed head counts for these classes 
@@ -85,7 +95,26 @@ get_salary_headcount_table <- function(salary_table, headcount_table, salary_gro
 
 regular_salary_headcount_table <- get_salary_headcount_table(regular_salary_table_, regular_headcount_table_, salary_growth_table, "regular")$salary_headcount_table
 
+regular_salary_headcount_table <- get_salary_headcount_table(regular_salary_table_, regular_headcount_table_, salary_growth_table, "regular")$salary_headcount_table
+regular_entrant_profile_table <- get_salary_headcount_table(regular_salary_table_, regular_headcount_table_, salary_growth_table, "regular")$entrant_profile
 
+special_salary_headcount_table <- get_salary_headcount_table(special_salary_table_, special_headcount_table_, salary_growth_table, "special")$salary_headcount_table
+special_entrant_profile_table <- get_salary_headcount_table(special_salary_table_, special_headcount_table_, salary_growth_table, "special")$entrant_profile
+
+admin_salary_headcount_table <- get_salary_headcount_table(admin_salary_table_, admin_headcount_table_, salary_growth_table, "admin")$salary_headcount_table
+admin_entrant_profile_table <- get_salary_headcount_table(admin_salary_table_, admin_headcount_table_, salary_growth_table, "admin")$entrant_profile
+
+eco_salary_headcount_table <- get_salary_headcount_table(eco_salary_table_, eco_headcount_table_, salary_growth_table, "eco")$salary_headcount_table
+eco_entrant_profile_table <- get_salary_headcount_table(eco_salary_table_, eco_headcount_table_, salary_growth_table, "eco")$entrant_profile
+
+eso_salary_headcount_table <- get_salary_headcount_table(eso_salary_table_, eso_headcount_table_, salary_growth_table, "eso")$salary_headcount_table
+eso_entrant_profile_table <- get_salary_headcount_table(eso_salary_table_, eso_headcount_table_, salary_growth_table, "eso")$entrant_profile
+
+judges_salary_headcount_table <- get_salary_headcount_table(judges_salary_table_, judges_headcount_table_, salary_growth_table, "judges")$salary_headcount_table
+judges_entrant_profile_table <- get_salary_headcount_table(judges_salary_table_, judges_headcount_table_, salary_growth_table, "judges")$entrant_profile
+
+senior_management_salary_headcount_table <- get_salary_headcount_table(senior_management_salary_table_, 
+                                            senior_management_headcount_table_, salary_growth_table, "senior management")$salary_headcount_table
+senior_management_entrant_profile_table <- get_salary_headcount_table(senior_management_salary_table_, 
+                                            senior_management_headcount_table_, salary_growth_table, "senior management")$entrant_profile
 ```
-
-
