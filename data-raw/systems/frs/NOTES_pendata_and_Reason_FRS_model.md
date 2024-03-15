@@ -1,0 +1,62 @@
+
+# How pendata relates to the Reason FRS model
+
+This compares pendata to the Reason FRS model as provided to Rock
+College on \[date\] in the file \[filename\].
+
+## Order in which to run programs
+
+## Mortality rates
+
+- Reason:
+
+  - gets general, safety, and teacher tables (**Florida FRS model
+    input.R**, lines 173-175)
+  - cleans these tables (**Florida FRS benefit model.R**, lines 144-169)
+  - defines base_regular_mort_table as the average of general and
+    teacher mortality tables (**Florida FRS benefit model.R**, line 172)
+
+- pendata:
+
+  - 
+
+## Extended mortality rates
+
+- Reason:
+
+  - creates extended mortality tables reflecting mortality improvement
+    and new entrants (**Florida FRS benefit model.R** lines 231-264)
+  - creates retiree mortality tables “for current retirees” (**Florida
+    FRS benefit model.R** lines 267-291)
+
+## Termination rates
+
+## Retirement rates
+
+## Headcount
+
+## Salary
+
+## Salary growth
+
+- Reason:
+
+  - reads salary growth rates (**Florida FRS model input.R** line 180)
+
+  - extends salary growth to the maximum yos by carrying the last yos
+    growth rate (yos=70) forward to all subsequent yos (up to 70)
+    (**Florida FRS benefit model.R** lines 6-9)
+
+- pendata:
+
+  - does this in one program (**salary_growth.R**)
+
+## Salary-headcount table
+
+- Reason:
+
+  - Reads raw salary-headcount data (**Florida FRS model input.R** lines
+    182-208)
+
+  - These counts do not include DC plan headcount. Reason adjusts
+    headcount data upward to be consistent with plan totals ()

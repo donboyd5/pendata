@@ -11,7 +11,6 @@
 # TODO --------------------------------------------------------------------
 
 # Consider:
-#   - breaking entrant_profile out into separate R file
 #   - separate files for salary_headcount_raw, which just relies on one sheet, and
 #       salary_headcount, which requires ..._raw plus salary_growth
 
@@ -46,13 +45,4 @@ salary_headcount <- hc1 |>
 
 saveRDS(salary_headcount, path(dfrs, "salary_headcount.rds"))
 
-
-# create entrant profile --------------------------------------------------
-# why does Truong want so many older people in his entrants' profile??
-entrant_profile <- salary_headcount |>
-  filter(entry_year == max(entry_year)) |>
-  mutate(entrant_dist = count/sum(count), .by=c(system, class)) |>
-  select(system, class, entry_age, start_sal=entry_salary, entrant_dist)
-
-saveRDS(entrant_profile, path(dfrs, "entrant_profile.rds"))
 
