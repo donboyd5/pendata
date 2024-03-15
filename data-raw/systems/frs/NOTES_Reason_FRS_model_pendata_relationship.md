@@ -11,14 +11,14 @@
 
 ## Salary growth
 
-- Truong reads salary growth rates in “Florida FRS model input.R” line
+- Reason reads salary growth rates in “Florida FRS model input.R” line
   180
 
-- He extends salary growth to OUR maximum yos in “Florida FRS benefit
-  model.R” lines 6-9 by carrying the last yos growth rate (yos=70)
-  forward to all subsequent yos (up to 70)
+- Reason extends salary growth to OUR maximum yos in “Florida FRS
+  benefit model.R” lines 6-9 by carrying the last yos growth rate
+  (yos=70) forward to all subsequent yos (up to 70)
 
-- I do all of this in salary_growth.R
+- pendata does all of this in salary_growth.R
 
 ``` r
 #Calculate salary cumulative growth 
