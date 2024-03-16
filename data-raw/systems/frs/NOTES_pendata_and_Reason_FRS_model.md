@@ -4,9 +4,28 @@
 This compares pendata to the Reason FRS model as provided to Rock
 College on \[date\] in the file \[filename\].
 
-## Order in which to run programs
+## Mortality rates and mortality improvement
 
-## Mortality rates
+### Background
+
+- FRS, and the Reason FRS model, use the Society of Actuaries’ Pub-2010
+  base mortality rates with SOA Projection Scale MP- 2018. (See, for
+  example, the 2022 FRS actuarial valuation Appendix A.) SOA links:
+
+  - [Pub-2010 landing
+    page](https://www.soa.org/resources/research-reports/2019/pub-2010-retirement-plans/)
+
+  - [Pub-2010 Public Retirement Plans Mortality Tables
+    Report](https://www.soa.org/globalassets/assets/files/resources/research-report/2019/pub-2010-mort-report.pdf)
+
+  - [Pub.H-2010 Headcount-Weighted Mortality Rates
+    (pub-2010-headcount-mort-rates.xlsx)](https://www.soa.org/49347a/globalassets/assets/files/resources/research-report/2019/pub-2010-headcount-mort-rates.xlsx)
+    spreadsheet used by Reason, which has mortality rates for general,
+    safety, and teacher workers as of 2010.
+
+- 
+
+### Mortality rates
 
 - Reason:
 
@@ -35,21 +54,55 @@ College on \[date\] in the file \[filename\].
 
 ## Headcount
 
+## Entrant profile
+
+Reason (**Florida FRS benefit model.R** lines 55-59):
+
+- Get the merged salary_headcount_table which, for each age and yos
+  group, has:
+
+  - yos, age, count, start_year (2022, the year of the data), entry_year
+    (start_year - yos), entry_age (age - yos), and entry salary
+    (data-year salary reduced by salary growth to salary at year of
+    entry)
+
+- Keep data for the highest entry year (which is the lowest yos group)
+
+- Calculate the percentage distribution of headcount by entry age
+  (entrant_dist)
+
+- Keep entry_age, start_sal=entry_salary, entrant_dist
+
+- Reason model has the entrant profile in a separate table for each
+  class
+
+pendata does the same in **entrant_profile.R**, but puts the entrant
+profile in one long data frame
+
 ## Salary
 
 ## Salary growth
 
 - Reason:
 
-  - reads salary growth rates (**Florida FRS model input.R** line 180)
+  - Reads salary growth rates as a wide file, with a column for each
+    class (**Florida FRS model input.R** line 180)
 
-  - extends salary growth to the maximum yos by carrying the last yos
-    growth rate (yos=70) forward to all subsequent yos (up to 70)
-    (**Florida FRS benefit model.R** lines 6-9)
+  - Extends salary growth to the maximum yos by carrying the last yos
+    growth rate (yos=30) forward to all subsequent yos (up to 70), and
+    also calculates cumulative growth from yos=0 to yos=70 (**Florida
+    FRS benefit model.R** lines 6-9)
+
+  - Note: Later, when calculating entry salary in the salary_headcount
+    table, Reason creates a temporary version of the salary growth table
+    with data for the class being worked on, but does not change the
+    data.
 
 - pendata:
 
-  - does this in one program (**salary_growth.R**)
+  - Does the same thing (gets the same growth rates, extends years, and
+    calculates the same cumulative growth rates) but stores the result
+    for all classes in a long data frame (**salary_growth.R**)
 
 ## Salary-headcount table
 
