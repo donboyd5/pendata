@@ -7,7 +7,10 @@
 
 *.rds
 
-# ignore files that I make notes in
+# temp files associated with an open Excel file:
+~$.*
+
+# files that I make notes in:
 *_djb*
 
 
