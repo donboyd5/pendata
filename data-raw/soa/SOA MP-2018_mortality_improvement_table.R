@@ -14,7 +14,7 @@ draw <- here::here("data-raw")
 # mortality improvement scales ----
 
 # download the MP-2018 documentation and tables from the SOA site MP-2018 was
-# released in 2018 -- see SOA documentation data for calendar years 1950 through
+# released in 2018 -- see SOA documentation. Data for calendar years 1950 through
 # 2014 were taken directly from SSA-published smoothed mortality rates from 2018
 # SSA Trustees report
 
