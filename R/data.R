@@ -1,3 +1,22 @@
+#' Pub.H-2010 Headcount-Weighted Mortality Rates
+#'
+#' Raw data from SOA's Pub.H-2010 Headcount-Weighted Mortality Rates.
+#'
+#' @format ## `pub2010hc_mortality_rates`
+#' A tibble with 3,708 rows and 4 columns:
+#' \describe{
+#'   \item{employee_type}{"teacher", "safety" or "general"}
+#'   \item{beneficiary_type}{"employee", "healthy_retiree", "disabled_retiree",
+#'   or "contingent_survivor"}
+#'   \item{age}{integer generally ranging from 18 to 120}
+#'   \item{rate}{mortality rate as decimal number}
+#' }
+#' @source
+#' <https://www.soa.org/49347a/globalassets/assets/files/resources/research-report/2019/pub-2010-headcount-mort-rates.xlsx>
+"pub2010hc_mortality_rates"
+
+
+
 #' Mortality Improvement Scale MP-2018
 #'
 #' Raw data from Scale MP-2018, the latest iteration of the pension mortality

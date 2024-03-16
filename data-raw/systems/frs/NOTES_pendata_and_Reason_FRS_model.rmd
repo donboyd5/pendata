@@ -4,7 +4,7 @@ output: github_document
 
 # How pendata relates to the Reason FRS model
 
-This compares pendata to the Reason FRS model as provided to Rock College on [date] in the file [filename].
+This compares pendata to the version of the Reason FRS model provided to Rockefeller College on [date] in the file [filename].
 
 ## Mortality rates and mortality improvement
 
@@ -13,6 +13,8 @@ This compares pendata to the Reason FRS model as provided to Rock College on [da
 FRS, and the Reason FRS model, use the Society of Actuaries' Pub-2010 base mortality rates with SOA Projection Scale MP- 2018. (See, for example, the 2022 FRS actuarial valuation Appendix A.)
 
 ### Mortality rates
+
+#### Background
 
 -   SOA links:
 
@@ -32,17 +34,17 @@ FRS, and the Reason FRS model, use the Society of Actuaries' Pub-2010 base morta
 
 ### Mortality improvement rates
 
-#### Overview
+#### Background
 
 FRS and the Reason FRS model begin with the SOA mortality improvement table MP-2018 (mortality-improvement-scale-mp-2018-rates.xlsx), which has separate male and female mortality improvement rates for single years of age from 20 (labeled as \<= 20) to 120, crossed by single years from 1951 through 2034 (labeled as 2034+). Extend it by (1) adding ages 18 and 19 with the same rates as age 20, and (2) adding years 2035-2154 with the same rates as 2034.
 
 Links:
 
--   SOA [landing page](https://www.soa.org/resources/experience-studies/2018/mortality-improvement-scale-mp-2018/)
+-   SOA Mortality Improvement Scale MP-2018 [landing page](https://www.soa.org/resources/experience-studies/2018/mortality-improvement-scale-mp-2018/)
 
--   SOA Mortality improvement table MP-2018 [report](https://www.soa.org/49964f/globalassets/assets/files/resources/experience-studies/2018/mortality-improvement-scale-mp-2018.pdf)
+-   SOA Mortality Improvement Scale MP-2018 [report](https://www.soa.org/49964f/globalassets/assets/files/resources/experience-studies/2018/mortality-improvement-scale-mp-2018.pdf)
 
--   SOA mortality improvement table ([mortality-improvement-scale-mp-2018-rates.xlsx](https://www.soa.org/493456/globalassets/assets/files/resources/experience-studies/2018/mortality-improvement-scale-mp-2018-rates.xlsx))
+-   SOA Scale MP-2018 Rates ([mortality-improvement-scale-mp-2018-rates.xlsx](https://www.soa.org/493456/globalassets/assets/files/resources/experience-studies/2018/mortality-improvement-scale-mp-2018-rates.xlsx))
 
 #### Reason
 
@@ -54,9 +56,9 @@ Links:
 
 -   Download from SOA site (**SOA_mp-2018_mortality_improvement_table.R**)
 
--   Read male and female tables, create a long data frame (**SOA_mp-2018_mortality_improvement_table.R**)
+-   Read male and female tables, create a long data frame (**SOA MP-2018_mortality_improvement_table.R**)
 
--   Save as an .rda file (**SOA_mp-2018_mortality_improvement_table.R**). pendata saves the unadjusted mortality improvement table because other systems may also use mp-2018 and we want a version as provided by SOA for use when developing data for systems other than frs.
+-   Save as an .rda file (**SOA MP-2018_mortality_improvement_table.R**). pendata saves the unadjusted mortality improvement table because other systems may also use mp-2018 and we want a version as provided by SOA for use when developing data for systems other than frs.
 
 -   Create an FRS-specific extended mp2018 table (**mortality_improvement.R**):
 
