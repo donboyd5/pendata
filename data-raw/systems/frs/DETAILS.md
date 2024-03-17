@@ -1,45 +1,68 @@
 
+<!-- DO NOT EDIT the .md file. Instead, edit the .rmd file. -->
+
+# Florida FRS Details
+
 # How pendata relates to the Reason FRS model
 
-This compares pendata to the Reason FRS model as provided to Rock
-College on \[date\] in the file \[filename\].
+This compares pendata to the version of the Reason FRS model provided to
+Rockefeller College on \[date\] in the file \[filename\].
 
 ## Mortality rates and mortality improvement
 
-### Background
-
-- FRS, and the Reason FRS model, use the Society of Actuaries’ Pub-2010
-  base mortality rates with SOA Projection Scale MP- 2018. (See, for
-  example, the 2022 FRS actuarial valuation Appendix A.) SOA links:
-
-  - [Pub-2010 landing
-    page](https://www.soa.org/resources/research-reports/2019/pub-2010-retirement-plans/)
-
-  - [Pub-2010 Public Retirement Plans Mortality Tables
-    Report](https://www.soa.org/globalassets/assets/files/resources/research-report/2019/pub-2010-mort-report.pdf)
-
-  - [Pub.H-2010 Headcount-Weighted Mortality Rates
-    (pub-2010-headcount-mort-rates.xlsx)](https://www.soa.org/49347a/globalassets/assets/files/resources/research-report/2019/pub-2010-headcount-mort-rates.xlsx)
-    spreadsheet used by Reason, which has mortality rates for general,
-    safety, and teacher workers as of 2010.
-
-- 
+FRS, and the Reason FRS model, use the Society of Actuaries’ Pub-2010
+base mortality rates with SOA Projection Scale MP- 2018. (See, for
+example, the 2022 FRS actuarial valuation Appendix A.) For details on
+the SOA files see [SOA README](data-raw/soa/README.md).
 
 ### Mortality rates
 
-- Reason:
+#### Reason
 
-  - gets general, safety, and teacher tables (**Florida FRS model
-    input.R**, lines 173-175)
-  - cleans these tables (**Florida FRS benefit model.R**, lines 144-169)
-  - defines base_regular_mort_table as the average of general and
-    teacher mortality tables (**Florida FRS benefit model.R**, line 172)
+- reads general, safety, and teacher tables from SOA Excel file
+  (**Florida FRS model input.R**, lines 173-175)
+- cleans these tables (**Florida FRS benefit model.R**, lines 144-169)
+- defines base_regular_mort_table as the average of general and teacher
+  mortality tables (**Florida FRS benefit model.R**, line 172)
 
-- pendata:
+#### pendata
 
-  - 
+### Mortality improvement rates
 
-## Extended mortality rates
+#### Background
+
+FRS and the Reason FRS model begin with the SOA mortality improvement
+table MP-2018 (mortality-improvement-scale-mp-2018-rates.xlsx), which
+has separate male and female mortality improvement rates for single
+years of age from 20 (labeled as \<= 20) to 120, crossed by single years
+from 1951 through 2034 (labeled as 2034+). Extend it by (1) adding ages
+18 and 19 with the same rates as age 20, and (2) adding years 2035-2154
+with the same rates as 2034.
+
+#### Reason
+
+- Read male and female mortality improvement tables (**Florida FRS model
+  input.R**, lines 177-178)
+
+- Clean mortality improvement tables (**Florida FRS benefit model.R**,
+  lines 174-228)
+
+#### pendata
+
+- Create an FRS-specific extended mp2018 table
+  (**mortality_improvement.R**):
+
+  - Get the saved mp2018 data table (the .rda file), and
+
+  - Extend it by adding 2 ages, 18 and 19, that have the same mortality
+    improvement rates as age 20.
+
+  - Extend it by adding years from 2035 through 2154 with the same
+    mortality improvement rates as 2034.
+
+  - Calculate cumulative improvement rates
+
+Extended mortality rates
 
 - Reason:
 
@@ -58,8 +81,8 @@ College on \[date\] in the file \[filename\].
 
 Reason (**Florida FRS benefit model.R** lines 55-59):
 
-- Get the merged salary_headcount_table which, for each age and yos
-  group, has:
+- Get the merged salary_headcount_table created several lines earlier
+  which, for each age and yos group, has:
 
   - yos, age, count, start_year (2022, the year of the data), entry_year
     (start_year - yos), entry_age (age - yos), and entry salary

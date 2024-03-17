@@ -12,6 +12,10 @@
 # https://www.soa.org/49347a/globalassets/assets/files/resources/research-report/2019/pub-2010-headcount-mort-rates.xlsx
 
 # Read general, teacher, and safety tables.
+
+# Do NOT make changes that Reason makes to mortality tables here. Instead,
+# make them in the FRS file.
+
 # Save as an rda file.
 
 
@@ -53,7 +57,8 @@ get_mort <- function(sheet, fullpath){
                col_types="text")
   )
 
-  # identify columns to drop: value in row 2 (variable names) is missing
+  # identify columns to drop - those where value in row 2 (variable names)
+  # is missing
   cols_to_drop <- mort1[2, ] |>
     unlist(use.names = FALSE) |>
     is.na()
@@ -110,11 +115,7 @@ sheets <- c("PubT.H-2010", "PubS.H-2010", "PubG.H-2010") # teacher, safety gener
 mort <- sheets |>
   purrr::map(\(x) get_mort(x, fullpath)) |>
   list_rbind() |>
-  pivot_wider(names_from = gender, values_from = rate) |>
-  mutate(all=(male + female) / 2) |>
-  pivot_longer(cols=c(male, female, all),
-               names_to = "gender", values_to = "rate") |>
-  select(employee_type, beneficiary_type, gender, age, rate)
+  filter(!is.na(rate))
 
 count(mort, employee_type)
 count(mort, beneficiary_type)
