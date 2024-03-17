@@ -12,6 +12,9 @@ draw <- here::here("data-raw")
 
 dfrs <- fs::path(draw, "systems", "frs")
 
+
+# get data ----------------------------------------------------------------
+
 mort <- pendata::pub2010hc_mortality_rates |>
   mutate(system="frs") |>
   relocate(system)
@@ -24,6 +27,12 @@ saveRDS(mort, path(dfrs, "mortality_rates.rds")) # one of the files we will save
 # later, we will gather up all of the files for a system and put them into
 # a big list for the system e.g., frs$mort_rates, frs$salary_scale
 # that can be loaded into the model
+
+# pivot_wider(names_from = gender, values_from = rate) |>
+# mutate(all=(male + female) / 2) |>
+# pivot_longer(cols=c(male, female, all),
+#              names_to = "gender", values_to = "rate") |>
+# select(employee_type, beneficiary_type, gender, age, rate)
 
 
 

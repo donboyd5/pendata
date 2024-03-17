@@ -2,27 +2,19 @@
 output: github_document
 ---
 
+<!-- DO NOT EDIT the .md file. Instead, edit the .rmd file. -->
+
+# Florida FRS Details
+
 # How pendata relates to the Reason FRS model
 
 This compares pendata to the version of the Reason FRS model provided to Rockefeller College on [date] in the file [filename].
 
 ## Mortality rates and mortality improvement
 
-### Background
-
-FRS, and the Reason FRS model, use the Society of Actuaries' Pub-2010 base mortality rates with SOA Projection Scale MP- 2018. (See, for example, the 2022 FRS actuarial valuation Appendix A.)
+FRS, and the Reason FRS model, use the Society of Actuaries' Pub-2010 base mortality rates with SOA Projection Scale MP- 2018. (See, for example, the 2022 FRS actuarial valuation Appendix A.) For details on the SOA files see [SOA README](data-raw/soa/README.md).
 
 ### Mortality rates
-
-#### Background
-
--   SOA links:
-
-    -   [Pub-2010 landing page](https://www.soa.org/resources/research-reports/2019/pub-2010-retirement-plans/)
-
-    -   [Pub-2010 Public Retirement Plans Mortality Tables Report](https://www.soa.org/globalassets/assets/files/resources/research-report/2019/pub-2010-mort-report.pdf)
-
-    -   [Pub.H-2010 Headcount-Weighted Mortality Rates (pub-2010-headcount-mort-rates.xlsx)](https://www.soa.org/49347a/globalassets/assets/files/resources/research-report/2019/pub-2010-headcount-mort-rates.xlsx) spreadsheet used by Reason, which has mortality rates for general, safety, and teacher workers as of 2010.
 
 #### Reason
 
@@ -38,13 +30,6 @@ FRS, and the Reason FRS model, use the Society of Actuaries' Pub-2010 base morta
 
 FRS and the Reason FRS model begin with the SOA mortality improvement table MP-2018 (mortality-improvement-scale-mp-2018-rates.xlsx), which has separate male and female mortality improvement rates for single years of age from 20 (labeled as \<= 20) to 120, crossed by single years from 1951 through 2034 (labeled as 2034+). Extend it by (1) adding ages 18 and 19 with the same rates as age 20, and (2) adding years 2035-2154 with the same rates as 2034.
 
-Links:
-
--   SOA Mortality Improvement Scale MP-2018 [landing page](https://www.soa.org/resources/experience-studies/2018/mortality-improvement-scale-mp-2018/)
-
--   SOA Mortality Improvement Scale MP-2018 [report](https://www.soa.org/49964f/globalassets/assets/files/resources/experience-studies/2018/mortality-improvement-scale-mp-2018.pdf)
-
--   SOA Scale MP-2018 Rates ([mortality-improvement-scale-mp-2018-rates.xlsx](https://www.soa.org/493456/globalassets/assets/files/resources/experience-studies/2018/mortality-improvement-scale-mp-2018-rates.xlsx))
 
 #### Reason
 
@@ -53,12 +38,6 @@ Links:
 -   Clean mortality improvement tables (**Florida FRS benefit model.R**, lines 174-228)
 
 #### pendata
-
--   Download from SOA site (**SOA_mp-2018_mortality_improvement_table.R**)
-
--   Read male and female tables, create a long data frame (**SOA MP-2018_mortality_improvement_table.R**)
-
--   Save as an .rda file (**SOA MP-2018_mortality_improvement_table.R**). pendata saves the unadjusted mortality improvement table because other systems may also use mp-2018 and we want a version as provided by SOA for use when developing data for systems other than frs.
 
 -   Create an FRS-specific extended mp2018 table (**mortality_improvement.R**):
 
