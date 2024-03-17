@@ -4,7 +4,7 @@ output: github_document
 
 <!-- DO NOT EDIT the .md file. Instead, edit the .rmd file. -->
 
-# Florida FRS Details, and How pendata relates to the Reason FRS model
+# Florida FRS Details, and how pendata relates to the Reason FRS model
 
 This compares pendata to the version of the Reason FRS model provided to Rockefeller College on [date] in the file [filename].
 
