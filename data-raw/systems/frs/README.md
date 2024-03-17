@@ -35,8 +35,8 @@ runs “Florida FRS model input.R”, I expect to extend and enhance some of
 the data in this package based on transformations done in the other
 Reason programs.
 
-Note that I have not included the dataframe `return_scenarios`, created
-in Reason’s “Florida FRS model input.R”, in `pendata` because it
+Note that I have not included the dataframe `return_scenarios` that is
+created in Reason’s “Florida FRS model input.R”, in `pendata` because it
 contains assumptions about investment returns that we will want to vary
 in a model rather than freeze in static data files.
 
