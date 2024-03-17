@@ -13,7 +13,7 @@ Rockefeller College on \[date\] in the file \[filename\].
 FRS, and the Reason FRS model, use the Society of Actuaries’ Pub-2010
 base mortality rates with SOA Projection Scale MP- 2018. (See, for
 example, the 2022 FRS actuarial valuation Appendix A.) For details on
-the SOA files see [SOA README](data-raw/soa/README.md).
+the SOA files see [SOA README](/data-raw/soa/README.md).
 
 ### Mortality rates
 
