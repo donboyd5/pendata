@@ -35,13 +35,13 @@ devtools::install_github("donboyd5/pendata")
 
 ## How to build the data in this package
 
-- **SOA**: Go to the data-raw/soa folder and read the README. Step
-  through the individual .R files to build the SOA data sets. These must
-  be built first because individual systems may base actuarial tables on
-  SOA tables.
+- **SOA**: Go to the `data-raw/soa` folder and read the README. Step
+  through the individual `.R` files to build the SOA data sets. These
+  must be built first because individual systems may base actuarial
+  tables on SOA tables.
 
 - **Individual systems**: Go to the data-raw subfolder for the system,
-  such as data-raw/frs for Florida Retirement System (FRS). Read the
+  such as `data-raw/frs` for Florida Retirement System (FRS). Read the
   README for documentation and information about which programs to run
   first, because some data depends on data built in earlier steps. Step
-  through the individual .R files.
+  through the individual `.R` files.

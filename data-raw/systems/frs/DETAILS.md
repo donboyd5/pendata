@@ -1,9 +1,7 @@
 
 <!-- DO NOT EDIT the .md file. Instead, edit the .rmd file. -->
 
-# Florida FRS Details
-
-# How pendata relates to the Reason FRS model
+# Florida FRS Details, and How pendata relates to the Reason FRS model
 
 This compares pendata to the version of the Reason FRS model provided to
 Rockefeller College on \[date\] in the file \[filename\].
@@ -15,17 +13,9 @@ base mortality rates with SOA Projection Scale MP- 2018. (See, for
 example, the 2022 FRS actuarial valuation Appendix A.) For details on
 the SOA files see [SOA README](/data-raw/soa/README.md).
 
-### Mortality rates
-
-#### Reason
-
-- reads general, safety, and teacher tables from SOA Excel file
-  (**Florida FRS model input.R**, lines 173-175)
-- cleans these tables (**Florida FRS benefit model.R**, lines 144-169)
-- defines base_regular_mort_table as the average of general and teacher
-  mortality tables (**Florida FRS benefit model.R**, line 172)
-
-#### pendata
+We discuss mortality improvement rates before mortality rates because
+Reason constructs extended mortality rates that reflect mortality
+improvement, so we must have the improvement rates first.
 
 ### Mortality improvement rates
 
@@ -44,32 +34,45 @@ with the same rates as 2034.
 - Read male and female mortality improvement tables (**Florida FRS model
   input.R**, lines 177-178)
 
-- Clean mortality improvement tables (**Florida FRS benefit model.R**,
-  lines 174-228)
+- Clean and extend mortality improvement tables (**Florida FRS benefit
+  model.R**, lines 174-228):
+
+  - Clean the raw mortality improvement tables data
+
+  - Add ages 18 and 19 with the same mortality improvement rates as age
+    20
+
+  - Add years 2035 through 2154 with the same mortality improvement
+    rates as 2034
+
+  - Calculate cumulative improvement rates, based to 2010, the year of
+    the mortality tables
 
 #### pendata
 
-- Create an FRS-specific extended mp2018 table
-  (**mortality_improvement.R**):
+Create an FRS-specific extended mp2018 table
+(**mortality_improvement.R**):
 
-  - Get the saved mp2018 data table (the .rda file), and
+- Get the saved SOA pendata::mp2018 data table (the .rda file), and
 
-  - Extend it by adding 2 ages, 18 and 19, that have the same mortality
-    improvement rates as age 20.
+- Extend ages and years in the same manner as Reason, and calculate
+  cumulative improvement rates in the same way.
 
-  - Extend it by adding years from 2035 through 2154 with the same
-    mortality improvement rates as 2034.
+### Mortality rates
 
-  - Calculate cumulative improvement rates
+#### Reason
 
-Extended mortality rates
+- reads general, safety, and teacher tables from SOA Excel file
+  (**Florida FRS model input.R**, lines 173-175)
+- cleans these tables (**Florida FRS benefit model.R**, lines 144-169)
+- defines base_regular_mort_table as the average of general and teacher
+  mortality tables (**Florida FRS benefit model.R**, line 172)
+- creates extended mortality tables reflecting mortality improvement and
+  new entrants (**Florida FRS benefit model.R** lines 231-264)
+- creates retiree mortality tables “for current retirees” (**Florida FRS
+  benefit model.R** lines 267-291)
 
-- Reason:
-
-  - creates extended mortality tables reflecting mortality improvement
-    and new entrants (**Florida FRS benefit model.R** lines 231-264)
-  - creates retiree mortality tables “for current retirees” (**Florida
-    FRS benefit model.R** lines 267-291)
+#### pendata
 
 ## Termination rates
 

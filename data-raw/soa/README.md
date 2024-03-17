@@ -6,8 +6,8 @@
 `pendata` includes selected SOA mortality rates and mortality
 improvement rates.
 
-See the programs **SOA Pub.H-2010 Headcount-Weighted Mortality Rates.R**
-and **SOA MP-2018_mortality_improvement_table.R** in the data-raw/soa
+See the programs `SOA Pub.H-2010 Headcount-Weighted Mortality Rates.R`
+and `SOA MP-2018_mortality_improvement_table.R` in the data-raw/soa
 folder. The programs are independent of each other so the order in which
 they are run does not matter.
 
@@ -39,3 +39,15 @@ general, safety, and teacher employees.
 
 - SOA Scale MP-2018 Rates
   ([mortality-improvement-scale-mp-2018-rates.xlsx](https://www.soa.org/493456/globalassets/assets/files/resources/experience-studies/2018/mortality-improvement-scale-mp-2018-rates.xlsx))
+
+Mortality improvement steps
+(`SOA_mp-2018_mortality_improvement_table.R`):
+
+- Download from SOA site
+
+- Read male and female tables, create a long data frame
+
+- Save as an .rda file. pendata saves the unadjusted mortality
+  improvement table because other systems may also use mp-2018 and we
+  want a version as provided by SOA for use when developing data for
+  individuals pension systems.
