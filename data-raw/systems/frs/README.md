@@ -40,4 +40,5 @@ created in Reason’s “Florida FRS model input.R”, in `pendata` because it
 contains assumptions about investment returns that we will want to vary
 in a model rather than freeze in static data files.
 
-For details, see the [FRS DETAILS](DETAILS.md) file.
+For details, see the [FRS DETAILS](/data-raw/systems/frs/DETAILS.md)
+file.
