@@ -22,9 +22,9 @@ FRS and the Reason FRS model begin with the SOA mortality improvement table MP-2
 
 #### Reason
 
--   Read male and female mortality improvement tables (**Florida FRS model input.R**, lines 177-178)
+-   Read male and female mortality improvement tables (`Florida FRS model input.R`, lines 177-178)
 
--   Clean and extend mortality improvement tables (**Florida FRS benefit model.R**, lines 174-228):
+-   Clean and extend mortality improvement tables (`Florida FRS benefit model.R`, lines 174-228):
 
     -   Clean the raw mortality improvement tables data
 
@@ -36,7 +36,7 @@ FRS and the Reason FRS model begin with the SOA mortality improvement table MP-2
 
 #### pendata
 
-Create an FRS-specific extended mp2018 table (**mortality_improvement.R**):
+Create an FRS-specific extended mp2018 table (`mortality_improvement.R`):
 
 -   Get the saved SOA pendata::mp2018 data table (the .rda file), and
 
@@ -46,11 +46,11 @@ Create an FRS-specific extended mp2018 table (**mortality_improvement.R**):
 
 #### Reason
 
--   reads general, safety, and teacher tables from SOA Excel file (**Florida FRS model input.R**, lines 173-175)
--   cleans these tables (**Florida FRS benefit model.R**, lines 144-169)
--   defines base_regular_mort_table as the average of general and teacher mortality tables (**Florida FRS benefit model.R**, line 172)
--   creates extended mortality tables reflecting mortality improvement and new entrants (**Florida FRS benefit model.R** lines 231-264) **DJB return to this**
--   creates retiree mortality tables "for current retirees" (**Florida FRS benefit model.R** lines 267-291)
+-   reads general, safety, and teacher tables from SOA Excel file (`Florida FRS model input.R`, lines 173-175)
+-   cleans these tables (`Florida FRS benefit model.R`, lines 144-169)
+-   defines base_regular_mort_table as the average of general and teacher mortality tables (`Florida FRS benefit model.R`, line 172)
+-   creates extended mortality tables reflecting mortality improvement and new entrants (`Florida FRS benefit model.R` lines 231-264) **DJB return to this**
+-   creates retiree mortality tables "for current retirees" (`Florida FRS benefit model.R` lines 267-291)
 
 #### pendata
 
@@ -62,7 +62,7 @@ Create an FRS-specific extended mp2018 table (**mortality_improvement.R**):
 
 ## Entrant profile
 
-Reason (**Florida FRS benefit model.R** lines 55-59):
+Reason (`Florida FRS benefit model.R` lines 55-59):
 
 -   Get the merged salary_headcount_table created several lines earlier which, for each age and yos group, has:
 
@@ -76,28 +76,30 @@ Reason (**Florida FRS benefit model.R** lines 55-59):
 
 -   Reason model has the entrant profile in a separate table for each class
 
-pendata does the same in **entrant_profile.R**, but puts the entrant profile in one long data frame
+pendata does the same in `entrant_profile.R`, but puts the entrant profile in one long data frame
 
 ## Salary
 
 ## Salary growth
 
--   Reason:
+### Reason
 
-    -   Reads salary growth rates as a wide file, with a column for each class (**Florida FRS model input.R** line 180)
+-   Reads salary growth rates as a wide file, with a column for each class (`Florida FRS model input.R` line 180)
 
-    -   Extends salary growth to the maximum yos by carrying the last yos growth rate (yos=30) forward to all subsequent yos (up to 70), and also calculates cumulative growth from yos=0 to yos=70 (**Florida FRS benefit model.R** lines 6-9)
+-   Extends salary growth to the maximum yos by carrying the last yos growth rate (yos=30) forward to all subsequent yos (up to 70), and also calculates cumulative growth from yos=0 to yos=70 (`Florida FRS benefit model.R` lines 6-9)
 
-    -   Note: Later, when calculating entry salary in the salary_headcount table, Reason creates a temporary version of the salary growth table with data for the class being worked on, but does not change the data.
+-   Note: Later, when calculating entry salary in the salary_headcount table, Reason creates a temporary version of the salary growth table with data for the class being worked on, but does not change the data.
 
--   pendata:
+### pendata
 
-    -   Does the same thing (gets the same growth rates, extends years, and calculates the same cumulative growth rates) but stores the result for all classes in a long data frame (**salary_growth.R**)
+-   Does the same thing (gets the same growth rates, extends years, and calculates the same cumulative growth rates) but stores the result for all classes in a long data frame (`salary_growth.R`)
 
 ## Salary-headcount table
 
--   Reason:
+### Reason
 
-    -   Reads raw salary-headcount data (**Florida FRS model input.R** lines 182-208)
+-   Reads raw salary-headcount data (`Florida FRS model input.R` lines 182-208)
 
-    -   These counts do not include DC plan headcount. Reason adjusts headcount data upward to be consistent with plan totals ()
+-   These counts do not include DC plan headcount. Reason adjusts headcount data upward to be consistent with plan totals ()
+
+### pendata
