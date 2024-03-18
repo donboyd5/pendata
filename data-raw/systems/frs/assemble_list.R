@@ -21,6 +21,7 @@ dfrs <- fs::path(draw, "systems", "frs")
 # get list with the desired tables -------------------------------------------------------------------
 
 files <- c(
+  "base_mortality", "class_mortality_xwalk",
   "current_amort_layers", "init_funding_data",
   "mortality_rates", "mortality_improvement", "salary_growth",
   "salary_headcount", "entrant_profile", "retiree_distribution",
@@ -37,6 +38,8 @@ frs <- files |>
   purrr::map(f)
 
 names(frs)
+frs$base_mortality |> ht()
+frs$class_mortality_xwalk |> ht()
 frs$current_amort_layers |> ht()
 frs$init_funding_data |> ht()
 frs$mortality_rates |> ht()
