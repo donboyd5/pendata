@@ -1,6 +1,9 @@
 
 frs_constants <- list()
 
+classes <- c("regular", "special", "admin",
+             "eco", "eso", "judges",
+             "senior_management")
 
 # regular_total_active_member_ <- 537128
 # special_total_active_member_ <- 72925
@@ -17,6 +20,7 @@ eco_eso_judges, 2075
 senior_management, 7610")
 
 frs_constants <- within(frs_constants,{
+  classes <- classes
   start_year <- 2022
   yos_max <- 70
   total_actives <- total_actives
