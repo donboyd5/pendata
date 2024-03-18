@@ -62,18 +62,71 @@ Create an FRS-specific extended mp2018 table
 
 #### Reason
 
-- reads general, safety, and teacher tables from SOA Excel file
+##### **base** mortality tables before improvement
+
+- reads SOA general, safety, and teacher tables from SOA Excel file
   (`Florida FRS model input.R`, lines 173-175)
 - cleans these tables (`Florida FRS benefit model.R`, lines 144-169)
-- defines base_regular_mort_table as the average of general and teacher
-  mortality tables (`Florida FRS benefit model.R`, line 172)
+  - replace missing mortality rates (`Florida FRS benefit model.R`,
+    lines 159-163)
+    - for beneficiary type employee with healthy retiree rates
+    - for beneficiary type healthy retiree with rates for employees (as
+      updated)
+    - as far as I can tell this addresses the fact that in the SOA data,
+      for beneficiary_type healthy_retiree, teachers do not have
+      retirement rates in the ages 50:54 although general employees do.
+      Because Reason averages general and teacher mortality tables for
+      regular class employees, apparently they feel this is better than
+      using the employee rate when a retiree rate is not available
+
+![](images/clipboard-1831592207.png)
+
+- define base mortality tables (before improvement):
+  - regular: average of SOA general and teacher mortality tables –
+    base_regular_mort_table (`Florida FRS benefit model.R`, line 172)
+  - special, admin – use SOA safety (`Florida FRS benefit model.R`,
+    lines 258-264)
+  - eco, eso, judges, senior_management - use SOA general
+    (`Florida FRS benefit model.R`, lines 258-264)
+
+##### **extended** mortality tables with improvement
+
+depends on age, yos, tier: these need to be in the model, not the data,
+I think
+
 - creates extended mortality tables reflecting mortality improvement and
   new entrants (`Florida FRS benefit model.R` lines 231-264) **DJB
   return to this**
+  - final_mort_table for regular has entry_year (1970:2052), entry_age
+    (18:65 by 5 = 11), dist_age (18:120) and yos (0:70) = 83 x 11 x 103
+    x 71 = 6.677 million combinations
+
+  - calc
+
+    - term_year = entry_year + yos
+    - dist_year = entry_year + dist_age - entry_age
+    - filter(term_year \<= dist_year) leaves 2.977 million
+
+  - merge with base mort table and male and female mortality improvement
+    tables to give
+
+    ![](images/clipboard-442466811.png)
+
+  - calc
+
+    - tier_at_dist_age (why do we want this now?)
+    - male and female mort: if tier is vested, then use
+      employee\_\[gender\], otherwise use healthy retiree\_\[gender\];
+      multiply by improvement factor
+    - mort = avg (male + female)
 - creates retiree mortality tables “for current retirees”
   (`Florida FRS benefit model.R` lines 267-291)
 
 #### pendata
+
+##### base mortality
+
+- 
 
 ## Termination rates
 
@@ -83,7 +136,9 @@ Create an FRS-specific extended mp2018 table
 
 ## Entrant profile
 
-Reason (`Florida FRS benefit model.R` lines 55-59):
+### Reason
+
+(`Florida FRS benefit model.R` lines 55-59):
 
 - Get the merged salary_headcount_table created several lines earlier
   which, for each age and yos group, has:
@@ -103,8 +158,10 @@ Reason (`Florida FRS benefit model.R` lines 55-59):
 - Reason model has the entrant profile in a separate table for each
   class
 
-pendata does the same in `entrant_profile.R`, but puts the entrant
-profile in one long data frame
+### pendata
+
+does the same in `entrant_profile.R`, but puts the entrant profile in
+one long data frame
 
 ## Salary
 
