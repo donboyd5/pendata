@@ -1,19 +1,20 @@
 
 # frs: Florida Retirement System
 
-# This program gets mortality tables for FRS, from an
-# Excel workbook (pub-2010-headcount-mort-rates.xlsx) that Reason created.
+# morality rates
 
 
 # setup -------------------------------------------------------------------
 
-source(here::here("data-raw", "libraries.r"))
 draw <- here::here("data-raw")
-
 dfrs <- fs::path(draw, "systems", "frs")
 
+source(here::here("data-raw", "libraries.r"))
+source(fs::path(dfrs, "functions_tier.r"))
+source(fs::path(dfrs, "constants.r"))
 
-# get data ----------------------------------------------------------------
+
+# get SOA data ----------------------------------------------------------------
 
 mort1 <- pendata::pub2010hc_mortality_rates |>
   mutate(system="frs") |>
@@ -33,7 +34,6 @@ count(mort1, age) |> ht()
 #   regular: average of SOA general and teacher mortality tables (Florida FRS benefit model.R, line 172)
 #   special, admin – use SOA safety (Florida FRS benefit model.R, lines 258-264)
 #   eco, eso, judges, senior_management - use SOA general (Florida FRS benefit model.R, lines 258-264)
-
 
 # create the regular table and add it to mort
 # general has 626 records, teachers has 616 records when does one have values but not the other
@@ -74,7 +74,7 @@ base_mort <- bind_rows(
 glimpse(base_mort)
 count(base_mort, employee_type)
 
-saveRDS(base_mort, path(dfrs, "base_mortality.rds"))
+saveRDS(base_mort, path(dfrs, "base_mortality_rates.rds"))
 
 
 # construct crosswalk between employee class and employee type ------------
@@ -86,39 +86,180 @@ class_mortality_xwalk <- tibble(class = frs_constants$classes) |>
                      class %in% c("eco", "eso", "judges",
                                   "senior_management") ~ "general"))
 
+class_mortality_xwalk
+
 saveRDS(class_mortality_xwalk, path(dfrs, "class_mortality_xwalk.rds"))
 
 
 # entry_year_range_ 1970:2052
 
-# expand_grid(entry_year = entry_year_range_, entry_age = entrant_profile$entry_age, dist_age = age_range_, yos = yos_range_) %>%
-# mutate(
-#   term_year = entry_year + yos,
-#   dist_year = entry_year + dist_age - entry_age
-# )
+# construct mortality rates with mortality improvement ------------
+
+# final_mort_table for regular has
+#  entry_year (1970:2052)
+#  entry_age (18:65 by 5 = 11)
+#  dist_age (18:120)
+#  yos (0:70)
+# = 83 x 11 x 103 x 71 = 6.677 million combinations
+
+# term_year = entry_year + yos
+# dist_year = entry_year + dist_age - entry_age
+# filter(term_year <= dist_year) leaves 2.977 million
+
+# depends on dist_year, age, yos, tier or class
+
+# I think we need improved mortality rates for each:
+
+# unique for each: class, tier_at_dist_age, dist_year, dist_age
+skim(rmt)
+
+base_mortality_rates <- readRDS(fs::path(dfrs, "base_mortality_rates.rds"))
+mprates <- readRDS(fs::path(dfrs, "mortality_improvement.rds"))
+
+count(base_mortality_rates, employee_type)
+
+emptypes <- class_mortality_xwalk |> pull(employee_type) |> unique()
+
+base <- expand_grid(employee_type=emptypes,
+                    dist_year=1970:2154,
+                    dist_age=18:120) |>
+  filter((dist_year - dist_age) %in% 1905:2034) |>  # allowable yob range
+  left_join(base_mortality_rates |>
+              filter(!is.na(rate)) |>  # should I do this?? djb
+              select(employee_type, beneficiary_type, gender, dist_age=age, rate),
+            by = join_by(employee_type, dist_age),
+            relationship = "many-to-many")
+glimpse(base)
+skim(base)
+
+tmp <- base |> filter(is.na(rate))
+
+count(base_mortality_rates, employee_type)
+count(base, employee_type)
 
 
-# saveRDS(mort, path(dfrs, "mortality_rates.rds")) # one of the files we will save
+# final_mort_table <- expand_grid(entry_year = entry_year_range_, entry_age = entrant_profile$entry_age, dist_age = age_range_, yos = yos_range_) %>%
+#   mutate(
+#     term_year = entry_year + yos,
+#     dist_year = entry_year + dist_age - entry_age
+#   )  %>%
+#   filter(term_year <= dist_year) %>%
+#   arrange(entry_year, entry_age, yos, dist_age) %>%
+# left_join(base_mort_table, by = c("dist_age" = "age")) %>%
+#   left_join(male_mp_final_table, by = c("dist_age" = "age", "dist_year" = "year")) %>%
+#   left_join(female_mp_final_table, by = c("dist_age" = "age", "dist_year" = "year")) %>%
+#   mutate(
+#     tier_at_dist_age = get_tier(class_name, entry_year, dist_age, yos),
+#
+#     male_mort = if_else(str_detect(tier_at_dist_age, "vested"), employee_male,
+#                         healthy_retiree_male) * male_mp_cumprod_adj,
+#
+#     female_mort = if_else(str_detect(tier_at_dist_age, "vested"), employee_female,
+#                           healthy_retiree_female) * female_mp_cumprod_adj,
+#
+#     mort_final = (male_mort + female_mort)/2
+#   )
 
-# later, we will gather up all of the files for a system and put them into
-# a big list for the system e.g., frs$mort_rates, frs$salary_scale
-# that can be loaded into the model
+count(base, entry_year, dist_year)
 
-# pivot_wider(names_from = gender, values_from = rate) |>
-# mutate(all=(male + female) / 2) |>
-# pivot_longer(cols=c(male, female, all),
-#              names_to = "gender", values_to = "rate") |>
-# select(employee_type, beneficiary_type, gender, age, rate)
+check <- rmt |>
+  count(entry_year, dist_year, dist_age)
 
 
 
-# readRDS(path(ddir, "mort_rates.rds"))
+# FOR TESTING AND QC compare ----
+rmtdjb <- readRDS(fs::path(dfrs, "from_reason", "rmtdjb.rds"))
+rmt <- readRDS(fs::path(dfrs, "from_reason", "regular_mort_table.rds"))
+glimpse(rmt) # Rows: 2,977,459
+length(unique(rmt$mort_final)) # 14915
 
-# note that Truong also does the following in the benefit model
-# Create this mort table for regular employees who are either teachers or general employees
-#   base_regular_mort_table <- (base_general_mort_table + base_teacher_mort_table)/2
-# in other words, he uses the average for teachers and general, but not for safety??
 
-# this is addressed in the table above by creating "all" rows for the gender
-# column, which is the average for everything
+a <- proc.time()
+djb <- rmt |>
+  select(entry_year, dist_age, yos, tier_at_dist_age) |>
+  mutate(class="regular") |>
+  mutate(tier=get_tier(class, entry_year, dist_age, yos, frs_constants$new_year)) # my get_tier
+b <- proc.time()
+b - a
 
+
+count(djb, tier_at_dist_age, tier) |>
+  filter(tier_at_dist_age != tier)
+
+# entry_year entry_age dist_year dist_age yos term_year mort_final tier_at_dist_age
+
+# it looks like we have 38,583 unique combinations of mortality rates for class regular,
+# uniquely determined by tier_at_dist_age, dist_age, and dist_year
+# with 7 classes, total uniques might be abotu 280k
+
+# counts <- rmt |>
+#   summarise(n=n(), nunique=length(unique(mort_final)),
+#             .by=c(tier_at_dist_age, entry_year, entry_age, dist_age))
+#
+# counts <- rmt |>
+#   summarise(n=n(), nunique=length(unique(mort_final)),
+#             .by=c(tier_at_dist_age, entry_year, dist_year, dist_age))
+#
+# counts <- rmt |>
+#   summarise(n=n(), nunique=length(unique(mort_final)),
+#             .by=c(dist_year, dist_age))
+
+counts <- rmt |>
+  summarise(n=n(), nunique=length(unique(mort_final)),
+            .by=c(tier_at_dist_age, dist_year, dist_age))
+
+counts |>
+  mutate(yob=dist_year - dist_age) |>
+  summarise(minyob=min(yob), maxyob=max(yob))
+
+tmp <- rmt |>
+  arrange(tier_at_dist_age, dist_year, dist_age) |>
+  select(tier_at_dist_age, dist_year, dist_age, everything())
+
+max(counts$nunique)
+
+count(counts, dist_age) |> ht()
+count(counts, dist_year) |> ht()
+count(counts, tier_at_dist_age)
+tmp <- rmt |> select(tier_at_dist_age, )
+# 12 tiers: (early, non_vested, norm, vested) x 3 tiers
+skim(counts)
+# dist_year: 1970:2154
+count(counts, dist_year) |> ht()
+counts |> filter(dist_year >= 2150)
+nrow(counts)
+length(unique(rmt$mort_final))
+
+
+
+
+
+# get_tier <- function(class_name, entry_year, age, yos){
+#   tier = if_else(entry_year < 2011,
+#                  case_when(
+#                    class_name %in% c("special", "admin") & (yos >= 25 | (age >= 55 & yos >= 6) | (age >= 52 & yos >= 25)) ~ "tier_1_norm",
+#                    yos >= 30 | (age >= 62 & yos >= 6) ~ "tier_1_norm",
+#                    class_name %in% c("special", "admin") & (yos >= 6 & age >= 53) ~ "tier_1_early",
+#                    (yos >= 6 & age >= 58) ~ "tier_1_early",
+#                    yos >= 6 ~ "tier_1_vested",
+#                    .default = "tier_1_non_vested"
+#                  ),
+#                  if_else(entry_year < new_year_,
+#                          case_when(
+#                            class_name %in% c("special", "admin") & (yos >= 30 | (age >= 60 & yos >= 8)) ~ "tier_2_norm",
+#                            yos >= 33 | (age >= 65 & yos >= 8) ~ "tier_2_norm",
+#                            class_name %in% c("special", "admin") & (yos >= 8 & age >= 56) ~ "tier_2_early",
+#                            (yos >= 8 & age >= 61) ~ "tier_2_early",
+#                            yos >= 8 ~ "tier_2_vested",
+#                            .default = "tier_2_non_vested"
+#                          ),
+#                          case_when(
+#                            class_name %in% c("special", "admin") & (yos >= 30 | (age >= 60 & yos >= 8)) ~ "tier_3_norm",
+#                            yos >= 33 | (age >= 65 & yos >= 8) ~ "tier_3_norm",
+#                            class_name %in% c("special", "admin") & (yos >= 8 & age >= 56) ~ "tier_3_early",
+#                            (yos >= 8 & age >= 61) ~ "tier_3_early",
+#                            yos >= 8 ~ "tier_3_vested",
+#                            .default = "tier_3_non_vested"
+#                          )))
+#   return(tier)
+# }

@@ -4,7 +4,8 @@
 # Florida FRS Details, and how pendata relates to the Reason FRS model
 
 This compares pendata to the version of the Reason FRS model provided to
-Rockefeller College on \[date\] in the file \[filename\].
+Rockefeller College in the file Florida-FRS-main.zip, downloaded by Boyd
+on 1/29/2024.
 
 ## Mortality rates and mortality improvement
 
@@ -22,7 +23,7 @@ improvement, so we must have the improvement rates first.
 #### Background
 
 FRS and the Reason FRS model begin with the SOA mortality improvement
-table MP-2018 (mortality-improvement-scale-mp-2018-rates.xlsx), which
+table MP-2018 (`mortality-improvement-scale-mp-2018-rates.xlsx`), which
 has separate male and female mortality improvement rates for single
 years of age from 20 (labeled as \<= 20) to 120, crossed by single years
 from 1951 through 2034 (labeled as 2034+). Extend it by (1) adding ages
@@ -53,7 +54,7 @@ with the same rates as 2034.
 Create an FRS-specific extended mp2018 table
 (`mortality_improvement.R`):
 
-- Get the saved SOA pendata::mp2018 data table (the .rda file), and
+- Get the saved SOA `pendata::mp2018` data table (the `.rda` file), and
 
 - Extend ages and years in the same manner as Reason, and calculate
   cumulative improvement rates in the same way.
@@ -69,7 +70,8 @@ Create an FRS-specific extended mp2018 table
 - cleans these tables (`Florida FRS benefit model.R`, lines 144-169)
   - replace missing mortality rates (`Florida FRS benefit model.R`,
     lines 159-163)
-    - for beneficiary type employee with healthy retiree rates
+    - for beneficiary type employee with healthy retiree rates (this
+      seems unnecessary)
     - for beneficiary type healthy retiree with rates for employees (as
       updated)
     - as far as I can tell this addresses the fact that in the SOA data,
@@ -77,7 +79,9 @@ Create an FRS-specific extended mp2018 table
       retirement rates in the ages 50:54 although general employees do.
       Because Reason averages general and teacher mortality tables for
       regular class employees, apparently they feel this is better than
-      using the employee rate when a retiree rate is not available
+      using the employee rate when a retiree rate is not available. See
+      [Github issue \#3](https://github.com/donboyd5/pendata/issues/3)
+      for details.
 
 ![](images/clipboard-1831592207.png)
 
@@ -95,8 +99,7 @@ depends on age, yos, tier: these need to be in the model, not the data,
 I think
 
 - creates extended mortality tables reflecting mortality improvement and
-  new entrants (`Florida FRS benefit model.R` lines 231-264) **DJB
-  return to this**
+  new entrants (`Florida FRS benefit model.R` lines 231-264)
   - final_mort_table for regular has entry_year (1970:2052), entry_age
     (18:65 by 5 = 11), dist_age (18:120) and yos (0:70) = 83 x 11 x 103
     x 71 = 6.677 million combinations
@@ -126,7 +129,22 @@ I think
 
 ##### base mortality
 
-- 
+Construct base mortality rates equivalent to Reasons, but in long
+format, from SOA rates already saved in
+`pendata::pub2010hc_mortality_rates`. Save the resulting data frame in
+`data-raw/systems/frs` as `base_mortality_rates.rds`. It looks like
+this:
+
+![](images/clipboard-2736643039.png)
+
+##### crosswalk between FRS classes and base_mortality_rates employee type
+
+Reason maps the 7 FRS classes to the 3 base_mortality_rates
+employee_types. Create a crosswalk file:
+
+![](images/clipboard-3916429509.png)
+
+##### construct and save a long extended mortality rates table
 
 ## Termination rates
 

@@ -14,7 +14,8 @@ they are run does not matter.
 ## Mortality Rates
 
 `pendata` includes Pub.H-2010 Headcount-Weighted Mortality Rates for
-general, safety, and teacher employees.
+general, safety, and teacher employees
+(`SOA Pub.H-2010 Headcount-Weighted Mortality Rates.R`).
 
 - [Pub-2010 landing
   page](https://www.soa.org/resources/research-reports/2019/pub-2010-retirement-plans/)

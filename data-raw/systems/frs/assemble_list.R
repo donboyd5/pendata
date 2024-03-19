@@ -21,11 +21,19 @@ dfrs <- fs::path(draw, "systems", "frs")
 # get list with the desired tables -------------------------------------------------------------------
 
 files <- c(
-  "base_mortality", "class_mortality_xwalk",
-  "current_amort_layers", "init_funding_data",
-  "mortality_rates", "mortality_improvement", "salary_growth",
-  "salary_headcount", "entrant_profile", "retiree_distribution",
-  "retirement_rates", "termination_rates") |> sort()
+  "base_mortality_rates",
+  "class_mortality_xwalk",
+  "current_amort_layers",
+  "init_funding_data",
+  "mortality_rates",
+  "mortality_improvement",
+  "salary_growth",
+  "salary_headcount",
+  "entrant_profile",
+  "retiree_distribution",
+  "retirement_rates",
+  "termination_rates"
+  ) |> sort()
 
 f <- function(file){
   fpath <- path(dfrs, paste0(file, ".rds"))
