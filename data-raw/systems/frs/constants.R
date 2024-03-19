@@ -22,6 +22,7 @@ senior_management, 7610")
 frs_constants <- within(frs_constants,{
   classes <- classes
   start_year <- 2022
+  new_year <- 2024 # Year for new entrants with a new tier to join (update when new val report comes out)
   yos_max <- 70
   total_actives <- total_actives
 })
