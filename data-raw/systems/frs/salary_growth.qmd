@@ -1,0 +1,108 @@
+# Salary growth rates
+
+Note: Extending salary growth table requires access to frs_constants.
+
+## Setup
+
+```{r}
+#| label: setup
+#| output: false
+
+source(here::here("data-raw", "libraries.r"))
+
+draw <- here::here("data-raw")
+dfrs <- fs::path(draw, "systems", "frs")
+
+frs_constants <- readRDS(fs::path(dfrs, "frs_constants.rds"))
+
+FileName <- "Florida FRS inputs.xlsx"
+fullpath <- fs::path(dfrs, FileName)
+
+```
+
+
+## Get salary growth table
+
+```{r}
+#| label: get-salary-growth
+
+salgrowth1 <- read_excel(fullpath, sheet = "Salary Growth", col_types = "text")
+
+salgrowth2 <- salgrowth1 |>
+  pivot_longer(-yos, names_to = "class", values_to = "salgrowth") |>
+  mutate(
+    yos = as.integer(yos),
+    class = str_remove(class, "salary_increase_"),
+    # fix inconsistent naming
+    class = ifelse(class == "special_risk", "special", class),
+    salgrowth = as.numeric(salgrowth),
+    system="frs"
+  ) |>
+  select(system, class, yos, salgrowth)
+
+glimpse(salgrowth2)
+# skim(salgrowth2)
+# ht(salgrowth2)
+
+
+```
+
+
+## Extend salary growth table to max yos and calculate cumulative growth
+
+Extends salary growth to the maximum yos by carrying the last yos growth rate (yos=30) forward to all subsequent yos (up to 70), and calculates cumulative growth from yos=0 to yos=70 (same as in Florida FRS benefit model.R lines 6-9).
+
+
+```{r}
+#| label: extend-salary-growth
+
+# extend salary growth table to max yos and calculate cumulative growth -------
+# cumprod(1 + lag(.x, default = 0))
+# salgrowth2 <- readRDS(path(dfrs, "salary_growth_raw.rds"))
+
+salgrowthx <- crossing(salgrowth2 |>
+                         select(system, class),
+                       yos=0:frs_constants$yos_max) |>
+  left_join(salgrowth2, by = join_by(system, class, yos)) |>
+  arrange(system, class, yos) |>
+  group_by(system, class) |>
+  fill(salgrowth, .direction = "down") |>
+  mutate(cumprod_increase=cumprod(1 + lag(salgrowth, default = 0))) |>
+  ungroup()
+
+saveRDS(salgrowthx, fs::path(dfrs, "salary_growth.rds"))
+```
+
+
+## Show final salary growth table
+
+Here is the result.
+
+```{r}
+#| label: show-salary-growth
+
+salgrowthx <- readRDS(fs::path(dfrs, "salary_growth.rds"))
+
+DT::datatable(salgrowthx,
+          options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
+          filter="top") |>
+  formatPercentage(columns = c("salgrowth"), digits=2) |> 
+  formatRound(columns = c("cumprod_increase"), digits=4)
+
+# datatable(ptargets, options = list(scrollX = TRUE, scrollY = '400px', paging = TRUE))
+# formatCurrency(columns = c("ptarget"), currency="", digits=0)
+# formatPercentage(columns = c("salgrowth"), digits=2)
+# formatRound(columns = c("cumprod_increase"), digits=4)
+
+```
+
+## Comparison to the Reason approach
+
+`pendata` constructs the same salary-growth numbers as Reason, but creates a long file rather than a wide file.
+
+Reason reads salary growth rates as a wide file, with a column for each class (Florida FRS model input.R line 180)
+
+Extends salary growth to the maximum yos by carrying the last yos growth rate (yos=30) forward to all subsequent yos (up to 70), and also calculates cumulative growth from yos=0 to yos=70 (Florida FRS benefit model.R lines 6-9)
+
+Note: Later, when calculating entry salary in the salary_headcount table, Reason creates a temporary version of the salary growth table with data for the class being worked on, but does not change the data.
+

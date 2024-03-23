@@ -1,0 +1,63 @@
+# Initial funding data
+
+Get initial funding data from `Florida FRS inputs.xlsx`, sheet = "Funding Input".
+
+
+## Setup
+
+```{r}
+#| label: setup
+#| output: false
+
+source(here::here("data-raw", "libraries.r"))
+
+draw <- here::here("data-raw")
+dfrs <- fs::path(draw, "systems", "frs")
+
+frs_constants <- readRDS(fs::path(dfrs, "frs_constants.rds"))
+
+FileName <- "Florida FRS inputs.xlsx"
+fullpath <- fs::path(dfrs, FileName)
+
+```
+
+
+## Get and save initial funding data
+
+For now we simply get the data as-is until we understand better how we use it.
+
+```{r}
+#| label: get-and-save-initial-funding-data
+
+init_funding_data <- read_excel(fullpath, sheet = "Funding Input")
+
+saveRDS(init_funding_data, fs::path(dfrs, "init_funding_data.rds"))
+
+```
+
+## Show initial funding data
+
+Here is the result.
+
+```{r}
+#| label: show-initial-funding-data
+
+ifd <- readRDS(fs::path(dfrs, "init_funding_data.rds"))
+
+# names(ifd)
+
+DT::datatable(ifd,
+          options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
+          filter="top")
+
+
+# datatable(ptargets, options = list(scrollX = TRUE, scrollY = '400px', paging = TRUE))
+# formatCurrency(columns = c("ptarget"), currency="", digits=0)
+# formatPercentage(columns = c("salgrowth"), digits=2)
+# formatRound(columns = c("cumprod_increase"), digits=4)
+
+
+```
+
+## Comparison to the Reason approach
+

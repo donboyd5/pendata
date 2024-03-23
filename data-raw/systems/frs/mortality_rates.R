@@ -111,31 +111,163 @@ saveRDS(class_mortality_xwalk, path(dfrs, "class_mortality_xwalk.rds"))
 # I think we need improved mortality rates for each:
 
 # unique for each: class, tier_at_dist_age, dist_year, dist_age
+
+## prep mortality ----
+# The only mortality categories Reason uses are:
+#   employee, for vested tiers
+#   healthy_retiree for others
+# In all cases, they first calc improved mortality for males and females,
+# then average male and female.
+
+count(base_mortality_rates, employee_type)
+count(base_mortality_rates, beneficiary_type)
+
+bmprep <- base_mortality_rates |>
+  filter(!is.na(rate)) |> # should I do this?? djb
+  filter(beneficiary_type %in% c("employee", "healthy_retiree")) |>
+  select(employee_type, beneficiary_type, gender, dist_age=age, rate)
+
+emptypes <- class_mortality_xwalk |>
+  pull(employee_type) |>
+  unique()
+
+base <- expand_grid(employee_type=emptypes,
+                    dist_year=1970:2154,
+                    dist_age=18:120) |>
+  filter((dist_year - dist_age) %in% 1905:2034) # birth year -- mentally add 120 for max year
+
+# mutate(yob=dist_year - dist_age,
+#        firstty=yob + 18) |>
+#   relocate(firstty, dist_year) |>
+#   filter(firstty > dist_year)
+
+base2 <- base |>
+  left_join(bmprep,
+            by = join_by(employee_type, dist_age),
+            relationship = "many-to-many") |>
+  left_join(mprates |>
+              select(dist_year=year, dist_age=age, gender, mp_cumprod_adj=mpcadj),
+            by = join_by(dist_year, dist_age, gender)) |>
+  relocate(dist_age, dist_year, .before = rate) |>
+  arrange(employee_type, beneficiary_type, gender, dist_age, dist_year) |>
+  mutate(mort=rate * mp_cumprod_adj)
+skim(base2)
+
+# now get the average of male and female mortality rates, after projecting them separately
+
+mort_final <- base2 |>
+  summarise(mort_final=mean(mort),
+            .by=c(employee_type, beneficiary_type, dist_age, dist_year))
+skim(mort_final) # 57,428 records, vs maybe 21m records (7 classes x 3m records) in Reason model
+saveRDS(mort_final, fs::path(dfrs, "mortality_final.rds"))
+
+
+# are there any unique mortality rates in the Reason mortality table that are not in this one? ----
+mt <- readRDS(fs::path(dfrs, "mortality_final.rds"))
+rmt <- readRDS(fs::path(dfrs, "from_reason", "regular_mort_table.rds"))
+
+skim(mt) # use bene type for grouping
+skim(rmt)
+
+glimpse(mt)
+glimpse(rmt) # include tier for grouping
+
+# get comparable groupings for rmt and mt
+glimpse(rmt)
+rmtg <- rmt |>
+  mutate(beneficiary_type=if_else(
+    str_detect(tier_at_dist_age, "vested"),
+    "employee", "healthy_retiree")) |>
+  select(beneficiary_type, dist_year, dist_age, mort_final) |>
+  distinct() # |>    mutate(nrsn=n(), .by=dist_year, dist_age)
+skim(rmtg)
+ht(rmtg)
+
+mtg <- mt |>
+  filter(employee_type=="regular") |>
+  select(beneficiary_type, dist_year, dist_age, mort_final) |>
+  distinct() # |>  mutate(ndjb=n(), .by=dist_year, dist_age)
+skim(mtg)
+
+comp <- bind_rows(
+  rmtg |> mutate(src="reason"),
+  mtg |> mutate(src="boyd"))
+
+compw <- comp |>
+  pivot_wider(names_from = src, values_from = mort_final)
+
+compw |>
+  filter(!is.na(reason), !is.na(boyd)) |>
+  filter(reason != boyd) # good, zero
+
+compw |>
+  filter(!is.na(reason), is.na(boyd)) # good, zero
+
+bad <- compw |>
+  filter(is.na(reason), !is.na(boyd)) # 3,548
+
+count(bad, beneficiary_type)
+count(bad, dist_year) |> ht()
+count(bad, dist_age) |> ht()
+count(bad, beneficiary_type, dist_year, dist_age)
+
+bad |> filter(beneficiary_type=="employee")
+
+bad2 <- count(bad, beneficiary_type, dist_year, dist_age) |>
+  left_join(rmtg, by = join_by(beneficiary_type, dist_year, dist_age)) |>
+  mutate(yob=dist_year - dist_age)
+skim(bad2)
+bad2 |>
+  skim()
+
+bad2 |>
+  summarise(minyob=min(yob), maxyob=max(yob), minage=min(dist_age), maxage=max(dist_age),
+            maxyod=max(yob + 120),
+            .by=c(beneficiary_type, dist_year)) |>
+  arrange(minyob)
+
+bad |>
+  mutate(yob=dist_year - dist_age,
+         firstty=yob + 18) |>
+  relocate(firstty, dist_year) |>
+  filter(firstty > dist_year)
+
+
+
+# test --------------------------------------------------------------------
+
+
+
+mt <- readRDS(fs::path(dfrs, "mortality_final.rds"))
+rmt <- readRDS(fs::path(dfrs, "from_reason", "regular_mort_table.rds"))
 skim(rmt)
 
 base_mortality_rates <- readRDS(fs::path(dfrs, "base_mortality_rates.rds"))
 mprates <- readRDS(fs::path(dfrs, "mortality_improvement.rds"))
 
-count(base_mortality_rates, employee_type)
 
-emptypes <- class_mortality_xwalk |> pull(employee_type) |> unique()
 
-base <- expand_grid(employee_type=emptypes,
-                    dist_year=1970:2154,
-                    dist_age=18:120) |>
-  filter((dist_year - dist_age) %in% 1905:2034) |>  # allowable yob range
-  left_join(base_mortality_rates |>
-              filter(!is.na(rate)) |>  # should I do this?? djb
-              select(employee_type, beneficiary_type, gender, dist_age=age, rate),
-            by = join_by(employee_type, dist_age),
-            relationship = "many-to-many")
-glimpse(base)
-skim(base)
 
-tmp <- base |> filter(is.na(rate))
 
-count(base_mortality_rates, employee_type)
-count(base, employee_type)
+# tmp <- base2 |>
+#   filter(employee_type=="general",
+#          beneficiary_type=="employee",
+#          gender=="female",
+#          dist_age %in% c(18))
+# note that we don't have mortality improvement for 18 year olds past
+# 2052. An 18 year old in 2052 will still get the 19 year old mortality
+# improvement in 2053, and so on, so we have enough data for them. If this
+# does present a problem, we can keep more data
+
+# base2 |>
+#   filter(employee_type=="general",
+#          beneficiary_type=="employee",
+#          # gender=="female",
+#          dist_age==18) |>
+#   ggplot(aes(x=dist_year, y=mort, colour=gender)) +
+#   geom_point() +
+#   geom_line()
+
 
 
 # final_mort_table <- expand_grid(entry_year = entry_year_range_, entry_age = entrant_profile$entry_age, dist_age = age_range_, yos = yos_range_) %>%
@@ -164,6 +296,8 @@ count(base, entry_year, dist_year)
 
 check <- rmt |>
   count(entry_year, dist_year, dist_age)
+
+
 
 
 

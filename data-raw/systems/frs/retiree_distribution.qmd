@@ -1,0 +1,118 @@
+# Retiree distribution
+
+Note: 
+
+## Setup
+
+```{r}
+#| label: setup
+#| output: false
+
+source(here::here("data-raw", "libraries.r"))
+
+draw <- here::here("data-raw")
+dfrs <- fs::path(draw, "systems", "frs")
+
+frs_constants <- readRDS(fs::path(dfrs, "frs_constants.rds"))
+
+FileName <- "Florida FRS inputs.xlsx"
+fullpath <- fs::path(dfrs, FileName)
+
+```
+
+
+## Get and save retiree distribution data
+
+```{r}
+#| label: get-retiree_distribution
+
+retiree_distribution <- read_excel(fullpath, sheet = "Retiree Distribution")
+
+# glimpse(retiree_distribution)
+# 
+# skim(retiree_distribution)
+# retiree_distribution |>
+#   summarise(across(-age, sum))
+
+saveRDS(retiree_distribution, path(dfrs, "retiree_distribution.rds"))
+
+
+```
+
+
+## Show retiree_distribution table
+
+Here is the result.
+
+```{r}
+#| label: show-salary-growth
+
+rd <- readRDS(fs::path(dfrs, "retiree_distribution.rds"))
+
+rd |> 
+  DT::datatable(
+          options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
+          filter="top") |>
+  formatRound(columns = c("n_retire", "total_ben", "avg_ben"), digits=0) |> 
+  formatRound(columns = c("n_retire_ratio", "total_ben_ratio"), digits=4)
+
+# datatable(ptargets, options = list(scrollX = TRUE, scrollY = '400px', paging = TRUE))
+# formatCurrency(columns = c("ptarget"), currency="", digits=0)
+# formatPercentage(columns = c("salgrowth"), digits=2)
+# formatRound(columns = c("cumprod_increase"), digits=4)
+
+```
+
+## Comparison to the Reason approach
+
+`pendata` constructs the same salary-growth numbers as Reason, but creates a long file rather than a wide file.
+
+Reason reads salary growth rates as a wide file, with a column for each class (Florida FRS model input.R line 180)
+
+Extends salary growth to the maximum yos by carrying the last yos growth rate (yos=30) forward to all subsequent yos (up to 70), and also calculates cumulative growth from yos=0 to yos=70 (Florida FRS benefit model.R lines 6-9)
+
+Note: Later, when calculating entry salary in the salary_headcount table, Reason creates a temporary version of the salary growth table with data for the class being worked on, but does not change the data.
+
+
+
+# About -------------------------------------------------------------------
+
+# Get retiree distribution for FRS, from an Excel workbook (Florida FRS
+# inputs.xlsx) that Reason created.
+
+
+# TODO --------------------------------------------------------------------
+
+# Look for additional cleanup code that Reason has in other files and
+# consolidate it here.
+
+# Not sure where these data come from. Find out and document.
+
+# Read as text, convert to desired types.
+
+# Reverse engineer spreadsheet, get source data and calculate annual from that,
+# giving us the ability to use different interpolation methods.
+
+
+# setup -------------------------------------------------------------------
+
+source(here::here("data-raw", "libraries.r"))
+draw <- here::here("data-raw")
+
+dfrs <- fs::path(draw, "systems", "frs")
+
+FileName <- "Florida FRS inputs.xlsx"
+fullpath  <- fs::path(dfrs, FileName)
+
+
+# get and save data ----------------------------------------------------------------
+
+retiree_distribution <- read_excel(fullpath, sheet = "Retiree Distribution")
+
+glimpse(retiree_distribution)
+
+skim(retiree_distribution)
+retiree_distribution |>
+  summarise(across(-age, sum))
+
+saveRDS(retiree_distribution, path(dfrs, "retiree_distribution.rds"))
