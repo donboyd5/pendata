@@ -1,6 +1,12 @@
 project:
   type: book
 
+execute:
+  eval: true
+  echo: true
+  output: true
+  freeze: auto # auto: during global project renders, re-render only when source changes
+
 book:
   title: "Non-system data"
   author: "Don Boyd"
@@ -29,13 +35,8 @@ format:
 editor_options:
   chunk_output_type: console
 
-execute:
-  eval: true
-  echo: true
-  output: true
-  freeze: auto  # during global project renders, re-render only when source changes
 
-
+# additional execution options
   # error: false
   # warning: false
   # message: false  # not sure if allowed

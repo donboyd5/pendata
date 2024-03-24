@@ -2,6 +2,9 @@
 
 Note: 
 
+## TODO
+
+
 ## Setup
 
 ```{r}
@@ -87,4 +90,17 @@ mp |>
 
 ## Comparison to the Reason approach
 
+Here is where Reason does the comparable things:
+
+-   Read male and female mortality improvement tables (`Florida FRS model input.R`, lines 177-178)
+
+-   Clean and extend mortality improvement tables (`Florida FRS benefit model.R`, lines 174-228):
+
+    -   Clean the raw mortality improvement tables data
+
+    -   Add ages 18 and 19 with the same mortality improvement rates as age 20
+
+    -   Add years 2035 through 2154 with the same mortality improvement rates as 2034
+
+    -   Calculate cumulative improvement rates, based to 2010, the year of the mortality tables
 

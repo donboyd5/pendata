@@ -1,3 +1,7 @@
+---
+params:
+  download: false
+---
 # SOA Mortality improvement rates
 
 `pendata` includes SOA Mortality Improvement Scale MP-2018.
@@ -32,7 +36,7 @@ MP-2018 was released in 2018 -- see SOA documentation. SOA took data for calenda
 
 ```{r}
 #| label: download
-#| eval: false
+#| eval: !expr params$download
 
 # https://www.soa.org/49964f/globalassets/assets/files/resources/experience-studies/2018/mortality-improvement-scale-mp-2018.pdf
 udoc <- "https://www.soa.org/49964f/globalassets/assets/files/resources/experience-studies/2018/mortality-improvement-scale-mp-2018.pdf"

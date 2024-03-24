@@ -1,6 +1,12 @@
 project:
   type: book
 
+execute:
+  eval: true
+  echo: true
+  output: true
+  freeze: auto  # during global project renders, re-render only when source changes
+
 book:
   title: "Florida Retirement System data"
   author: "Don Boyd"
@@ -13,6 +19,7 @@ book:
       chapters:
       - init_funding_data.qmd
       - retiree_distribution.qmd
+      - retirement_rates.qmd
       - salary.qmd
       - salary_growth.qmd
     - part: "Data that depend on SOA data"
@@ -25,6 +32,8 @@ book:
 
 # devtools::load_all("./")
 
+# from pendata folder, in powershell, enter ./runall.bat
+
 format:
   html:
     theme: cosmo
@@ -35,13 +44,8 @@ format:
 editor_options:
   chunk_output_type: console
 
-execute:
-  eval: true
-  echo: true
-  output: true
-  freeze: auto  # during global project renders, re-render only when source changes
 
-
+# additional execution options
   # error: false
   # warning: false
   # message: false  # not sure if allowed

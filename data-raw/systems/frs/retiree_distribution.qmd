@@ -1,6 +1,14 @@
 # Retiree distribution
 
-Note: 
+Read retiree distribution data from "Florida FRS inputs.xlsx", sheet = "Retiree Distribution". 
+
+We do not yet know precisely where these data come from. It looks like Reason obtained data on the number of retirees and total benefits by 5-year age groups (presumably from the 2022 actuarial valuation) and did a simple division by 5 to spread them out equally among individual years of age.
+
+## TODO
+
+-   Near term: Determine precise source of the data. Presumably it is the FRS 2022 actuarial valuation, but we should know the exact table number.
+
+-   Longer term: Consider a spline approach for distributing 5-year age-group data to individual ages. See [pendata issue #4](https://github.com/donboyd5/pendata/issues/4).
 
 ## Setup
 
@@ -23,6 +31,9 @@ fullpath <- fs::path(dfrs, FileName)
 
 ## Get and save retiree distribution data
 
+The columns n_retire_ratio and total_ben_ratio give each single-year of age's share of total retirees and total benefits, respectively. Thus, these columns sum to 1.
+
+
 ```{r}
 #| label: get-retiree_distribution
 
@@ -31,7 +42,10 @@ retiree_distribution <- read_excel(fullpath, sheet = "Retiree Distribution")
 # glimpse(retiree_distribution)
 # 
 # skim(retiree_distribution)
+
+# verify that n_retire_ratio and total_ben_ratio sum to one
 # retiree_distribution |>
+#   select(-avg_ben) |> 
 #   summarise(across(-age, sum))
 
 saveRDS(retiree_distribution, path(dfrs, "retiree_distribution.rds"))
@@ -45,7 +59,7 @@ saveRDS(retiree_distribution, path(dfrs, "retiree_distribution.rds"))
 Here is the result.
 
 ```{r}
-#| label: show-salary-growth
+#| label: show-retiree-distribution
 
 rd <- readRDS(fs::path(dfrs, "retiree_distribution.rds"))
 
@@ -65,54 +79,5 @@ rd |>
 
 ## Comparison to the Reason approach
 
-`pendata` constructs the same salary-growth numbers as Reason, but creates a long file rather than a wide file.
+Reason does the same thing in `Florida FRS model input.R`, line 245,
 
-Reason reads salary growth rates as a wide file, with a column for each class (Florida FRS model input.R line 180)
-
-Extends salary growth to the maximum yos by carrying the last yos growth rate (yos=30) forward to all subsequent yos (up to 70), and also calculates cumulative growth from yos=0 to yos=70 (Florida FRS benefit model.R lines 6-9)
-
-Note: Later, when calculating entry salary in the salary_headcount table, Reason creates a temporary version of the salary growth table with data for the class being worked on, but does not change the data.
-
-
-
-# About -------------------------------------------------------------------
-
-# Get retiree distribution for FRS, from an Excel workbook (Florida FRS
-# inputs.xlsx) that Reason created.
-
-
-# TODO --------------------------------------------------------------------
-
-# Look for additional cleanup code that Reason has in other files and
-# consolidate it here.
-
-# Not sure where these data come from. Find out and document.
-
-# Read as text, convert to desired types.
-
-# Reverse engineer spreadsheet, get source data and calculate annual from that,
-# giving us the ability to use different interpolation methods.
-
-
-# setup -------------------------------------------------------------------
-
-source(here::here("data-raw", "libraries.r"))
-draw <- here::here("data-raw")
-
-dfrs <- fs::path(draw, "systems", "frs")
-
-FileName <- "Florida FRS inputs.xlsx"
-fullpath  <- fs::path(dfrs, FileName)
-
-
-# get and save data ----------------------------------------------------------------
-
-retiree_distribution <- read_excel(fullpath, sheet = "Retiree Distribution")
-
-glimpse(retiree_distribution)
-
-skim(retiree_distribution)
-retiree_distribution |>
-  summarise(across(-age, sum))
-
-saveRDS(retiree_distribution, path(dfrs, "retiree_distribution.rds"))

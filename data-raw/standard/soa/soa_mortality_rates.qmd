@@ -1,3 +1,7 @@
+---
+params:
+  download: false
+---
 # SOA Mortality rates
 
 `pendata` includes Pub.H-2010 Headcount-Weighted Mortality Rates for general, safety, and teacher employees (`SOA Pub.H-2010 Headcount-Weighted Mortality Rates.R`).
@@ -23,10 +27,15 @@ dsoa <- fs::path(draw, "standard", "soa")
 
 ## Download SOA mortality rates
 
+<!-- 
+
+#| eval: !expr params$download
+
+-->
+
 ```{r}
 #| label: download
-#| eval: false
-
+#| eval: !expr params$download
 
 url <- "https://www.soa.org/49347a/globalassets/assets/files/resources/research-report/2019/pub-2010-headcount-mort-rates.xlsx"
 # path_file(url)
