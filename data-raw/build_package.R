@@ -21,7 +21,7 @@ source(fs::path(draw, "libraries.r"))
 
 
 # get standard actuarial tables and data for individual systems ----
-quarto_render(dstd, execute_params=list(download="false")) # standard actuarial information
+quarto_render(dstd, execute_params=list(download="true")) # standard actuarial information
 quarto_render(dfrs) # Florida Retirement System
 
 
