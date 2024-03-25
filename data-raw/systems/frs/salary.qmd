@@ -24,12 +24,11 @@ Consider:
 source(here::here("data-raw", "libraries.r"))
 draw <- here::here("data-raw")
 dfrs <- fs::path(draw, "systems", "frs")
+drds <- fs::path(dfrs, "rds")
 
 source(fs::path(dfrs, "functions.R"))
 
-
-
-frs_constants <- readRDS(fs::path(dfrs, "frs_constants.rds"))
+frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
 
 FileName <- "Florida FRS inputs.xlsx"
 fullpath <- fs::path(dfrs, FileName)
@@ -92,7 +91,7 @@ salary_table <- purrr::map(saltabs, get_salaries) |>
   relocate(system) |>
   arrange(system, class, age, yos)
 
-saveRDS(salary_table, fs::path(dfrs, "salary.rds"))
+saveRDS(salary_table, fs::path(drds, "salary.rds"))
 
 ```
 
@@ -105,13 +104,14 @@ Here is the result.
 ```{r}
 #| label: show-salary-data
 
-sal <- readRDS(fs::path(dfrs, "salary.rds"))
+sal <- readRDS(fs::path(drds, "salary.rds"))
 
 # names(ifd)
 
-DT::datatable(sal,
-          options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
-          filter="top") |> 
+sal |> 
+  DT::datatable(
+    options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
+    filter="top") |> 
   formatCurrency(columns = c("salary"), currency="", digits=0)
 
 

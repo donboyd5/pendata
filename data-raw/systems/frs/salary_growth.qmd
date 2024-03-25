@@ -12,8 +12,9 @@ source(here::here("data-raw", "libraries.r"))
 
 draw <- here::here("data-raw")
 dfrs <- fs::path(draw, "systems", "frs")
+drds <- fs::path(dfrs, "rds")
 
-frs_constants <- readRDS(fs::path(dfrs, "frs_constants.rds"))
+frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
 
 FileName <- "Florida FRS inputs.xlsx"
 fullpath <- fs::path(dfrs, FileName)
@@ -58,7 +59,7 @@ Extends salary growth to the maximum yos by carrying the last yos growth rate (y
 
 # extend salary growth table to max yos and calculate cumulative growth -------
 # cumprod(1 + lag(.x, default = 0))
-# salgrowth2 <- readRDS(path(dfrs, "salary_growth_raw.rds"))
+# salgrowth2 <- readRDS(path(drds, "salary_growth_raw.rds"))
 
 salgrowthx <- crossing(salgrowth2 |>
                          select(system, class),
@@ -70,7 +71,7 @@ salgrowthx <- crossing(salgrowth2 |>
   mutate(cumprod_increase=cumprod(1 + lag(salgrowth, default = 0))) |>
   ungroup()
 
-saveRDS(salgrowthx, fs::path(dfrs, "salary_growth.rds"))
+saveRDS(salgrowthx, fs::path(drds, "salary_growth.rds"))
 ```
 
 
@@ -81,7 +82,7 @@ Here is the result.
 ```{r}
 #| label: show-salary-growth
 
-salgrowthx <- readRDS(fs::path(dfrs, "salary_growth.rds"))
+salgrowthx <- readRDS(fs::path(drds, "salary_growth.rds"))
 
 DT::datatable(salgrowthx,
           options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),

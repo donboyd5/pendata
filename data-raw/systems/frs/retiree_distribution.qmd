@@ -20,8 +20,9 @@ source(here::here("data-raw", "libraries.r"))
 
 draw <- here::here("data-raw")
 dfrs <- fs::path(draw, "systems", "frs")
+drds <- fs::path(dfrs, "rds")
 
-frs_constants <- readRDS(fs::path(dfrs, "frs_constants.rds"))
+frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
 
 FileName <- "Florida FRS inputs.xlsx"
 fullpath <- fs::path(dfrs, FileName)
@@ -48,7 +49,7 @@ retiree_distribution <- read_excel(fullpath, sheet = "Retiree Distribution")
 #   select(-avg_ben) |> 
 #   summarise(across(-age, sum))
 
-saveRDS(retiree_distribution, path(dfrs, "retiree_distribution.rds"))
+saveRDS(retiree_distribution, path(drds, "retiree_distribution.rds"))
 
 
 ```
@@ -61,7 +62,7 @@ Here is the result.
 ```{r}
 #| label: show-retiree-distribution
 
-rd <- readRDS(fs::path(dfrs, "retiree_distribution.rds"))
+rd <- readRDS(fs::path(drds, "retiree_distribution.rds"))
 
 rd |> 
   DT::datatable(

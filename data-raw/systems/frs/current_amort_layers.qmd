@@ -1,0 +1,69 @@
+# Current amortization layers
+
+
+## TODO
+
+-   Near term: Determine precise source of the data. Presumably it is the FRS 2022 actuarial valuation, but we should know the exact table number.
+
+
+## Setup
+
+```{r}
+#| label: setup
+#| output: false
+
+source(here::here("data-raw", "libraries.r"))
+
+draw <- here::here("data-raw")
+dfrs <- fs::path(draw, "systems", "frs")
+drds <- fs::path(dfrs, "rds")
+
+frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
+
+FileName <- "Florida FRS inputs.xlsx"
+fullpath <- fs::path(dfrs, FileName)
+
+```
+
+
+```{r}
+#| label: get-data
+
+amort1 <- read_excel(fullpath,
+                     sheet = "Amort Input",
+                     col_types = "text")
+
+amort2 <- amort1 |>
+  mutate(system="frs",
+         date=mdy(date),
+         amo_period=as.numeric(amo_period),
+         amo_balance=as.numeric(amo_balance)) |>
+  relocate(system)
+
+# skim(amort2)
+# amort2 |> filter(is.na(amo_period))
+# amo_period is NA in the source data for June 30, 2019
+
+saveRDS(amort2, fs::path(drds, "current_amort_layers.rds"))
+
+```
+
+
+```{r}
+#| label: show-current-amortization-layers
+
+cal <- readRDS(fs::path(drds, "current_amort_layers.rds"))
+
+cal |> 
+  DT::datatable(
+    options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
+    filter="top") |> 
+  formatRound(columns = c("amo_balance"), digits=0)
+
+
+# datatable(ptargets, options = list(scrollX = TRUE, scrollY = '400px', paging = TRUE))
+# formatCurrency(columns = c("ptarget"), currency="", digits=0)
+# formatPercentage(columns = c("salgrowth"), digits=2)
+# formatRound(columns = c("cumprod_increase"), digits=4)
+
+```

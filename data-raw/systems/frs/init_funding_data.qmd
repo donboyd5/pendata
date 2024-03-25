@@ -13,8 +13,9 @@ source(here::here("data-raw", "libraries.r"))
 
 draw <- here::here("data-raw")
 dfrs <- fs::path(draw, "systems", "frs")
+drds <- fs::path(dfrs, "rds")
 
-frs_constants <- readRDS(fs::path(dfrs, "frs_constants.rds"))
+frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
 
 FileName <- "Florida FRS inputs.xlsx"
 fullpath <- fs::path(dfrs, FileName)
@@ -31,7 +32,7 @@ For now we simply get the data as-is until we understand better how we use it.
 
 init_funding_data <- read_excel(fullpath, sheet = "Funding Input")
 
-saveRDS(init_funding_data, fs::path(dfrs, "init_funding_data.rds"))
+saveRDS(init_funding_data, fs::path(drds, "init_funding_data.rds"))
 
 ```
 
@@ -42,14 +43,23 @@ Here is the result.
 ```{r}
 #| label: show-initial-funding-data
 
-ifd <- readRDS(fs::path(dfrs, "init_funding_data.rds"))
+ifd <- readRDS(fs::path(drds, "init_funding_data.rds"))
 
+# glimpse(ifd)
 # names(ifd)
+# define variables that will be comma formatted and those that will be percentages
+nifd <- names(ifd)
+idvars <- c("class", "year")
+misc_ratevars <- c("dr_legacy", "dr_new", "roa", "fr_ava", "fr_mva")
+ratevars <- c(misc_ratevars, str_subset(nifd, "rate"))
+commavars <- setdiff(nifd, c(idvars, ratevars))
 
-DT::datatable(ifd,
-          options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
-          filter="top")
-
+ifd |> 
+  DT::datatable(
+    options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
+    filter="top") |> 
+  formatRound(columns = commavars, digits=0) |> 
+  formatPercentage(columns = ratevars, digits=3)
 
 # datatable(ptargets, options = list(scrollX = TRUE, scrollY = '400px', paging = TRUE))
 # formatCurrency(columns = c("ptarget"), currency="", digits=0)

@@ -5,7 +5,7 @@ execute:
   eval: true
   echo: true
   output: true
-  freeze: auto  # during global project renders, re-render only when source changes
+  freeze: auto  # auto: during global project renders, re-render only when source changes
 
 book:
   title: "Florida Retirement System data"
@@ -17,16 +17,20 @@ book:
     - constants.qmd
     - part: "Stand-alone items (only requiring access to frs_constants)"
       chapters:
+      - current_amort_layers.qmd
       - init_funding_data.qmd
+      - headcount.qmd
       - retiree_distribution.qmd
       - retirement_rates.qmd
       - salary.qmd
       - salary_growth.qmd
-    - part: "Data that depend on SOA data"
+    - part: "Data that depend on previously created data"
       chapters:
-        - mortality_improvement.qmd
-    #   chapters:
-    #   -
+      - base_mortality_rates.qmd
+      - mortality_improvement.qmd
+    - part: "Assemble list of data for package"
+      chapters:
+      - assemble_list.qmd
 
 # bibliography: references.bib
 

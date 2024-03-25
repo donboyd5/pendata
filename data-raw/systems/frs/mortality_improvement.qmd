@@ -15,8 +15,9 @@ source(here::here("data-raw", "libraries.r"))
 
 draw <- here::here("data-raw")
 dfrs <- fs::path(draw, "systems", "frs")
+drds <- fs::path(dfrs, "rds")
 
-frs_constants <- readRDS(fs::path(dfrs, "frs_constants.rds"))
+frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
 
 
 ```
@@ -58,7 +59,7 @@ ht(mp2)
 # count(mp2, age) |> ht()
 # count(mp2, year) |> ht()
 
-saveRDS(mp2, path(dfrs, "mortality_improvement.rds"))
+saveRDS(mp2, path(drds, "mortality_improvement.rds"))
 
 ```
 
@@ -69,7 +70,7 @@ Here is the result. Show just one gender and age, to fit within what's allowed f
 ```{r}
 #| label: show-salary-growth
 
-mp <- readRDS(fs::path(dfrs, "mortality_improvement.rds"))
+mp <- readRDS(fs::path(drds, "mortality_improvement.rds"))
 
 mp |> 
   filter(gender=="female", age==30) |> 

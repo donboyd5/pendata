@@ -7,11 +7,13 @@ Define constants that will be used throughout the FRS data construction process.
 
 ```{r}
 #| label: setup
+#| output: false
 
 source(here::here("data-raw", "libraries.r"))
 draw <- here::here("data-raw")
 
 dfrs <- fs::path(draw, "systems", "frs")
+drds <- fs::path(dfrs, "rds")
 
 frs_constants <- list()
 
@@ -87,7 +89,7 @@ frs_constants <- within(frs_constants,{
 # put the list of constants in alpha order by name
 frs_constants <- frs_constants[order(names(frs_constants))]
 
-saveRDS(frs_constants, fs::path(dfrs, "frs_constants.rds"))
+saveRDS(frs_constants, fs::path(drds, "frs_constants.rds"))
 
 
 ```

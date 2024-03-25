@@ -1,0 +1,82 @@
+# Assembly list of data
+
+
+## TODO
+
+
+## Setup
+
+```{r}
+#| label: setup
+#| output: false
+
+draw <- here::here("data-raw")
+dfrs <- fs::path(draw, "systems", "frs")
+drds <- fs::path(dfrs, "rds")
+
+source(fs::path(draw, "libraries.r"))
+source(fs::path(dfrs, "functions.r"))
+
+```
+
+
+## List of files
+
+```{r}
+#| label: file-list
+
+files <- c(
+  "base_mortality_rates",
+  #"class_mortality_xwalk",
+  "current_amort_layers",
+  # "entrant_profile",
+  "headcount",
+  "init_funding_data",
+  # "mortality_rates",
+  "mortality_improvement",
+  "retiree_distribution",
+  "retirement_rates",
+  "salary_growth" #,
+  # "salary_headcount",
+  #"termination_rates"
+  ) |> sort()
+
+
+```
+
+
+## Read files, assemble list, save list as .rda file
+
+```{r}
+#| label: read-assemble-save
+
+f <- function(file){
+  fpath <- path(drds, paste0(file, ".rds"))
+  print(fpath)
+  readRDS(fpath)
+}
+
+frs <- files |>
+  set_names() |>
+  purrr::map(f)
+
+usethis::use_data(frs, overwrite = TRUE)
+
+```
+
+
+## Explore results
+
+```{r}
+#| label: explore-list
+
+
+
+for(f in names(frs)){
+  print(f)
+  frs[[f]] |> ht()
+}
+
+
+```
+
