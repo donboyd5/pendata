@@ -1,0 +1,107 @@
+# Mortality improvement
+
+Note: 
+
+## TODO
+
+
+## Setup
+
+```{r}
+#| label: setup
+#| output: false
+
+source(here::here("data-raw", "libraries.r"))
+
+draw <- here::here("data-raw")
+dfrs <- fs::path(draw, "systems", "frs")
+drds <- fs::path(dfrs, "rds")
+
+frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
+
+
+```
+
+
+## Get and extend mortality improvement table
+
+Get SOA MP-2018 mortality improvement table and, using `pendata::extend_mp`:
+
+-   Extend it to earlier ages
+
+-   Extend it to later years
+
+-   Calculate cumulative mortality improvement
+
+-   Adjust cumulative improvement to be indexed to a baseyear
+
+```{r}
+#| label: get-extend-mp
+
+# get SOA MP-2018 mortality improvement table
+
+mp1 <- pendata::mp2018
+skim(mp1) # 1951-2034, ages 20-120
+
+# for FRS, extend years to 2154, age down to 18, and index to baseyear 2010 ---
+mp2 <- pendata::extend_mp(mp1, startage=18, endyear=2154, baseyear=2010) |>
+  mutate(system="frs") |>
+  relocate(system)
+skim(mp2)
+ht(mp2)
+
+# mp2 |>
+#   filter(year %in% 2009:2011, gender=="female", age %in% 18:21)
+# 
+# glimpse(mp2)
+# ht(mp2)
+# count(mp2, gender)
+# count(mp2, age) |> ht()
+# count(mp2, year) |> ht()
+
+saveRDS(mp2, path(drds, "mortality_improvement.rds"))
+
+```
+
+## Show extended mortality improvement table
+
+Here is the result. Show just one gender and age, to fit within what's allowed for client-side data.
+
+```{r}
+#| label: show-salary-growth
+
+mp <- readRDS(fs::path(drds, "mortality_improvement.rds"))
+
+mp |> 
+  filter(gender=="female", age==30) |> 
+  DT::datatable(
+    options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
+    filter="top") |>
+  formatPercentage(columns = c("mp"), digits=2) |> 
+  formatRound(columns = c("mpc", "mpcadj"), digits=4)
+
+# datatable(ptargets, options = list(scrollX = TRUE, scrollY = '400px', paging = TRUE))
+# formatCurrency(columns = c("ptarget"), currency="", digits=0)
+# formatPercentage(columns = c("salgrowth"), digits=2)
+# formatRound(columns = c("cumprod_increase"), digits=4)
+
+
+```
+
+
+## Comparison to the Reason approach
+
+Here is where Reason does the comparable things:
+
+-   Read male and female mortality improvement tables (`Florida FRS model input.R`, lines 177-178)
+
+-   Clean and extend mortality improvement tables (`Florida FRS benefit model.R`, lines 174-228):
+
+    -   Clean the raw mortality improvement tables data
+
+    -   Add ages 18 and 19 with the same mortality improvement rates as age 20
+
+    -   Add years 2035 through 2154 with the same mortality improvement rates as 2034
+
+    -   Calculate cumulative improvement rates, based to 2010, the year of the mortality tables
+

@@ -4,6 +4,7 @@ library(rlang)
 library(tidyverse)
 tprint <- 75  # default tibble print
 options(tibble.print_max = tprint, tibble.print_min = tprint)
+library(quarto)
 
 # load packages needed for development process ---- library(devtools)
 # library(usethis) library(pkgload) library(lintr) library(styler)

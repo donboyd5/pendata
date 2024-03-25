@@ -1,59 +1,65 @@
-# About -------------------------------------------------------------------
+# Salary data
 
-# frs: Florida Retirement System
+Get salary data from `Florida FRS inputs.xlsx`, various sheets, convert to a single long tibble, and save.
 
-# Get and save salary tables for FRS from the Excel workbook (Florida FRS
-# inputs.xlsx) that Reason created.
+## TODO
+
+Consider:
+
+-   breaking entrant_profile out into separate R file
+
+-   separate files for salary_headcount_raw, which just relies on one sheet, and salary_headcount, which requires salary_headcount_raw plus salary_growth
+
+-   deleting the NA records
+
+-   interpolation / spline to get every year
 
 
-# TODO --------------------------------------------------------------------
+## Setup
 
-# Consider:
-#   - breaking entrant_profile out into separate R file
-#   - separate files for salary_headcount_raw, which just relies on one sheet, and
-#       salary_headcount, which requires ..._raw plus salary_growth
+```{r}
+#| label: setup
+#| output: false
 
-
-# setup -------------------------------------------------------------------
-
-source(here::here("data-raw", "libraries.R"))
+source(here::here("data-raw", "libraries.r"))
 draw <- here::here("data-raw")
-
 dfrs <- fs::path(draw, "systems", "frs")
+drds <- fs::path(dfrs, "rds")
+
 source(fs::path(dfrs, "functions.R"))
-source(fs::path(dfrs, "constants.R"))
-frs_constants
+
+frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
 
 FileName <- "Florida FRS inputs.xlsx"
-
-
-# functions ---------------------------------------------------------------
-
-
-# get data ----------------------------------------------------------------
-# my approach is get all the raw data and clean it before combining with other files
 fullpath <- fs::path(dfrs, FileName)
 
+```
+
+## Get vector of salary sheetnames
+
+```{r}
+#| label: salary-sheetnames
+
 tabs <- excel_sheets(fullpath)
-
-
-# explore tabs ----------------------------------------------------------
-
 tabs |> str_subset("Regular")
 tabs |> str_subset("Salary Distribution")
 
-
-# get all of the salary tables ----
 saltabs <- tabs |>
   str_subset("Salary Distribution ")
 
+```
+
+## Function to get a salary table
+```{r}
+#| label: salary-function
+
 get_salaries <- function(salsheet){
-  # read a headcount sheet, pivot and clean, return a tibble
+  # read a salary sheet, pivot and clean, return a tibble
 
   class_sheetname <- str_remove(salsheet, "Salary Distribution ") # notice ending space
   class <- get_class_from_sheetname(class_sheetname)
 
-  print(class)
+  print(paste0("Getting sheet for class: ", class))
 
   sal1 <- read_excel(fullpath, salsheet, col_types = "text")
   sal2 <- sal1 |>
@@ -68,15 +74,59 @@ get_salaries <- function(salsheet){
   sal2
 }
 
+
+```
+
+
+
+## Get all of the salary tables, create a long tibble, and save as rds file
+
+
+```{r}
+#| label: get-and-save-salaries
+
 salary_table <- purrr::map(saltabs, get_salaries) |>
   list_rbind() |>
   mutate(system="frs") |>
   relocate(system) |>
   arrange(system, class, age, yos)
 
-saveRDS(salary_table, path(dfrs, "salary.rds"))
+saveRDS(salary_table, fs::path(drds, "salary.rds"))
+
+```
 
 
+
+## Show salary data
+
+Here is the result.
+
+```{r}
+#| label: show-salary-data
+
+sal <- readRDS(fs::path(drds, "salary.rds"))
+
+# names(ifd)
+
+sal |> 
+  DT::datatable(
+    options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
+    filter="top") |> 
+  formatCurrency(columns = c("salary"), currency="", digits=0)
+
+
+# datatable(ptargets, options = list(scrollX = TRUE, scrollY = '400px', paging = TRUE))
+# formatCurrency(columns = c("ptarget"), currency="", digits=0)
+# formatPercentage(columns = c("salgrowth"), digits=2)
+# formatRound(columns = c("cumprod_increase"), digits=4)
+
+
+```
+
+
+## Comparison to the Reason approach
+
+<!-- 
 # Truong's code below, commented out ----------------------------
 
 # Truong gets:
@@ -189,5 +239,5 @@ saveRDS(salary_table, path(dfrs, "salary.rds"))
 #   return(output)
 # }
 
-
+-->
 

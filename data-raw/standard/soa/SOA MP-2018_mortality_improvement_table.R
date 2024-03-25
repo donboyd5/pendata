@@ -64,8 +64,12 @@ usethis::use_data(mp2018, overwrite = TRUE)
 
 # mp1 <- readRDS(fs::path(draw, "mp-2018.rds"))
 # mp1 <- mp2018
+devtools::load_all("./")
+mp3 <- pendata::mp1
+usethis::use_data(mp1, overwrite = TRUE)
+rm(mp1)
+mp1
 
-mp1 <- pendata::mp2018
 skim(mp1) # 1951-2034, ages 20-120
 
 # extend years to 2154, age down to 18, and index to baseyear 2010

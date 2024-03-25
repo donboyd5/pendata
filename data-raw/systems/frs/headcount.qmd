@@ -1,0 +1,157 @@
+# Headcount tables
+
+
+## TODO
+
+-   Near term: Determine precise source of the data. Presumably it is the FRS 2022 actuarial valuation, but we should know the exact table number.
+
+
+## Setup
+
+```{r}
+#| label: setup
+#| output: false
+
+draw <- here::here("data-raw")
+dfrs <- fs::path(draw, "systems", "frs")
+drds <- fs::path(dfrs, "rds")
+
+source(fs::path(draw, "libraries.r"))
+source(fs::path(dfrs, "functions.r"))
+
+frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
+
+FileName <- "Florida FRS inputs.xlsx"
+fullpath <- fs::path(dfrs, FileName)
+
+```
+
+
+## Function to get a single headcount sheet
+
+```{r}
+#| label: headcount-functions
+
+get_headcount <- function(fullpath, hcsheet){
+  # read a headcount sheet, pivot and clean, return a tibble
+
+  class_sheetname <- str_remove(hcsheet, "HeadCount Distribution ") # notice ending space
+  class <- get_class_from_sheetname(class_sheetname)
+
+  print(class)
+
+  hc1 <- read_excel(fullpath, hcsheet, col_types = "text")
+  hc2 <- hc1 |>
+    pivot_longer(-age, names_to = "yos", values_to = "count") |>
+    mutate(
+      class = class,
+      age = as.integer(age),
+      yos = as.integer(yos),
+      count = as.numeric(count)
+    ) |>
+    relocate(class)
+  hc2
+}
+
+```
+
+
+## Review and define desired sheets
+
+```{r}
+
+tabs <- excel_sheets(fullpath)
+
+tabs |> str_subset("Regular")
+tabs |> str_subset("HeadCount Distribution") # e.g., HeadCount Distribution Sen Man
+
+
+# get all of the headcount tables ----
+hctabs <- tabs |>
+  str_subset("HeadCount")
+
+
+```
+
+
+
+## Get data
+
+```{r}
+#| label: get-data
+
+headcount_table <- hctabs |> 
+  purrr::map(\(x) get_headcount(fullpath, x)) |>
+  list_rbind() |>
+  mutate(system="frs") |>
+  relocate(system) |>
+  arrange(system, class, age, yos)
+
+```
+
+## Gross up the headcount
+
+Headcount does not include DC members, so gross up for that using ratio of total headcount to the DB headcount. Requires `frs_constants$total_actives`.
+
+```{r}
+#| label: headcount-grossup
+
+
+# active_member_adjustment_ratio = if_else(str_detect(class_name, "eco|eso|judges"), eco_eso_judges_active_member_adjustment_ratio,
+#                                          total_active_member / sum(count, na.rm = T))
+
+# headcount_table <- readRDS(path(dfrs, "headcount_raw.rds"))
+
+# compute adjustment ratios based on total headcount including DC
+adjustment_ratios1 <- headcount_table |>
+  mutate(class=ifelse(class %in% c("eco", "eso", "judges"),
+                      "eco_eso_judges",
+                      class)) |>
+  summarise(count=sum(count, na.rm=TRUE), .by=class) |>
+  left_join(frs_constants$total_actives, by = join_by(class)) |>
+  mutate(active_member_adjustment_ratio =
+           total_actives / count)
+
+# break eco_eso_judges into 3 classes
+adjustment_ratios2 <- adjustment_ratios1 |>
+  select(class, active_member_adjustment_ratio) |>
+  mutate(reps = ifelse(class=="eco_eso_judges", 3, 1)) |>
+  uncount(reps) |>
+  mutate(class = ifelse(class=="eco_eso_judges",
+                        c("eco", "eso", "judges"),
+                        class))
+# adjustment_ratios2
+
+headcount_adjusted <- headcount_table |>
+  left_join(adjustment_ratios2, by = join_by(class)) |>
+  mutate(count=count * active_member_adjustment_ratio) |>
+  select(-active_member_adjustment_ratio)
+
+# headcount_adjusted
+
+saveRDS(headcount_adjusted, path(drds, "headcount.rds"))
+
+```
+
+
+
+## Show the final headcount
+
+```{r}
+#| label: show-final-headcount-data
+
+hca <- readRDS(fs::path(drds, "headcount.rds"))
+
+hca |> 
+  DT::datatable(
+    options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
+    filter="top") |> 
+  formatRound(columns = c("count"), digits=0)
+
+
+# datatable(ptargets, options = list(scrollX = TRUE, scrollY = '400px', paging = TRUE))
+# formatCurrency(columns = c("ptarget"), currency="", digits=0)
+# formatPercentage(columns = c("salgrowth"), digits=2)
+# formatRound(columns = c("cumprod_increase"), digits=4)
+
+```
