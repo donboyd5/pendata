@@ -13,5 +13,3 @@ dfrs <- fs::path(draw, "systems", "frs")
 
 # return_scenarios <- read_excel(FileName, sheet = "Return Scenarios")
 
-ppath <- r"(E:\R_projects\packages\penmodel)"
-create_package(ppath)

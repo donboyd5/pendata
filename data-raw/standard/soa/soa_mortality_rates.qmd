@@ -19,6 +19,8 @@ params:
 #| label: setup
 
 source(here::here("data-raw", "libraries.r"))
+
+ddata <- here::here("data")
 draw <- here::here("data-raw")
 
 dsoa <- fs::path(draw, "standard", "soa")
@@ -159,11 +161,10 @@ usethis::use_data(pub2010hc_mortality_rates, overwrite = TRUE)
 ```{r}
 #| label: show-mortality rates
 
-# avoid the need to install to get the latest data under a short name
-devtools::load_all("./")
-mort <- pendata::pub2010hc_mortality_rates
+# avoid the need to install
+devtools::load_all()
 
-DT::datatable(mort,
+DT::datatable(pub2010hc_mortality_rates,
           options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
           filter="top") |>
   formatPercentage(columns = c("rate"), digits=3) 

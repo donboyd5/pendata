@@ -13,6 +13,7 @@ Note:
 
 source(here::here("data-raw", "libraries.r"))
 
+ddata <- here::here("data")
 draw <- here::here("data-raw")
 dfrs <- fs::path(draw, "systems", "frs")
 drds <- fs::path(dfrs, "rds")
@@ -39,16 +40,16 @@ Get SOA MP-2018 mortality improvement table and, using `pendata::extend_mp`:
 #| label: get-extend-mp
 
 # get SOA MP-2018 mortality improvement table
-
-mp1 <- pendata::mp2018
-skim(mp1) # 1951-2034, ages 20-120
+# load(fs::path(ddata, "mp2018.rda"))
+devtools::load_all()
+# skim(mp2018) # 1951-2034, ages 20-120
 
 # for FRS, extend years to 2154, age down to 18, and index to baseyear 2010 ---
-mp2 <- pendata::extend_mp(mp1, startage=18, endyear=2154, baseyear=2010) |>
+mp2 <- extend_mp(mp2018, startage=18, endyear=2154, baseyear=2010) |>
   mutate(system="frs") |>
   relocate(system)
-skim(mp2)
-ht(mp2)
+# skim(mp2)
+# ht(mp2)
 
 # mp2 |>
 #   filter(year %in% 2009:2011, gender=="female", age %in% 18:21)

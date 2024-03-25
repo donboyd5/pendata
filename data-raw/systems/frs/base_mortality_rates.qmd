@@ -34,7 +34,10 @@ frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
 ```{r}
 #| label: soa-data
 
-mort1 <- pendata::pub2010hc_mortality_rates |>
+# load(here::here("data", "pub2010hc_mortality_rates.rda"))
+devtools::load_all()
+
+mort1 <- pub2010hc_mortality_rates |>
   mutate(system="frs") |>
   relocate(system)
 
