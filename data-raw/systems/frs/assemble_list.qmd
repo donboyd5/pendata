@@ -27,18 +27,17 @@ source(fs::path(dfrs, "functions.r"))
 
 files <- c(
   "base_mortality_rates",
-  #"class_mortality_xwalk",
   "current_amort_layers",
   # "entrant_profile",
   "headcount",
   "init_funding_data",
-  # "mortality_rates",
+  "mortality_final",
   "mortality_improvement",
   "retiree_distribution",
   "retirement_rates",
-  "salary_growth" #,
+  "salary_growth",
   # "salary_headcount",
-  #"termination_rates"
+  "termination_rates"
   ) |> sort()
 
 

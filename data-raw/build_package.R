@@ -13,6 +13,8 @@
 
 # setup -------------------------------------------------------------------
 
+rm(list = ls())
+
 draw <- here::here("data-raw")
 dstd <- fs::path(draw, "standard")
 dfrs <- fs::path(draw, "systems", "frs")
@@ -21,7 +23,7 @@ source(fs::path(draw, "libraries.r"))
 
 
 # get standard actuarial tables and data for individual systems ----
-quarto_render(dstd, execute_params=list(download="true")) # standard actuarial information
+quarto_render(dstd, execute_params=list(download="false")) # standard actuarial information
 quarto_render(dfrs) # Florida Retirement System
 
 
@@ -29,13 +31,13 @@ quarto_render(dfrs) # Florida Retirement System
 
 (package_root <- usethis::proj_get())
 devtools::document(package_root)
-# devtools::check(package_root) # not essential to check for CRAN requirements but good practice
+devtools::check(package_root) # not essential to check for CRAN requirements but good practice
 devtools::build(package_root)
 devtools::install(package_root)
 
 
 # look at newly installed package ----
 library(pendata)
-data(package="pendata")
+# data(package="pendata")
 data(frs)
 names(frs)
