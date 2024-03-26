@@ -1,0 +1,174 @@
+# Termination rates
+
+Get termination rate tables for FRS, from an Excel workbook (Florida FRS inputs.xlsx) that Reason created.
+
+
+## TODO
+
+Look for additional cleanup code that Reason has in other files and consolidate it here.
+
+Weird eco withdrawal rate at 4 yos. Presumably ok.
+
+deal with yos values. do we need to convert to single year?
+
+## Setup
+
+```{r}
+#| label: setup
+#| output: false
+
+draw <- here::here("data-raw")
+dfrs <- fs::path(draw, "systems", "frs")
+drds <- fs::path(dfrs, "rds")
+
+source(fs::path(draw, "libraries.r"))
+source(fs::path(dfrs, "functions.r"))
+source(fs::path(dfrs, "functions_tier.r"))
+
+frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
+
+FileName <- "Florida FRS inputs.xlsx"
+fullpath <- fs::path(dfrs, FileName)
+
+```
+
+## Check excel tabs
+
+```{r}
+#| label: check
+
+tabs <- excel_sheets(fullpath)
+tabs |> str_subset("Withdrawal")
+# read_excel(fullpath, sheet = "Withdrawal Rates")
+
+```
+
+
+## Get termination rates
+
+```{r}
+#| label: termination
+
+
+wrtabs <- tabs |>
+  str_subset("Withdrawal") |>
+  setdiff("Withdrawal Rates")
+wrtabs
+
+f <- function(tab){
+  print(tab)
+
+  gender <- case_when(str_sub(tab, -4, -1) == "Male" ~ "male",
+                      str_sub(tab, -6, -1) == "Female" ~ "female",
+                      .default="all")
+
+  class <- case_when(str_detect(tab, "Regular") ~ "regular",
+                     str_detect(tab, "Special") ~ "special",
+                     str_detect(tab, "Eco") ~ "eco",
+                     str_detect(tab, "Eso") ~ "eso",
+                     str_detect(tab, "Judges") ~ "judges",
+                     str_detect(tab, "Sen Man") ~ "senior_management",
+                     str_detect(tab, "Admin") ~ "admin",
+                     .default = "ERROR")
+
+  df1 <- read_excel(fullpath,
+             sheet = tab,
+             col_types = "text")
+
+  df2 <- df1 |>
+    mutate(system = "frs",
+           class = class,
+           gender = gender,
+           yos = as.integer(yos)) |>
+    pivot_longer(-c(system, class, gender, yos),
+                 names_to = "age_group",
+                 values_to = "term_rate")
+
+  df2
+}
+
+f(wrtabs[1])
+
+age_group_order <- c("under_25", "25_to_29", "30_to_34",
+                     "35_to_44", "45_to_54", "over_55")
+
+trates <- purrr::map(wrtabs, f) |>
+  list_rbind() |>
+  # percentage values read as character were not converted to decimal values
+  mutate(term_rate=as.numeric(term_rate) / 100,
+         # make age_group a factor so that it will sort in desired oder
+         age_group = factor(age_group, levels = age_group_order)) |>
+  select(system, class, gender, yos, age_group, term_rate) |>
+  arrange(system, class, gender, yos, age_group)
+
+skim(trates)
+count(trates, class)
+count(trates, gender)
+count(trates, yos)
+count(trates, age_group)
+
+saveRDS(trates, path(drds, "termination_rates.rds"))
+
+```
+
+
+## Show the termination rates
+
+
+```{r}
+#| label: show-final-mortality-rates
+
+trates <- readRDS(fs::path(drds, "termination_rates.rds"))
+
+trates |> 
+  # head() |> 
+  DT::datatable(
+    options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
+    filter="top") |> 
+  formatPercentage(columns = c("term_rate"), digits=3)
+
+
+# datatable(ptargets, options = list(scrollX = TRUE, scrollY = '400px', paging = TRUE))
+# formatCurrency(columns = c("ptarget"), currency="", digits=0)
+# formatPercentage(columns = c("salgrowth"), digits=2)
+# formatRound(columns = c("cumprod_increase"), digits=4)
+
+```
+
+## Comparison to Reason
+
+```{r}
+#| label: comp
+#| eval: false
+
+
+
+# Truong's code, commented-out ----
+# Termination rate tables
+
+# regular_term_rate_male_table_ <- read_excel(FileName, sheet = "Withdrawal Rate Regular Male")
+# regular_term_rate_female_table_ <- read_excel(FileName, sheet = "Withdrawal Rate Regular Female")
+#
+# special_term_rate_male_table_ <- read_excel(FileName, sheet = "Withdrawal Rate Special Male")
+# special_term_rate_female_table_ <- read_excel(FileName, sheet = "Withdrawal Rate Special Female")
+#
+# admin_term_rate_male_table_ <- read_excel(FileName, sheet = "Withdrawal Rate Admin Male")
+# admin_term_rate_female_table_ <- read_excel(FileName, sheet = "Withdrawal Rate Admin Female")
+#
+# eco_term_rate_male_table_ <- read_excel(FileName, sheet = "Withdrawal Rate Eco")
+# eco_term_rate_female_table_ <- read_excel(FileName, sheet = "Withdrawal Rate Eco")
+#
+# eso_term_rate_male_table_ <- read_excel(FileName, sheet = "Withdrawal Rate Eso")
+# eso_term_rate_female_table_ <- read_excel(FileName, sheet = "Withdrawal Rate Eso")
+#
+# judges_term_rate_male_table_ <- read_excel(FileName, sheet = "Withdrawal Rate Judges")
+# judges_term_rate_female_table_ <- read_excel(FileName, sheet = "Withdrawal Rate Judges")
+#
+# senior_management_term_rate_male_table_ <- read_excel(FileName, sheet = "Withdrawal Rate Sen Man Male")
+# senior_management_term_rate_female_table_ <- read_excel(FileName, sheet = "Withdrawal Rate Sen Man Female")
+
+
+
+```
+
+

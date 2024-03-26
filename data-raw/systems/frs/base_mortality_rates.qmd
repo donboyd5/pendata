@@ -46,6 +46,7 @@ mort1 <- pub2010hc_mortality_rates |>
 
 ## Create base mortality table
 
+
 ```{r}
 #| label: base-mortality
 

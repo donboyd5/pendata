@@ -36,91 +36,135 @@ frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
 
 # devtools::load_all()
 
-bmr <- readRDS(fs::path(drds, "base_mortality_rates.rds"))
+base_mortality_rates <- readRDS(fs::path(drds, "base_mortality_rates.rds")) |> 
+  rename(dist_age=age)
+
+glimpse(base_mortality_rates)
+skim(base_mortality_rates)
+count(base_mortality_rates, employee_type) # general, regular, safety
+count(base_mortality_rates, beneficiary_type, vnv) # employee (vested), healthy_retiree (notvested)
 
 ```
 
+## crosswalk
 
-## Create base mortality table
 
 ```{r}
-#| label: base-mortality
+#| label: do-i-need-this-crosswalk
+#| eval: true
 
-# base mortality table: per Reason:
-#   regular: average of SOA general and teacher mortality tables (Florida FRS benefit model.R, line 172)
-#   special, admin – use SOA safety (Florida FRS benefit model.R, lines 258-264)
-#   eco, eso, judges, senior_management - use SOA general (Florida FRS benefit model.R, lines 258-264)
+# investigate this. I did it early on. I think I'll need it if we use the other classes
 
-# create the regular table and add it to mort
-# general has 626 records, teachers has 616 records when does one have values but not the other
-# mort1 |>
-#   filter(employee_type %in% c("general", "teachers")) |>
-#   arrange(beneficiary_type, gender, age, employee_type) |>
-#   group_by(beneficiary_type, gender, age) |>
-#   mutate(nnotna=sum(!is.na(rate))) |>
-#   filter(nnotna != 2)
-# issue arises for beneficiary_type healthy_retiree male and female ages 50-54 where
-#   we have not na values for general but values for teachers are na
+# construct crosswalk between employee class and employee type ------------
+# define which base mortality rates to use for each class
+class_mortality_xwalk <- tibble(class = frs_constants$classes) |>
+  mutate(employee_type =
+           case_when(class == "regular" ~ "regular",
+                     class %in% c("special", "admin") ~ "safety",
+                     class %in% c("eco", "eso", "judges",
+                                  "senior_management") ~ "general"))
 
-# follow the reason approach
-regular_mort <- mort1 |>
-  filter(employee_type %in% c("general", "teachers")) |>
-  pivot_wider(names_from = beneficiary_type, values_from = rate) |>
-  # address missing values in the same way as Reason does
-  mutate(employee = ifelse(is.na(employee), healthy_retiree, employee),
-         healthy_retiree = ifelse(is.na(healthy_retiree), employee, healthy_retiree)) |>
-  pivot_longer(cols = -c(system, employee_type, gender, age),
-               names_to = "beneficiary_type",
-               values_to = "rate") |>
-  # DO NOT use na.rm = TRUE as we have addressed the only case where we have values
-  # for one group (general) but not another (teachers)
-  summarise(rate=mean(rate), .by=c(system, beneficiary_type, gender, age)) |>
-  mutate(employee_type = "regular") |>
-  arrange(system, employee_type, beneficiary_type, gender, age)
+class_mortality_xwalk
 
-# mort1 |>
-#   filter(employee_type %in% c("general", "teachers")) |>
-#   filter(beneficiary_type ==  "healthy_retiree", gender=="female", age %in% 50:56)
-# regular_mort |> filter(beneficiary_type ==  "healthy_retiree", gender=="female", age %in% 50:56)
+# saveRDS(class_mortality_xwalk, path(dfrs, "class_mortality_xwalk.rds")) # maybe we need this?
 
-base_mort1 <- bind_rows(
-  mort1 |> filter(employee_type %in% c("general", "safety")),
-  regular_mort)
+```
 
-glimpse(base_mort1)
-count(base_mort1, employee_type)
-count(base_mort1, beneficiary_type)
-#   mutate(beneficiary_type=if_else(
-    # str_detect(tier_at_dist_age, "vested"),
-    # "employee", "healthy_retiree")) |>
-base_mort2 <- base_mort1 |> 
-  # Reason only uses: employee for vested, and healthy_retiree for not vested ???
-  filter(beneficiary_type %in% c("employee", "healthy_retiree")) |> 
-  mutate(vnv=ifelse(beneficiary_type=="employee",
-                    "vested", "notvested")) |> 
-  relocate(vnv, .after=beneficiary_type)
+## Get mortality improvement rates
 
-count(base_mort2, employee_type, beneficiary_type, vnv)
-  
-saveRDS(base_mort2, fs::path(drds, "base_mortality_rates.rds"))
+```{r}
+#| label: get-mortality-improvement-rates
+
+mprates <- readRDS(fs::path(drds, "mortality_improvement.rds"))
 
 
 ```
 
 
 
-## Show the final base_mortality_rates
+## Construct mortality rates with mortality improvement 
 
 ```{r}
-#| label: show-final-base_mortality_rates
+#| label: improve-mortality
 
-bmr <- readRDS(fs::path(drds, "base_mortality_rates.rds"))
+# final_mort_table for regular has
+#  entry_year (1970:2052)
+#  entry_age (18:65 by 5 = 11)
+#  dist_age (18:120)
+#  yos (0:70)
+# = 83 x 11 x 103 x 71 = 6.677 million combinations
 
-bmr |> 
+# term_year = entry_year + yos
+# dist_year = entry_year + dist_age - entry_age
+# filter(term_year <= dist_year) leaves 2.977 million
+
+# depends on dist_year, age, yos, tier or class
+
+# The only mortality categories Reason uses are:
+#   employee, for vested tiers
+#   healthy_retiree for others
+# In all cases, they first calc improved mortality for males and females,
+# then average male and female.
+
+
+emptypes <- class_mortality_xwalk |>
+  pull(employee_type) |>
+  unique()
+
+
+# I should make the years and ages based on frs_constants, but not just yet
+basedf <- expand_grid(employee_type=emptypes,
+                    dist_year=1970:2154,
+                    dist_age=18:120) |>
+  filter((dist_year - dist_age) %in% 1905:2034) # birth year -- mentally add 120 for max year
+
+# mutate(yob=dist_year - dist_age,
+#        firstty=yob + 18) |>
+#   relocate(firstty, dist_year) |>
+#   filter(firstty > dist_year)
+
+basedf2 <- basedf |>
+  left_join(base_mortality_rates,
+            by = join_by(employee_type, dist_age),
+            relationship = "many-to-many") |>
+  left_join(mprates |>
+              select(dist_year=year, dist_age=age, gender, mp_cumprod_adj=mpcadj),
+            by = join_by(dist_year, dist_age, gender)) |>
+  relocate(dist_age, dist_year, .before = rate) |>
+  arrange(employee_type, beneficiary_type, gender, dist_age, dist_year) |>
+  mutate(mort=rate * mp_cumprod_adj)
+skim(basedf2)
+
+# now get the average of male and female mortality rates, after projecting them separately
+
+mort_final <- basedf2 |>
+  summarise(mort_final=mean(mort),
+            .by=c(employee_type, beneficiary_type, vnv, dist_age, dist_year))
+skim(mort_final) # 57,428 records, vs maybe 21m records (7 classes x 3m records) in Reason model
+
+
+saveRDS(mort_final, fs::path(drds, "mortality_final.rds"))
+
+
+```
+
+
+
+## Show the head of final mortality rates
+
+Just the head because otherwise we show too much data
+
+```{r}
+#| label: show-final-mortality-rates
+
+mf <- readRDS(fs::path(drds, "mortality_final.rds"))
+
+mf |> 
+  head() |> 
   DT::datatable(
     options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
     filter="top") |> 
-  formatPercentage(columns = c("rate"), digits=3)
+  formatPercentage(columns = c("mort_final"), digits=3)
 
 
 # datatable(ptargets, options = list(scrollX = TRUE, scrollY = '400px', paging = TRUE))
@@ -129,3 +173,228 @@ bmr |>
 # formatRound(columns = c("cumprod_increase"), digits=4)
 
 ```
+
+## Comparison to Reason
+
+```{r}
+#| label: comp
+#| eval: false
+
+# lines below -- copied but not dealt with 
+
+# keep eval false as Gang does not have the from_reason folder; could provide it, however
+
+
+mt <- readRDS(fs::path(drds, "mortality_final.rds"))
+rmt <- readRDS(fs::path(dfrs, "from_reason", "regular_mort_table.rds"))
+skim(rmt)
+
+base_mortality_rates <- readRDS(fs::path(drds, "base_mortality_rates.rds"))
+mprates <- readRDS(fs::path(drds, "mortality_improvement.rds"))
+
+
+
+
+
+
+mt <- readRDS(fs::path(dfrs, "mortality_final.rds"))
+rmt <- readRDS(fs::path(dfrs, "from_reason", "regular_mort_table.rds"))
+skim(rmt)
+
+base_mortality_rates <- readRDS(fs::path(dfrs, "base_mortality_rates.rds"))
+mprates <- readRDS(fs::path(dfrs, "mortality_improvement.rds"))
+
+# are there any unique mortality rates in the Reason mortality table that are not in this one? ----
+mt <- readRDS(fs::path(dfrs, "mortality_final.rds"))
+rmt <- readRDS(fs::path(dfrs, "from_reason", "regular_mort_table.rds"))
+
+skim(mt) # use bene type for grouping
+skim(rmt)
+
+glimpse(mt)
+glimpse(rmt) # include tier for grouping
+
+# get comparable groupings for rmt and mt
+glimpse(rmt)
+rmtg <- rmt |>
+  mutate(beneficiary_type=if_else(
+    str_detect(tier_at_dist_age, "vested"),
+    "employee", "healthy_retiree")) |>
+  select(beneficiary_type, dist_year, dist_age, mort_final) |>
+  distinct() # |>    mutate(nrsn=n(), .by=dist_year, dist_age)
+skim(rmtg)
+ht(rmtg)
+
+mtg <- mt |>
+  filter(employee_type=="regular") |>
+  select(beneficiary_type, dist_year, dist_age, mort_final) |>
+  distinct() # |>  mutate(ndjb=n(), .by=dist_year, dist_age)
+skim(mtg)
+
+comp <- bind_rows(
+  rmtg |> mutate(src="reason"),
+  mtg |> mutate(src="boyd"))
+
+compw <- comp |>
+  pivot_wider(names_from = src, values_from = mort_final)
+
+compw |>
+  filter(!is.na(reason), !is.na(boyd)) |>
+  filter(reason != boyd) # good, zero
+
+compw |>
+  filter(!is.na(reason), is.na(boyd)) # good, zero
+
+bad <- compw |>
+  filter(is.na(reason), !is.na(boyd)) # 3,548
+
+count(bad, beneficiary_type)
+count(bad, dist_year) |> ht()
+count(bad, dist_age) |> ht()
+count(bad, beneficiary_type, dist_year, dist_age)
+
+bad |> filter(beneficiary_type=="employee")
+
+bad2 <- count(bad, beneficiary_type, dist_year, dist_age) |>
+  left_join(rmtg, by = join_by(beneficiary_type, dist_year, dist_age)) |>
+  mutate(yob=dist_year - dist_age)
+skim(bad2)
+bad2 |>
+  skim()
+
+bad2 |>
+  summarise(minyob=min(yob), maxyob=max(yob), minage=min(dist_age), maxage=max(dist_age),
+            maxyod=max(yob + 120),
+            .by=c(beneficiary_type, dist_year)) |>
+  arrange(minyob)
+
+bad |>
+  mutate(yob=dist_year - dist_age,
+         firstty=yob + 18) |>
+  relocate(firstty, dist_year) |>
+  filter(firstty > dist_year)
+
+
+
+
+
+# tmp <- base2 |>
+#   filter(employee_type=="general",
+#          beneficiary_type=="employee",
+#          gender=="female",
+#          dist_age %in% c(18))
+# note that we don't have mortality improvement for 18 year olds past
+# 2052. An 18 year old in 2052 will still get the 19 year old mortality
+# improvement in 2053, and so on, so we have enough data for them. If this
+# does present a problem, we can keep more data
+
+# base2 |>
+#   filter(employee_type=="general",
+#          beneficiary_type=="employee",
+#          # gender=="female",
+#          dist_age==18) |>
+#   ggplot(aes(x=dist_year, y=mort, colour=gender)) +
+#   geom_point() +
+#   geom_line()
+
+
+
+# final_mort_table <- expand_grid(entry_year = entry_year_range_, entry_age = entrant_profile$entry_age, dist_age = age_range_, yos = yos_range_) %>%
+#   mutate(
+#     term_year = entry_year + yos,
+#     dist_year = entry_year + dist_age - entry_age
+#   )  %>%
+#   filter(term_year <= dist_year) %>%
+#   arrange(entry_year, entry_age, yos, dist_age) %>%
+# left_join(base_mort_table, by = c("dist_age" = "age")) %>%
+#   left_join(male_mp_final_table, by = c("dist_age" = "age", "dist_year" = "year")) %>%
+#   left_join(female_mp_final_table, by = c("dist_age" = "age", "dist_year" = "year")) %>%
+#   mutate(
+#     tier_at_dist_age = get_tier(class_name, entry_year, dist_age, yos),
+#
+#     male_mort = if_else(str_detect(tier_at_dist_age, "vested"), employee_male,
+#                         healthy_retiree_male) * male_mp_cumprod_adj,
+#
+#     female_mort = if_else(str_detect(tier_at_dist_age, "vested"), employee_female,
+#                           healthy_retiree_female) * female_mp_cumprod_adj,
+#
+#     mort_final = (male_mort + female_mort)/2
+#   )
+
+count(base, entry_year, dist_year)
+
+check <- rmt |>
+  count(entry_year, dist_year, dist_age)
+
+
+
+
+
+# FOR TESTING AND QC compare ----
+rmtdjb <- readRDS(fs::path(dfrs, "from_reason", "rmtdjb.rds"))
+rmt <- readRDS(fs::path(dfrs, "from_reason", "regular_mort_table.rds"))
+glimpse(rmt) # Rows: 2,977,459
+length(unique(rmt$mort_final)) # 14915
+
+
+a <- proc.time()
+djb <- rmt |>
+  select(entry_year, dist_age, yos, tier_at_dist_age) |>
+  mutate(class="regular") |>
+  mutate(tier=get_tier(class, entry_year, dist_age, yos, frs_constants$new_year)) # my get_tier
+b <- proc.time()
+b - a
+
+
+count(djb, tier_at_dist_age, tier) |>
+  filter(tier_at_dist_age != tier)
+
+# entry_year entry_age dist_year dist_age yos term_year mort_final tier_at_dist_age
+
+# it looks like we have 38,583 unique combinations of mortality rates for class regular,
+# uniquely determined by tier_at_dist_age, dist_age, and dist_year
+# with 7 classes, total uniques might be abotu 280k
+
+# counts <- rmt |>
+#   summarise(n=n(), nunique=length(unique(mort_final)),
+#             .by=c(tier_at_dist_age, entry_year, entry_age, dist_age))
+#
+# counts <- rmt |>
+#   summarise(n=n(), nunique=length(unique(mort_final)),
+#             .by=c(tier_at_dist_age, entry_year, dist_year, dist_age))
+#
+# counts <- rmt |>
+#   summarise(n=n(), nunique=length(unique(mort_final)),
+#             .by=c(dist_year, dist_age))
+
+counts <- rmt |>
+  summarise(n=n(), nunique=length(unique(mort_final)),
+            .by=c(tier_at_dist_age, dist_year, dist_age))
+
+counts |>
+  mutate(yob=dist_year - dist_age) |>
+  summarise(minyob=min(yob), maxyob=max(yob))
+
+tmp <- rmt |>
+  arrange(tier_at_dist_age, dist_year, dist_age) |>
+  select(tier_at_dist_age, dist_year, dist_age, everything())
+
+max(counts$nunique)
+
+count(counts, dist_age) |> ht()
+count(counts, dist_year) |> ht()
+count(counts, tier_at_dist_age)
+tmp <- rmt |> select(tier_at_dist_age, )
+# 12 tiers: (early, non_vested, norm, vested) x 3 tiers
+skim(counts)
+# dist_year: 1970:2154
+count(counts, dist_year) |> ht()
+counts |> filter(dist_year >= 2150)
+nrow(counts)
+length(unique(rmt$mort_final))
+
+
+
+```
+
+

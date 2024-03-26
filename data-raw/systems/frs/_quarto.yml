@@ -28,6 +28,7 @@ book:
       chapters:
       - base_mortality_rates.qmd
       - mortality_improvement.qmd
+      - termination_rates.qmd
     - part: "Assemble list of data for package"
       chapters:
       - assemble_list.qmd
