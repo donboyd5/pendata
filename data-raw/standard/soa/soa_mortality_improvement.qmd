@@ -136,11 +136,6 @@ DT::datatable(mp2018,
 ```{r}
 #| label: explore
 
-# devtools::load_all("./")
-# mp1 <- pendata::mp2018
-
-# load(fs::path(ddata, "mp2018.rda"))
-
 devtools::load_all()
 glimpse(mp2018)
 

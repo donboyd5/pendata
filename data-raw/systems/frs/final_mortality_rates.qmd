@@ -1,0 +1,131 @@
+# Final mortality rates
+
+Final mortality rates, reflectomg base-year rates plus mortality improvement.
+
+
+## TODO
+
+
+
+## Setup
+
+```{r}
+#| label: setup
+#| output: false
+
+draw <- here::here("data-raw")
+dfrs <- fs::path(draw, "systems", "frs")
+drds <- fs::path(dfrs, "rds")
+
+source(fs::path(draw, "libraries.r"))
+source(fs::path(dfrs, "functions.r"))
+source(fs::path(dfrs, "functions_tier.r"))
+
+frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
+
+# FileName <- "Florida FRS inputs.xlsx"
+# fullpath <- fs::path(dfrs, FileName)
+
+```
+
+
+## Get base mortality-rate data
+
+```{r}
+#| label: base-data
+
+# devtools::load_all()
+
+bmr <- readRDS(fs::path(drds, "base_mortality_rates.rds"))
+
+```
+
+
+## Create base mortality table
+
+```{r}
+#| label: base-mortality
+
+# base mortality table: per Reason:
+#   regular: average of SOA general and teacher mortality tables (Florida FRS benefit model.R, line 172)
+#   special, admin – use SOA safety (Florida FRS benefit model.R, lines 258-264)
+#   eco, eso, judges, senior_management - use SOA general (Florida FRS benefit model.R, lines 258-264)
+
+# create the regular table and add it to mort
+# general has 626 records, teachers has 616 records when does one have values but not the other
+# mort1 |>
+#   filter(employee_type %in% c("general", "teachers")) |>
+#   arrange(beneficiary_type, gender, age, employee_type) |>
+#   group_by(beneficiary_type, gender, age) |>
+#   mutate(nnotna=sum(!is.na(rate))) |>
+#   filter(nnotna != 2)
+# issue arises for beneficiary_type healthy_retiree male and female ages 50-54 where
+#   we have not na values for general but values for teachers are na
+
+# follow the reason approach
+regular_mort <- mort1 |>
+  filter(employee_type %in% c("general", "teachers")) |>
+  pivot_wider(names_from = beneficiary_type, values_from = rate) |>
+  # address missing values in the same way as Reason does
+  mutate(employee = ifelse(is.na(employee), healthy_retiree, employee),
+         healthy_retiree = ifelse(is.na(healthy_retiree), employee, healthy_retiree)) |>
+  pivot_longer(cols = -c(system, employee_type, gender, age),
+               names_to = "beneficiary_type",
+               values_to = "rate") |>
+  # DO NOT use na.rm = TRUE as we have addressed the only case where we have values
+  # for one group (general) but not another (teachers)
+  summarise(rate=mean(rate), .by=c(system, beneficiary_type, gender, age)) |>
+  mutate(employee_type = "regular") |>
+  arrange(system, employee_type, beneficiary_type, gender, age)
+
+# mort1 |>
+#   filter(employee_type %in% c("general", "teachers")) |>
+#   filter(beneficiary_type ==  "healthy_retiree", gender=="female", age %in% 50:56)
+# regular_mort |> filter(beneficiary_type ==  "healthy_retiree", gender=="female", age %in% 50:56)
+
+base_mort1 <- bind_rows(
+  mort1 |> filter(employee_type %in% c("general", "safety")),
+  regular_mort)
+
+glimpse(base_mort1)
+count(base_mort1, employee_type)
+count(base_mort1, beneficiary_type)
+#   mutate(beneficiary_type=if_else(
+    # str_detect(tier_at_dist_age, "vested"),
+    # "employee", "healthy_retiree")) |>
+base_mort2 <- base_mort1 |> 
+  # Reason only uses: employee for vested, and healthy_retiree for not vested ???
+  filter(beneficiary_type %in% c("employee", "healthy_retiree")) |> 
+  mutate(vnv=ifelse(beneficiary_type=="employee",
+                    "vested", "notvested")) |> 
+  relocate(vnv, .after=beneficiary_type)
+
+count(base_mort2, employee_type, beneficiary_type, vnv)
+  
+saveRDS(base_mort2, fs::path(drds, "base_mortality_rates.rds"))
+
+
+```
+
+
+
+## Show the final base_mortality_rates
+
+```{r}
+#| label: show-final-base_mortality_rates
+
+bmr <- readRDS(fs::path(drds, "base_mortality_rates.rds"))
+
+bmr |> 
+  DT::datatable(
+    options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
+    filter="top") |> 
+  formatPercentage(columns = c("rate"), digits=3)
+
+
+# datatable(ptargets, options = list(scrollX = TRUE, scrollY = '400px', paging = TRUE))
+# formatCurrency(columns = c("ptarget"), currency="", digits=0)
+# formatPercentage(columns = c("salgrowth"), digits=2)
+# formatRound(columns = c("cumprod_increase"), digits=4)
+
+```
