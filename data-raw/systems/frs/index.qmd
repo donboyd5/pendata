@@ -9,3 +9,15 @@ editor_options:
 This part of the pendata project gets data for the Florida Retirement System. It is based on the version of the Reason FRS model provided to Rockefeller College in the file Florida-FRS-main.zip, downloaded by Boyd on January 29, 2024.
 
 
+## Next steps
+
+Remaining "Florida FRS benefit model.R" steps:
+
+-   Create a second mortality table for current retirees see  line 267
+-   Drop and retire tables "Florida FRS benefit model.R" lines 325-519
+-   Separation tables lines 522-590
+-   get_benefit_data lines 612-915
+
+Steps in "Florida FRS workforce model.R":
+
+- get_wf_data lines 17-250
