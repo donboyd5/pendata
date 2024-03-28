@@ -1,0 +1,41 @@
+# Miscellaneous information to add to frs list
+
+None at moment.
+
+Reason included return scenarios in the input data program:
+
+    read_excel(FileName, sheet = "Return Scenarios")
+
+However, return scenarios appear more appropriate to include as model inputs.
+
+## TODO
+
+
+## Setup
+
+```{r}
+#| label: setup
+#| output: false
+
+draw <- here::here("data-raw")
+dfrs <- fs::path(draw, "systems", "frs")
+drds <- fs::path(dfrs, "rds")
+
+source(fs::path(draw, "libraries.r"))
+source(fs::path(dfrs, "functions.r"))
+# source(fs::path(dfrs, "functions_tier.r"))
+
+frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
+
+
+```
+
+
+## Comparison to Reason
+
+```{r}
+#| label: comp
+#| eval: false
+
+
+```

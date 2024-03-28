@@ -6,6 +6,6 @@ editor_options:
 
 # Florida Retirement System data {.unnumbered}
 
--   This part of the project gets data for the Florida Retirement System.
+This part of the pendata project gets data for the Florida Retirement System. It is based on the version of the Reason FRS model provided to Rockefeller College in the file Florida-FRS-main.zip, downloaded by Boyd on January 29, 2024.
 
 

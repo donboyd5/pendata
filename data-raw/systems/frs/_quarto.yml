@@ -19,7 +19,7 @@ book:
       chapters:
       - current_amort_layers.qmd
       - init_funding_data.qmd
-      - headcount.qmd
+      - headcount.qmd # get and gross-up the raw headcount data
       - retiree_distribution.qmd
       - retirement_rates.qmd
       - salary.qmd
@@ -29,6 +29,8 @@ book:
       - base_mortality_rates.qmd
       - mortality_improvement.qmd
       - termination_rates.qmd
+      - salary_headcount_entrants.qmd # combine 2 previous files, add growth, extract entrants
+      - miscellaneous_info.qmd
     - part: "Assemble list of data for package"
       chapters:
       - assemble_list.qmd

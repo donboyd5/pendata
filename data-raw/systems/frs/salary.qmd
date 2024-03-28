@@ -2,6 +2,13 @@
 
 Get salary data from `Florida FRS inputs.xlsx`, various sheets, convert to a single long tibble, and save.
 
+## Overview
+
+### Details of Reason approach
+
+Reason reads raw salary-headcount data in `Florida FRS model input.R` lines 182-208.
+
+
 ## TODO
 
 Consider:

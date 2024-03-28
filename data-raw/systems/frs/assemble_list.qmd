@@ -28,7 +28,7 @@ source(fs::path(dfrs, "functions.r"))
 files <- c(
   "base_mortality_rates",
   "current_amort_layers",
-  # "entrant_profile",
+  "entrant_profile",
   "headcount",
   "init_funding_data",
   "mortality_final",
@@ -36,7 +36,7 @@ files <- c(
   "retiree_distribution",
   "retirement_rates",
   "salary_growth",
-  # "salary_headcount",
+  "salary_headcount",
   "termination_rates"
   ) |> sort()
 

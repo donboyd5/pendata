@@ -1,0 +1,147 @@
+# Salary and headcount tables combined, and extract entrants
+
+Combine salary and headcount tables, and compute entry salary:
+
+-   Get the separate salary and headcount tables (which have 5-year age and yos groups)
+-   Get the salary growth table
+-   Merge headcount and salary
+-   Compute entry age and entry year
+-   Merge salary growth
+-   Compute implied entry-year salary from cumulative salary growth
+-   Save salary-headcount table
+
+Reason does much of this near and before `Florida FRS model input.R` lines
+  182-208. (TODO: Improve this documentation.)
+
+Entrant profile:
+
+-   From salary-headcount table get most-recent entry year
+-   For each class of employee, compute \# of workers in each entry-age group as share of all entrants in the class
+-   Keep class, entry age group (entry_age), start_sal, and \# of entrants in entry_age group as share of all entrants in the class
+-   Save entrant profile
+
+Reason constructs the entrant profile in `Florida FRS benefit model.R` lines 55-59.
+
+## TODO
+
+## Setup
+
+```{r}
+#| label: setup
+#| output: false
+
+draw <- here::here("data-raw")
+dfrs <- fs::path(draw, "systems", "frs")
+drds <- fs::path(dfrs, "rds")
+
+source(fs::path(draw, "libraries.r"))
+source(fs::path(dfrs, "functions.r"))
+# source(fs::path(dfrs, "functions_tier.r"))
+
+frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
+
+
+```
+
+## Get input data
+
+```{r}
+#| label: get-data
+
+
+sg1 <- readRDS(path(drds, "salary_growth.rds"))
+sal1 <- readRDS(path(drds, "salary.rds"))
+hc1 <- readRDS(path(drds, "headcount.rds")) # grossed up
+
+
+```
+
+## Create salary-headcount table
+
+```{r}
+#| label: salary-headcount
+
+salary_headcount <- hc1 |>
+  left_join(sal1, by = join_by(system, class, age, yos)) |>
+  mutate(start_year = frs_constants$start_year,
+         entry_age = age - yos,
+         entry_year = start_year - yos) |>
+  # why do we have unneeded years? maybe weed out earlier
+  filter(!is.na(salary), entry_age >= 18) |>  
+  left_join(sg1, by = join_by(system, class, yos)) |>
+  mutate(entry_salary = salary / cumprod_increase) |>
+  select(system, class, entry_year, entry_age, age, yos, count, entry_salary)
+
+saveRDS(salary_headcount, fs::path(drds, "salary_headcount.rds"))
+
+```
+
+## Create entrant profile
+
+```{r}
+#| label: entrant-profile
+
+entrant_profile <- salary_headcount |>
+  filter(entry_year == max(entry_year)) |>
+  mutate(entrant_dist = count / sum(count), .by=c(system, class)) |>
+  select(system, class, entry_age, start_sal=entry_salary, entrant_dist)
+
+saveRDS(entrant_profile, fs::path(drds, "entrant_profile.rds"))
+
+```
+
+## Show the salary-headcount table
+
+```{r}
+#| label: show-salary-headcount-table
+
+shc <- readRDS(fs::path(drds, "salary_headcount.rds"))
+
+shc |> 
+  # head() |> 
+  DT::datatable(
+    options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
+    filter="top") |> 
+  formatRound(columns = c("count"), digits=2) |>
+  formatRound(columns = c("entry_salary"), digits=0)
+
+
+# datatable(ptargets, options = list(scrollX = TRUE, scrollY = '400px', paging = TRUE))
+# formatCurrency(columns = c("ptarget"), currency="", digits=0)
+# formatPercentage(columns = c("salgrowth"), digits=2)
+# formatRound(columns = c("cumprod_increase"), digits=4)
+
+```
+
+## Show the new entrant profile table
+
+```{r}
+#| label: show-entrant-profile
+
+ep <- readRDS(fs::path(drds, "entrant_profile.rds"))
+
+ep |> 
+  # head() |> 
+  DT::datatable(
+    options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
+    filter="top") |> 
+  formatRound(columns = c("start_sal"), digits=0) |> 
+  formatPercentage(columns = c("entrant_dist"), digits=1)
+
+
+# datatable(ptargets, options = list(scrollX = TRUE, scrollY = '400px', paging = TRUE))
+# formatCurrency(columns = c("ptarget"), currency="", digits=0)
+# formatPercentage(columns = c("salgrowth"), digits=2)
+# formatRound(columns = c("cumprod_increase"), digits=4)
+
+```
+
+
+## Comparison to Reason
+
+```{r}
+#| label: comp
+#| eval: false
+
+
+```

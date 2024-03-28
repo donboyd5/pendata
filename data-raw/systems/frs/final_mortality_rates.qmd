@@ -1,6 +1,43 @@
 # Final mortality rates
 
-Final mortality rates, reflectomg base-year rates plus mortality improvement.
+Final mortality rates, reflecting base-year rates plus mortality improvement.
+
+## Overview
+
+
+### Details of Reason approach
+
+
+Depends on age, yos, tier: these need to be in the model, not the data,
+I think
+
+- creates extended mortality tables reflecting mortality improvement and
+  new entrants (`Florida FRS benefit model.R` lines 231-264)
+  
+  - final_mort_table for regular has entry_year (1970:2052), entry_age
+    (18:65 by 5 = 11), dist_age (18:120) and yos (0:70) = 83 x 11 x 103
+    x 71 = 6.677 million combinations
+
+  - calc
+
+    - term_year = entry_year + yos
+    - dist_year = entry_year + dist_age - entry_age
+    - filter(term_year \<= dist_year) leaves 2.977 million
+
+  - merge with base mort table and male and female mortality improvement
+    tables to give
+
+    ![](images/clipboard-442466811.png)
+
+  - calc
+
+    - tier_at_dist_age (why do we want this now?)
+    - male and female mort: if tier is vested, then use
+      employee\_\[gender\], otherwise use healthy retiree\_\[gender\];
+      multiply by improvement factor
+    - mort = avg (male + female)
+- creates retiree mortality tables “for current retirees”
+  (`Florida FRS benefit model.R` lines 267-291)
 
 
 ## TODO
@@ -33,8 +70,6 @@ frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
 
 ```{r}
 #| label: base-data
-
-# devtools::load_all()
 
 base_mortality_rates <- readRDS(fs::path(drds, "base_mortality_rates.rds")) |> 
   rename(dist_age=age)

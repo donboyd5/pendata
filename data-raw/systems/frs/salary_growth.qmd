@@ -2,6 +2,25 @@
 
 Note: Extending salary growth table requires access to frs_constants.
 
+
+## Overview
+
+
+### Details of the Reason approach
+
+- Reads salary growth rates as a wide file, with a column for each class
+  (`Florida FRS model input.R` line 180)
+
+- Extends salary growth to the maximum yos by carrying the last yos
+  growth rate (yos=30) forward to all subsequent yos (up to 70), and
+  also calculates cumulative growth from yos=0 to yos=70
+  (`Florida FRS benefit model.R` lines 6-9)
+
+- Note: Later, when calculating entry salary in the salary_headcount
+  table, Reason creates a temporary version of the salary growth table
+  with data for the class being worked on, but does not change the data.
+
+
 ## Setup
 
 ```{r}

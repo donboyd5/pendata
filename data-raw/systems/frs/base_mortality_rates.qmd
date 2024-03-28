@@ -1,6 +1,48 @@
 # Base mortality rates
 
-Rates in the base year, before mortality improvement.
+Mortality rates in the base year, before mortality improvement.
+
+## Overview
+
+FRS, and the Reason FRS model, use the Society of Actuaries’ Pub-2010
+headcount-weighted base mortality rates with SOA Projection Scale MP- 2018. (See, for
+example, the 2022 FRS actuarial valuation Appendix A.)
+
+Reason reads SOA mortality tables in `Florida FRS model input.R` and cleans and consolidates them in `Florida FRS benefit model.R`. 
+
+pendata gets, cleans, and saves the SOA tables in a separate standard program so that they are available to other systems. pendata makes the FRS-specific versions of the SOA tables in this program. pendata intends to produce the same results as the Reason model.
+
+### Details of the Reason approach
+
+Reason:
+
+- reads SOA general, safety, and teacher tables from SOA Excel file
+  (`Florida FRS model input.R`, lines 173-175)
+- cleans these tables (`Florida FRS benefit model.R`, lines 144-169)
+  - replace missing mortality rates (`Florida FRS benefit model.R`,
+    lines 159-163)
+    - for beneficiary type employee with healthy retiree rates (this
+      seems unnecessary)
+    - for beneficiary type healthy retiree with rates for employees (as
+      updated)
+    - as far as I can tell this addresses the fact that in the SOA data,
+      for beneficiary_type healthy_retiree, teachers do not have
+      retirement rates in the ages 50:54 although general employees do.
+      Because Reason averages general and teacher mortality tables for
+      regular class employees, apparently they feel this is better than
+      using the employee rate when a retiree rate is not available. See
+      [Github issue \#3](https://github.com/donboyd5/pendata/issues/3)
+      for details.
+
+![](images/clipboard-1831592207.png)
+
+- define base mortality tables (before improvement):
+  - regular: average of SOA general and teacher mortality tables –
+    base_regular_mort_table (`Florida FRS benefit model.R`, line 172)
+  - special, admin – use SOA safety (`Florida FRS benefit model.R`,
+    lines 258-264)
+  - eco, eso, judges, senior_management - use SOA general
+    (`Florida FRS benefit model.R`, lines 258-264)
 
 
 ## TODO
@@ -34,8 +76,7 @@ frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
 ```{r}
 #| label: soa-data
 
-# load(here::here("data", "pub2010hc_mortality_rates.rda"))
-devtools::load_all()
+devtools::load_all() # gives us access to pub2010hc_mortality_rates.rda
 
 mort1 <- pub2010hc_mortality_rates |>
   mutate(system="frs") |>

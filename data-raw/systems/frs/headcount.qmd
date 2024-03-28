@@ -1,5 +1,10 @@
 # Headcount tables
 
+## Overview
+
+### Details of Reason approach
+
+Reason reads raw salary-headcount data in `Florida FRS model input.R` lines 182-208. These counts do not include DC plan headcount. Reason adjusts headcount data upward to be consistent with plan totals,
 
 ## TODO
 

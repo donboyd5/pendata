@@ -2,6 +2,40 @@
 
 Note: 
 
+## Overview
+
+FRS and the Reason FRS model begin with the SOA mortality improvement
+table MP-2018 (`mortality-improvement-scale-mp-2018-rates.xlsx`), which
+has separate male and female mortality improvement rates for single
+years of age from 20 (labeled as \<= 20) to 120, crossed by single years
+from 1951 through 2034 (labeled as 2034+). Extend it by (1) adding ages
+18 and 19 with the same rates as age 20, and (2) adding years 2035-2154
+with the same rates as 2034.
+
+Reason reads SOA mortality improvement tables in `Florida FRS model input.R` and cleans and extends them in `Florida FRS benefit model.R`. 
+
+pendata gets, cleans, and saves the SOA tables in a separate standard program so that they are available to other systems. pendata makes the FRS-specific versions of the SOA tables in this program. pendata intends to produce the same results as the Reason model.
+
+### Details of the Reason approach
+
+- Read male and female mortality improvement tables
+  (`Florida FRS model input.R`, lines 177-178)
+
+- Clean and extend mortality improvement tables
+  (`Florida FRS benefit model.R`, lines 174-228):
+
+  - Clean the raw mortality improvement tables data
+
+  - Add ages 18 and 19 with the same mortality improvement rates as age
+    20
+
+  - Add years 2035 through 2154 with the same mortality improvement
+    rates as 2034
+
+  - Calculate cumulative improvement rates, based to 2010, the year of
+    the mortality tables
+
+
 ## TODO
 
 
@@ -40,8 +74,7 @@ Get SOA MP-2018 mortality improvement table and, using `pendata::extend_mp`:
 #| label: get-extend-mp
 
 # get SOA MP-2018 mortality improvement table
-# load(fs::path(ddata, "mp2018.rda"))
-devtools::load_all()
+devtools::load_all() # gives us access to mp2018.rda
 # skim(mp2018) # 1951-2034, ages 20-120
 
 # for FRS, extend years to 2154, age down to 18, and index to baseyear 2010 ---

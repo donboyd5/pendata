@@ -116,7 +116,7 @@ saveRDS(trates, path(drds, "termination_rates.rds"))
 
 
 ```{r}
-#| label: show-final-mortality-rates
+#| label: show-final-termination-rates
 
 trates <- readRDS(fs::path(drds, "termination_rates.rds"))
 
