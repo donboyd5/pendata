@@ -18,6 +18,49 @@ Remaining "Florida FRS benefit model.R" steps:
 -   Separation tables lines 522-590
 -   get_benefit_data lines 612-915
 
+
 Steps in "Florida FRS workforce model.R":
 
-- get_wf_data lines 17-250
+-   get_wf_data lines 17-250
+
+
+Steps in "Florida FRS liability model.R"
+
+-   get_liability_data lines 21-303
+
+
+Steps in "Florida FRS funding model.R"
+
+-   get_funding_table lines 8-17
+-   get_funding_data lines 62-711
+    -   get_current_hire_amo_period_table lines 146-173
+    -   get_future_hire_amo_period_table lines 181-210
+    -   get_current_hire_debt_layer_table lines 214-225
+    -   get_current_hire_amo_payment_table lines 232-248
+    -   get_future_hire_debt_layer_table lines 255-258
+    -   get_future_hire_amo_payment_table lines 264-267
+    
+    -   Main for loop (through years) lines 288-705
+        -   Inner for (class in class_names_no_drop_frs) lines 290-354
+        
+        -   Process DROP lines 356-388
+        -   Update FRS's numbers after DROP lines 390-416
+        
+        -   for (class in class_names_no_frs) lines 419-534
+        
+        -   AVA development lines 536-548
+        
+        -   for (class in class_names_no_frs) lines 551-565
+        
+        -   DROP asset reallocation lines 567-577
+        -   for (class in class_names_no_drop_frs) lines 579-595
+        
+        -   AVA, UAL, funded ratio projections, and all-in-cost
+            for (class in class_names_no_frs) lines 597-656
+        
+        -   Amortization calculations
+            for (class in class_names_no_frs) lines 658-698
+            
+        -   return output lines 707-709
+            
+
