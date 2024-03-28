@@ -13,27 +13,27 @@ book:
   date: today
   date-format: long
   chapters:
-    - index.qmd
-    - constants.qmd
+    - index.qmd # index.qmd must ge in the quarto project root folder
+    - qmd/constants.qmd
     - part: "Stand-alone items (only requiring access to frs_constants)"
       chapters:
-      - current_amort_layers.qmd
-      - init_funding_data.qmd
-      - headcount.qmd # get and gross-up the raw headcount data
-      - retiree_distribution.qmd
-      - retirement_rates.qmd
-      - salary.qmd
-      - salary_growth.qmd
+      - qmd/current_amort_layers.qmd
+      - qmd/init_funding_data.qmd
+      - qmd/headcount.qmd # get and gross-up the raw headcount data
+      - qmd/retiree_distribution.qmd
+      - qmd/retirement_rates.qmd
+      - qmd/salary.qmd
+      - qmd/salary_growth.qmd
     - part: "Data that depend on previously created data"
       chapters:
-      - base_mortality_rates.qmd
-      - mortality_improvement.qmd
-      - termination_rates.qmd
-      - salary_headcount_entrants.qmd # combine 2 previous files, add growth, extract entrants
-      - miscellaneous_info.qmd
+      - qmd/base_mortality_rates.qmd
+      - qmd/mortality_improvement.qmd
+      - qmd/termination_rates.qmd
+      - qmd/salary_headcount_entrants.qmd # combine 2 previous files, add growth, extract entrants
+      - qmd/miscellaneous_info.qmd
     - part: "Assemble list of data for package"
       chapters:
-      - assemble_list.qmd
+      - qmd/assemble_list.qmd
 
 # bibliography: references.bib
 
