@@ -101,7 +101,7 @@ class_mortality_xwalk <- tibble(class = frs_constants$classes) |>
 
 class_mortality_xwalk
 
-# saveRDS(class_mortality_xwalk, path(dfrs, "class_mortality_xwalk.rds")) # maybe we need this?
+saveRDS(class_mortality_xwalk, path(drds, "class_mortality_xwalk.rds")) # maybe we need this?
 
 ```
 

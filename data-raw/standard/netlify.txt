@@ -1,0 +1,12 @@
+netlify login
+Logging into your Netlify account...
+ »   FetchError: request to https://api.netlify.com/api/v1/oauth/tickets?client_id=d6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750 failed, reason: Hostname/IP does not match certificate's altnames: Host: api.netlify.com. is not in the cert's altnames: DNS:*.safezone.mcafee.com, DNS:safezone.mcafee.com
+
+
+here is my config.json file
+{
+	"telemetryDisabled": false,
+	"cliId": "543bb4e1-01a6-440e-a1d9-34e7b405db88"
+}
+
+

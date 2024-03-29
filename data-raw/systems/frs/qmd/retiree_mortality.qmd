@@ -1,0 +1,153 @@
+# Current retiree mortality
+
+## Overview
+
+-   See "Florida FRS benefit model.R" lines 267-291
+
+### Details of Reason approach
+
+
+
+## TODO
+
+
+
+## Setup
+
+```{r}
+#| label: setup
+#| output: false
+
+draw <- here::here("data-raw")
+dfrs <- fs::path(draw, "systems", "frs")
+drds <- fs::path(dfrs, "rds")
+dfreason <- fs::path(dfrs, "from_reason")
+
+source(fs::path(draw, "libraries.r"))
+source(fs::path(dfrs, "functions.r"))
+
+frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
+
+```
+
+
+## Construct table
+```{r}
+#| label: retiree-mort
+
+bmt <- readRDS(fs::path(drds, "base_mortality_rates.rds"))
+mp <- readRDS(fs::path(drds, "mortality_improvement.rds"))
+xwalk <- readRDS(path(drds, "class_mortality_xwalk.rds")) 
+
+count(bmt, employee_type)
+
+# adjust bmt to select appropriate records and map employee_type to class
+bmt2 <- bmt |> 
+  filter(beneficiary_type == "healthy_retiree") |> 
+  select(age, employee_type, gender, rate) |> 
+  full_join(xwalk, 
+            by = join_by(employee_type), 
+            relationship = "many-to-many") |> 
+  relocate(class, employee_type)
+
+count(bmt2, class, employee_type)
+
+agerange <- 40:120
+yrange <- 2022:2154
+
+bmt3 <- mp |> 
+  mutate(base_age = age - (year - frs_constants$start_year)) |> 
+  filter(base_age >= 40,
+         age %in% agerange, year %in% yrange) |> 
+  left_join(bmt2 |> 
+              select(-employee_type), 
+            by = join_by(age, gender),
+            relationship = "many-to-many") |> 
+  mutate(rate=rate * mpcadj) |> 
+  summarise(rate=mean(rate), .by=c(class, age, year))
+  
+count(bmt3, class)
+count(bmt3, class, age) |> ht()
+count(bmt3, class, year) |> ht()
+
+```
+
+
+## Save as rds
+```{r}
+#| label: save-rds
+
+saveRDS(bmt3, fs::path(drds, "retiree_mortality_rates.rds"))
+
+
+```
+
+
+
+## Compare to Reason
+```{r}
+#| label: comp-reason
+
+
+reas_brmt <- readRDS(fs::path(dfreason, "base_regular_mort_table.rds"))
+reas_rrmrt <- readRDS(fs::path(dfreason, "regular_mort_retire_table.rds"))
+
+# brmt has age and cols for emptype by gender
+# mort improvement (one mail, one female) has age by year (many) and mpc adjusted
+
+bmt3
+reas_rrmrt
+
+nrow(bmt3 |> filter(class=="regular"))
+nrow(reas_rrmrt)
+
+comp <- 
+  bind_rows(bmt3 |> 
+              filter(class=="regular") |> 
+              mutate(type="pendata") |> 
+              select(age, year, rate, type),
+            reas_rrmrt |> 
+              mutate(type="reason") |> 
+              select(age, year, rate=mort_final, type))
+
+comp |> 
+  pivot_wider(names_from = type,
+              values_from = rate) |> 
+  mutate(diff=pendata - reason) |> 
+  filter(diff != 0) # good all values are the same
+
+check <- comp |> 
+  pivot_wider(names_from = type,
+              values_from = rate) |> 
+  filter(is.na(reason))
+
+```
+
+
+```{r}
+#| label: truong-code
+#| eval: false
+
+#Create a second mortality table for current retirees
+get_mort_retire_table <- function(base_mort_table, male_mp_final_table, female_mp_final_table){
+  
+  mort_retire_table <- expand_grid(age = age_range_[age_range_ >= 40], year = year_range_[year_range_ >= start_year_]) %>% 
+    left_join(base_mort_table, by = "age") %>% 
+    left_join(male_mp_final_table, by = c("age", "year")) %>% 
+    left_join(female_mp_final_table, by = c("age", "year")) %>% 
+    mutate(base_age = age - (year - start_year_),
+           male_mort = healthy_retiree_male * male_mp_cumprod_adj,
+           female_mort = healthy_retiree_female * female_mp_cumprod_adj,
+           mort_final = (male_mort + female_mort)/2) %>% 
+    select(base_age, age, year, mort_final) %>% 
+    filter(base_age >= 40) %>%
+    arrange(base_age)
+  
+  return(mort_retire_table)
+}
+
+regular_mort_retire_table <- get_mort_retire_table(base_regular_mort_table, male_mp_final_table, female_mp_final_table)
+
+
+```
+
