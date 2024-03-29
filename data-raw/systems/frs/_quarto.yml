@@ -28,6 +28,7 @@ book:
       chapters:
       - qmd/base_mortality_rates.qmd
       - qmd/mortality_improvement.qmd
+      - qmd/retiree_mortality.qmd
       - qmd/termination_rates.qmd
       - qmd/salary_headcount_entrants.qmd # combine 2 previous files, add growth, extract entrants
       - qmd/miscellaneous_info.qmd

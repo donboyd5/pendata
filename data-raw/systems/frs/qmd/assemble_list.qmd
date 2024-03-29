@@ -34,6 +34,7 @@ files <- c(
   "mortality_final",
   "mortality_improvement",
   "retiree_distribution",
+  "retiree_mortality_rates",
   "retirement_rates",
   "salary_growth",
   "salary_headcount",
