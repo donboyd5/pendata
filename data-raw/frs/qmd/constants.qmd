@@ -10,10 +10,9 @@ Define constants that will be used throughout the FRS data construction process.
 #| output: false
 
 source(here::here("data-raw", "libraries.r"))
-draw <- here::here("data-raw")
 
-dfrs <- fs::path(draw, "systems", "frs")
-drds <- fs::path(dfrs, "rds")
+draw <- here::here("data-raw")
+drds <- fs::path(draw, "frs", "rds")
 
 frs_constants <- list()
 

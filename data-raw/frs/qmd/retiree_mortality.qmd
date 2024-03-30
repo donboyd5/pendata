@@ -10,7 +10,7 @@
 
 ## TODO
 
-
+Integrate with baseline mortality.
 
 ## Setup
 
@@ -18,15 +18,7 @@
 #| label: setup
 #| output: false
 
-draw <- here::here("data-raw")
-dfrs <- fs::path(draw, "systems", "frs")
-drds <- fs::path(dfrs, "rds")
-dfreason <- fs::path(dfrs, "from_reason")
-
-source(fs::path(draw, "libraries.r"))
-source(fs::path(dfrs, "functions.r"))
-
-frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
+source("../_common_frs.R")
 
 ```
 
@@ -37,7 +29,14 @@ frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
 
 bmt <- readRDS(fs::path(drds, "base_mortality_rates.rds"))
 mp <- readRDS(fs::path(drds, "mortality_improvement.rds"))
-xwalk <- readRDS(path(drds, "class_mortality_xwalk.rds")) 
+# xwalk <- readRDS(path(drds, "class_mortality_xwalk.rds")) 
+
+class_mortality_xwalk <- tibble(class = frs_constants$classes) |>
+  mutate(employee_type =
+           case_when(class == "regular" ~ "regular",
+                     class %in% c("special", "admin") ~ "safety",
+                     class %in% c("eco", "eso", "judges",
+                                  "senior_management") ~ "general"))
 
 count(bmt, employee_type)
 
@@ -45,7 +44,7 @@ count(bmt, employee_type)
 bmt2 <- bmt |> 
   filter(beneficiary_type == "healthy_retiree") |> 
   select(age, employee_type, gender, rate) |> 
-  full_join(xwalk, 
+  full_join(class_mortality_xwalk, 
             by = join_by(employee_type), 
             relationship = "many-to-many") |> 
   relocate(class, employee_type)

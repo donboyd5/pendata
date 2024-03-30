@@ -3,3 +3,5 @@
 
 # Except this file, if the line below is uncommented
 #  !.gitignore
+
+/.quarto/

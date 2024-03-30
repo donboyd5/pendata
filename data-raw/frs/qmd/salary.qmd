@@ -28,17 +28,7 @@ Consider:
 #| label: setup
 #| output: false
 
-source(here::here("data-raw", "libraries.r"))
-draw <- here::here("data-raw")
-dfrs <- fs::path(draw, "systems", "frs")
-drds <- fs::path(dfrs, "rds")
-
-source(fs::path(dfrs, "functions.R"))
-
-frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
-
-FileName <- "Florida FRS inputs.xlsx"
-fullpath <- fs::path(dfrs, FileName)
+source("../_common_frs.R")
 
 ```
 

@@ -17,17 +17,7 @@ Reason reads raw salary-headcount data in `Florida FRS model input.R` lines 182-
 #| label: setup
 #| output: false
 
-draw <- here::here("data-raw")
-dfrs <- fs::path(draw, "systems", "frs")
-drds <- fs::path(dfrs, "rds")
-
-source(fs::path(draw, "libraries.r"))
-source(fs::path(dfrs, "functions.r"))
-
-frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
-
-FileName <- "Florida FRS inputs.xlsx"
-fullpath <- fs::path(dfrs, FileName)
+source("../_common_frs.R")
 
 ```
 

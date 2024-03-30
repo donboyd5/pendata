@@ -1,0 +1,3 @@
+# --- Stand-alone files --- {.unnumbered}
+
+Files in this group only require access to frs_constants.
