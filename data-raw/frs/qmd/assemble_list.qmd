@@ -1,4 +1,4 @@
-# Assemble list of data
+# Assemble FRS package data
 
 
 ## TODO

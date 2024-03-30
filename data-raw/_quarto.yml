@@ -6,7 +6,7 @@ execute:
   eval: true
   echo: true
   output: true
-  freeze: false  # auto: during global project renders, re-render only when source changes
+  freeze: auto  # auto: during global project renders, re-render only when source changes
 
 book:
   title: "pendata"
@@ -31,8 +31,8 @@ book:
       - frs/qmd/init_funding_data.qmd
       - frs/qmd/retiree_distribution.qmd
       - frs/qmd/retirement_rates.qmd
-      - frs/qmd/salary_growth.qmd
       - frs/qmd/salary.qmd
+      - frs/qmd/salary_growth.qmd
 
       # Data that depend on previously created data
       - frs/qmd/divider_dependencies.qmd
