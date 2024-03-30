@@ -1,0 +1,4 @@
+- source: project
+  quarto-pub:
+    - id: 17584cf0-7443-4a38-b7d7-fdc9584b3f73
+      url: 'https://donboyd5.quarto.pub/pendata'

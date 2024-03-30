@@ -16,15 +16,16 @@
 rm(list = ls())
 
 draw <- here::here("data-raw")
-dstd <- fs::path(draw, "standard")
-dfrs <- fs::path(draw, "systems", "frs")
 
 source(fs::path(draw, "libraries.r"))
 
+# Render the entire project
 
-# get standard actuarial tables and data for individual systems ----
-quarto_render(dstd, execute_params=list(download="false")) # standard actuarial information
-quarto_render(dfrs) # Florida Retirement System
+a <- proc.time()
+quarto_render(draw, execute_params=list(download="true"), as_job = FALSE)
+b <- proc.time()
+
+b - a
 
 
 # Build and install the updated package ----

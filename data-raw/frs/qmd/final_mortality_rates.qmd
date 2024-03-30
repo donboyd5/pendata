@@ -50,18 +50,7 @@ I think
 #| label: setup
 #| output: false
 
-draw <- here::here("data-raw")
-dfrs <- fs::path(draw, "systems", "frs")
-drds <- fs::path(dfrs, "rds")
-
-source(fs::path(draw, "libraries.r"))
-source(fs::path(dfrs, "functions.r"))
-source(fs::path(dfrs, "functions_tier.r"))
-
-frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
-
-# FileName <- "Florida FRS inputs.xlsx"
-# fullpath <- fs::path(dfrs, FileName)
+source("../_common_frs.R")
 
 ```
 
@@ -101,7 +90,7 @@ class_mortality_xwalk <- tibble(class = frs_constants$classes) |>
 
 class_mortality_xwalk
 
-saveRDS(class_mortality_xwalk, path(drds, "class_mortality_xwalk.rds")) # maybe we need this?
+# saveRDS(class_mortality_xwalk, path(drds, "class_mortality_xwalk.rds")) # maybe we need this?
 
 ```
 
@@ -111,7 +100,6 @@ saveRDS(class_mortality_xwalk, path(drds, "class_mortality_xwalk.rds")) # maybe 
 #| label: get-mortality-improvement-rates
 
 mprates <- readRDS(fs::path(drds, "mortality_improvement.rds"))
-
 
 ```
 
@@ -178,7 +166,7 @@ mort_final <- basedf2 |>
 skim(mort_final) # 57,428 records, vs maybe 21m records (7 classes x 3m records) in Reason model
 
 
-saveRDS(mort_final, fs::path(drds, "mortality_final.rds"))
+saveRDS(mort_final, fs::path(drds, "final_mortality_rates.rds"))
 
 
 ```
@@ -192,7 +180,7 @@ Just the head because otherwise we show too much data
 ```{r}
 #| label: show-final-mortality-rates
 
-mf <- readRDS(fs::path(drds, "mortality_final.rds"))
+mf <- readRDS(fs::path(drds, "final_mortality_rates.rds"))
 
 mf |> 
   head() |> 

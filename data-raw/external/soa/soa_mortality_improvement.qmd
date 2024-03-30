@@ -17,17 +17,15 @@ params:
 
 ```{r}
 #| label: setup
+#| output: false
 
-source(here::here("data-raw", "libraries.r"))
-
-ddata <- here::here("data")
-draw <- here::here("data-raw")
-
-dsoa <- fs::path(draw, "standard", "soa")
+source("_common_soa.R")
 
 # url for mortality improvement rates
 
 urates <- "https://www.soa.org/493456/globalassets/assets/files/resources/experience-studies/2018/mortality-improvement-scale-mp-2018-rates.xlsx"
+
+udoc <- "https://www.soa.org/49964f/globalassets/assets/files/resources/experience-studies/2018/mortality-improvement-scale-mp-2018.pdf"
 
 ```
 
@@ -41,13 +39,13 @@ MP-2018 was released in 2018 -- see SOA documentation. SOA took data for calenda
 #| eval: !expr params$download
 
 # https://www.soa.org/49964f/globalassets/assets/files/resources/experience-studies/2018/mortality-improvement-scale-mp-2018.pdf
-udoc <- "https://www.soa.org/49964f/globalassets/assets/files/resources/experience-studies/2018/mortality-improvement-scale-mp-2018.pdf"
+
 download.file(udoc,
-              fs::path(draw, "documentation", fs::path_file(udoc)),
+              fs::path(dsoa, "documentation", fs::path_file(udoc)),
               mode = "wb")
 
 download.file(urates,
-              fs::path(draw, fs::path_file(urates)),
+              fs::path(dsoa, fs::path_file(urates)),
               mode = "wb")
 
 ```

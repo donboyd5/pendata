@@ -1,0 +1,97 @@
+project:
+  type: book
+  output-dir: _webpage
+
+execute:
+  eval: true
+  echo: true
+  output: true
+  freeze: false  # auto: during global project renders, re-render only when source changes
+
+book:
+  title: "pendata"
+  author: "Don Boyd"
+  date: today
+  date-format: long
+  sidebar:
+    collapse-level: 1
+  chapters:
+    - index.qmd # index.qmd must be in the quarto project root folder
+    - part: "Data from SOA and Other External Sources"
+      chapters:
+      - external/soa/soa_mortality_rates.qmd
+      - external/soa/soa_mortality_improvement.qmd
+    - part: frs/qmd/_frs.qmd
+      chapters:
+      # Stand-alone items (only requiring access to frs_constants)
+      - frs/qmd/divider_standalone.qmd
+      - frs/qmd/constants.qmd
+      - frs/qmd/current_amort_layers.qmd
+      - frs/qmd/headcount.qmd # get and gross-up the raw headcount data
+      - frs/qmd/init_funding_data.qmd
+      - frs/qmd/retiree_distribution.qmd
+      - frs/qmd/retirement_rates.qmd
+      - frs/qmd/salary_growth.qmd
+      - frs/qmd/salary.qmd
+
+      # Data that depend on previously created data
+      - frs/qmd/divider_dependencies.qmd
+      - frs/qmd/base_mortality_rates.qmd
+      - frs/qmd/mortality_improvement.qmd
+      - frs/qmd/final_mortality_rates.qmd # must come after mortality improvement
+      - frs/qmd/retiree_mortality.qmd
+      - frs/qmd/termination_rates.qmd
+      - frs/qmd/salary_headcount_entrants.qmd # combine 2 previous files, add growth, extract entrants
+      - frs/qmd/miscellaneous_info.qmd
+
+      # Assemble list of data for package
+      - frs/qmd/divider_assemble.qmd
+      - frs/qmd/assemble_list.qmd
+
+# bibliography: references.bib
+
+# devtools::load_all("./")
+
+# from pendata folder, in powershell, enter ./runall.bat
+
+format:
+  html:
+    theme: cosmo
+    code-fold: true
+  # pdf:
+  #   documentclass: scrreprt
+
+editor_options:
+  chunk_output_type: console
+
+
+# additional execution options
+  # error: false
+  # warning: false
+  # message: false  # not sure if allowed
+  # note: false  # not sure if allowed
+
+# renv-related commands
+# renv::snapshot()
+# renv::restore()
+# renv::update()
+# renv::status()
+# Sys.getenv("RENV_PATHS_CELLAR") # RENV_PATHS_SOURCE RENV_PATHS_RENV
+
+
+# useful reminders of quarto commands:
+# quarto publish netlify --no-render
+# quarto publish netlify --no-browser --no-prompt
+# quarto publish netlify --no-render --no-browser --no-prompt
+
+# boyd-mta202324.netlify.app
+
+
+# possibly use this at start of each doc??
+# ---
+# output: html_document
+# editor_options:
+#   chunk_output_type: console
+# ---
+
+

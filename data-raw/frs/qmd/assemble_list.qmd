@@ -1,4 +1,4 @@
-# Assembly list of data
+# Assemble list of data
 
 
 ## TODO
@@ -10,12 +10,7 @@
 #| label: setup
 #| output: false
 
-draw <- here::here("data-raw")
-dfrs <- fs::path(draw, "systems", "frs")
-drds <- fs::path(dfrs, "rds")
-
-source(fs::path(draw, "libraries.r"))
-source(fs::path(dfrs, "functions.r"))
+source("../_common_frs.R")
 
 ```
 
@@ -29,9 +24,9 @@ files <- c(
   "base_mortality_rates",
   "current_amort_layers",
   "entrant_profile",
+  "final_mortality_rates",
   "headcount",
   "init_funding_data",
-  "mortality_final",
   "mortality_improvement",
   "retiree_distribution",
   "retiree_mortality_rates",
@@ -69,7 +64,6 @@ usethis::use_data(frs, overwrite = TRUE)
 
 ```{r}
 #| label: explore-list
-
 
 
 for(f in names(frs)){

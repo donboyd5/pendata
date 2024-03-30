@@ -45,15 +45,7 @@ pendata gets, cleans, and saves the SOA tables in a separate standard program so
 #| label: setup
 #| output: false
 
-source(here::here("data-raw", "libraries.r"))
-
-ddata <- here::here("data")
-draw <- here::here("data-raw")
-dfrs <- fs::path(draw, "systems", "frs")
-drds <- fs::path(dfrs, "rds")
-
-frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
-
+source("../_common_frs.R")
 
 ```
 

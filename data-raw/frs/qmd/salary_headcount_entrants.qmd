@@ -30,16 +30,7 @@ Reason constructs the entrant profile in `Florida FRS benefit model.R` lines 55-
 #| label: setup
 #| output: false
 
-draw <- here::here("data-raw")
-dfrs <- fs::path(draw, "systems", "frs")
-drds <- fs::path(dfrs, "rds")
-
-source(fs::path(draw, "libraries.r"))
-source(fs::path(dfrs, "functions.r"))
-# source(fs::path(dfrs, "functions_tier.r"))
-
-frs_constants <- readRDS(fs::path(drds, "frs_constants.rds"))
-
+source("../_common_frs.R")
 
 ```
 

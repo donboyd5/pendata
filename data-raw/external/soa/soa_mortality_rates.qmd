@@ -17,13 +17,9 @@ params:
 
 ```{r}
 #| label: setup
+#| output: false
 
-source(here::here("data-raw", "libraries.r"))
-
-ddata <- here::here("data")
-draw <- here::here("data-raw")
-
-dsoa <- fs::path(draw, "standard", "soa")
+source("_common_soa.R")
 
 ```
 
@@ -129,6 +125,7 @@ get_mort <- function(sheet, fullpath){
 
 fname <- "pub-2010-headcount-mort-rates.xlsx"
 fullpath <- fs::path(dsoa, fname)
+
 sheets <- c("PubT.H-2010", "PubS.H-2010", "PubG.H-2010") # teacher, safety general
 
 mort <- sheets |>
