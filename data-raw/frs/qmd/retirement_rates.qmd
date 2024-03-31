@@ -196,7 +196,7 @@ rr3 |>
 
 ```
 
-## Replace special risk DROP entry records with combine leo and non-leo values entry
+## Replace special risk DROP entry records with combines leo and non-leo values
 
 See "Florida FRS benefit model.R" lines 358-372.
 
@@ -222,7 +222,43 @@ rr4 <- rr3 |>
 ```
 
 
-## Replace special risk DROP entry records with combine leo and non-leo values entry
+## TODO: Tranlslate get_normal_retire_rate_table()
+
+See "Florida FRS benefit model.R" lines 374-453.
+
+### ret rate
+
+Reason gets a single retirement rate by age, for each class-tier group.
+
+For each group and age,
+First, for each employee_type Reason adds retirement + drop-entry rates.
+The single rate is then the mean of these sums.
+
+
+```{r}
+
+glimpse(rr4)
+
+tmp <- rr4 |> 
+  filter(str_detect(name, "regular"),
+         retirement_type %in% c("normal retirement", "drop entry")) |> 
+  mutate(class="regular") |> 
+  summarise(rate=sum(rate), .by=c(class, tier, vname, gender, age)) |> 
+  summarise(rate=mean(rate), .by=c(class, tier, age))
+
+count(tmp, name)
+count(tmp, retirement_type)
+
+tmp |> 
+  filter(tier=="tier1")
+
+
+```
+
+
+## Save final retirement rates file
+
+
 ```{r}
 #| label: save-retirement-rates
 
@@ -235,7 +271,7 @@ saveRDS(rr4, path(drds, "retirement_rates.rds"))
 ## Reason code
 
 ```{r}
-#| label: truong
+#| label: truong-special-risk-DROP
 #| eval: false
 
 special_risk_drop_entry_tier_1_table <- drop_entry_tier_1_table %>% 
@@ -253,6 +289,45 @@ special_risk_drop_entry_tier_2_table <- drop_entry_tier_2_table %>%
     special_risk_male = (special_risk_non_leo_male + special_risk_leo_male)/2,
     .keep = "unused"
   )
+
+```
+
+
+
+```{r}
+#| label: truong-get_normal_retire_rate_table
+#| eval: false
+
+  
+get_normal_retire_rate_table <- function(class_name, drop_entry_table, normal_retire_rate_table){
+  
+  if (class_name %in% c("eco", "eso", "judge")) {
+    search_text_in_drop_entry_table = "other"
+    search_text_in_normal_retire_table = "eco_eso_jud"
+  } else if (class_name == "senior management") {
+    search_text_in_drop_entry_table = "other"
+    search_text_in_normal_retire_table = "senior_management"
+  } else if (class_name == "admin"){
+    search_text_in_drop_entry_table = search_text_in_normal_retire_table = "special"
+  } else {
+    search_text_in_drop_entry_table = search_text_in_normal_retire_table = class_name
+  }
+  
+  normal_retire_rate_table <- (drop_entry_table %>% select(contains(search_text_in_drop_entry_table)) + 
+                                 normal_retire_rate_table %>% select(contains(search_text_in_normal_retire_table))) %>% 
+    add_column(age = drop_entry_table$age, .before = 1) %>% 
+    rowwise() %>% 
+    mutate(normal_retire_rate = mean(c_across(-age)), .keep = "unused") %>% 
+    ungroup()
+  
+  return(normal_retire_rate_table)
+}
+
+regular_normal_retire_rate_tier_1_table <- get_normal_retire_rate_table(class_name = "regular",
+                                                                        drop_entry_table = drop_entry_tier_1_table,
+                                                                        normal_retire_rate_table = normal_retire_rate_tier_1_table)
+
+...
 
 ```
 
