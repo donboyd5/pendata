@@ -7,10 +7,11 @@ This part of the pendata project gets data for the Florida Retirement System. It
 
 Remaining "Florida FRS benefit model.R" steps:
 
--   Create a second mortality table for current retirees lines 267-291
+-   DONE Create a second mortality table for current retirees lines 267-291
 -   Drop and retire tables "Florida FRS benefit model.R" lines 325-519
 -   Separation tables lines 522-590
 -   get_benefit_data lines 612-915
+-   consolidate mortality tables
 
 
 Steps in "Florida FRS workforce model.R":

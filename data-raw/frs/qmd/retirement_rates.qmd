@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Retirement rates
 
 
@@ -53,7 +58,7 @@ normal_pre <- c("regular_k12_instructional", "regular_nonk12_instructional",
 early_pre <- normal_pre[-1]
 
 drop_pre <- c("regular_k12_instructional", "regular_nonk12_instructional",
-              "special_risk_xleo", "special_risk_leo", "other")
+              "special_risk_nonleo", "special_risk_leo", "other")
 
 gender <- c("female", "male")
 
@@ -63,12 +68,12 @@ drop <- list(fnbase="drop entry", cols=combine(drop_pre, gender))
 
 # inspect the list
 rrlist <- list(normal, early, drop)
-rrlist[[1]]
+rrlist[[3]]
 
 
 ```
 
-## Function to get tier1 and tier2 retirement rate tables
+## Function to get tier1 and tier2 retirement rate tables from Excel
 
 tier 1 and tier 2 are in separate sheets. The function reads both sheets and stacks the results
 
@@ -124,46 +129,143 @@ get_retrates <- function(info, rrpath){
 rrates_raw <- rrlist |>
   purrr::map(\(x) get_retrates(x, dxi)) |>
   list_rbind() |>
-  separate(name, into = c("vname", "gender"), sep = "_(?=[^_]+$)", remove = TRUE)
+  separate(name, into = c("vname", "gender"), sep = "_(?=[^_]+$)", remove = FALSE)
 
-# count(rrates_raw, agec)
 # glimpse(rrates_raw)
+# count(rrates_raw, agec)
+count(rrates_raw, retirement_type)
 
 saveRDS(rrates_raw, path(drds, "rrates_raw.rds"))
 ```
 
+
+## Replace summary age 70-79 records with individual ages 70-79
+
+-   All retirement types and tiers: Create a new row for each individual age 70-79 that has the retirement rate for the 70-79 age group, in place of the grouped row (Reason "Florida FRS benefit model.R" lines 300-323, clean_retire_rate_table())
+
+
 ```{r}
-#| label: clean-save
+#| label: add-records-7079
 
-# clean and save retirement rates
-# see  Florida FRS benefit model.R clean_retire_rate_table
-rrraw <- readRDS(path(drds, "rrates_raw.rds"))
-ht(rrraw)
+rr1 <- readRDS(path(drds, "rrates_raw.rds"))
+ht(rr1)
+rr1$agec |> unique() |> sort()
 
-rrraw$agec |> unique() |> sort()
-
-# we need to fill in the 70-79 age group by repeating 70 - interpolation probably better
-
-# function to replace 70-79 with 10 rows like 70
-
-rr2 <- rrraw |>
+# fill in the 70-79 age group by repeating 70 - interpolation probably better
+rr2 <- rr1 |>
   mutate(reps=ifelse(agec=="70-79", 10, 1)) |>
   uncount(reps) |> # 10 copies of each 70-79 record
   mutate(age=as.numeric(agec),
          rate=as.numeric(rate)) |>
-  mutate(age=ifelse(agec=="70-79", 70:79, age), .by=c(system, retirement_type, tier, vname, gender))
-count(rr2, agec, age)
-
-ht(rr2)
-
-rr3 <- rr2 |>
-  select(system, retirement_type, tier, vname, gender, age, rate)
-
-ht(rr3)
-skim(rr3)
-saveRDS(rr3, path(drds, "retirement_rates.rds"))
+  mutate(age=ifelse(agec=="70-79", 70:79, age), .by=c(system, retirement_type, tier, vname, gender)) |>
+  select(-agec) |> 
+  arrange(system, retirement_type, tier, name, age)
 
 ```
+
+
+## Add zero records for ages 45-49 for normal retirement tier 2
+
+-   Normal retirement tier 2: Create new rows for individual ages 45-49 with zero retirement rate (this matches the min retirement age in the data for normal tier 1) (Reason "Florida FRS benefit model.R" lines 353-355) **What's the general rule here?**
+
+
+```{r}
+#| label: add-records-normal-4549
+
+rr2 |>
+  summarise(minage=min(age), maxage=max(age), .by=c(retirement_type, tier))
+
+new_rows <- rr2 |> 
+  filter(retirement_type=="normal retirement", tier=="tier2") |> 
+  select(-c(age, rate)) |> 
+  distinct() |> # we don't want all ages
+  mutate(reps=5) |> 
+  uncount(reps) |>
+  mutate(age=45:49,
+         rate=0, .by=c(system, retirement_type, tier, name))
+count(new_rows, age)
+count(new_rows, system, retirement_type, tier, name)
+glimpse(new_rows)
+
+rr3 <- bind_rows(rr2, new_rows) |> 
+  arrange(system, retirement_type, tier, name)
+skim(rr3)
+
+rr3 |>
+  summarise(minage=min(age), maxage=max(age), .by=c(retirement_type, tier))
+
+```
+
+## Replace special risk DROP entry records with combine leo and non-leo values entry
+
+See "Florida FRS benefit model.R" lines 358-372.
+
+```{r}
+#| label: special-risk-DROP-combine
+
+replacement_recs <- rr3 |> 
+  filter(retirement_type=="drop entry", str_detect(name, "special")) |> 
+  summarise(rate=mean(rate), .by=c(system, retirement_type, tier, gender, age)) |> 
+  mutate(vname="special_risk") |> 
+  unite(name, vname, gender, remove = FALSE)
+glimpse(replacement_recs)
+count(replacement_recs, gender)
+count(replacement_recs, age)
+skim(replacement_recs)
+
+rr4 <- rr3 |> 
+  filter(!(retirement_type=="drop entry" & str_detect(name, "special"))) |> 
+  bind_rows(replacement_recs) |> 
+  arrange(system, retirement_type, tier, name, vname, gender, age) |> 
+  relocate(rate, .after = age)
+
+```
+
+
+## Replace special risk DROP entry records with combine leo and non-leo values entry
+```{r}
+#| label: save-retirement-rates
+
+saveRDS(rr4, path(drds, "retirement_rates.rds"))
+
+```
+
+
+
+## Reason code
+
+```{r}
+#| label: truong
+#| eval: false
+
+special_risk_drop_entry_tier_1_table <- drop_entry_tier_1_table %>% 
+  select(age, contains("special_risk")) %>% 
+  mutate(
+    special_risk_female = (special_risk_non_leo_female + special_risk_leo_female)/2,
+    special_risk_male = (special_risk_non_leo_male + special_risk_leo_male)/2,
+    .keep = "unused"
+    )
+
+special_risk_drop_entry_tier_2_table <- drop_entry_tier_2_table %>% 
+  select(age, contains("special_risk")) %>% 
+  mutate(
+    special_risk_female = (special_risk_non_leo_female + special_risk_leo_female)/2,
+    special_risk_male = (special_risk_non_leo_male + special_risk_leo_male)/2,
+    .keep = "unused"
+  )
+
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 
