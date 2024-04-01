@@ -5,10 +5,17 @@ This part of the pendata project gets data for the Florida Retirement System. It
 
 ## Next steps
 
-Remaining "Florida FRS benefit model.R" steps:
+"Florida FRS model input.R" steps:
 
+-   DONE except for:
+    -   calibration constants, which won't make sense until all initial data are developed
+    -   return scenarios, which belong in the model (penmod) rather than pendata
+
+"Florida FRS benefit model.R" steps:
+
+-   All prior steps done
 -   DONE Create a second mortality table for current retirees lines 267-291
--   Drop and retire tables "Florida FRS benefit model.R" lines 325-519
+-   TENTATIVELY DONE Drop and retire tables "Florida FRS benefit model.R" lines 325-519
 -   Separation tables lines 522-590
 -   get_benefit_data lines 612-915
 -   consolidate mortality tables

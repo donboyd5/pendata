@@ -17,7 +17,7 @@ Reason reads raw salary-headcount data in `Florida FRS model input.R` lines 182-
 #| label: setup
 #| output: false
 
-source("../_common_frs.R")
+source(here::here("data-raw", "frs", "_common_frs.R"))
 
 ```
 

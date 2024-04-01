@@ -1,6 +1,6 @@
 
 
-source(fs::path(here::here("data-raw", "frs"), "_common_frs.R"))
+source(here::here("data-raw", "frs", "_common_frs.R"))
 
 tmp <- pendata::frs$retirement_rates
 
