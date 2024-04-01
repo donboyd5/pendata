@@ -45,7 +45,7 @@ pendata gets, cleans, and saves the SOA tables in a separate standard program so
 #| label: setup
 #| output: false
 
-source("../_common_frs.R")
+source(here::here("data-raw", "frs", "_common_frs.R"))
 
 ```
 

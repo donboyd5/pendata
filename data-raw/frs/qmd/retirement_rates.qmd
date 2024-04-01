@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Retirement rates
 
 
@@ -10,28 +15,29 @@
 #| label: setup
 #| output: false
 
-source("../_common_frs.R")
+# source("/data-raw/frs/_common_frs.R")
+source(here::here("data-raw", "frs", "_common_frs.R"))
 
 ```
 
 ## Function to combine prefix and suffix vectors in order
 
-Combine paste twos string vectors as follows:
+Function `combine` combines two string vectors as follows:
 
 -   if prefixes = c("a", "b", "c") and suffixes = c("1", "2")
 
 -   if we call combine(prefixes, suffixes)
 
--   the result would be c("a_1", "a_2", "b_1", "b_2", "c_1", "c_2") in that order
+-   the result is c("a_1", "a_2", "b_1", "b_2", "c_1", "c_2") in that order
 
 ```{r}
 #| label: functions
 
-combine <- function(prefixes, suffixes){
+combine <- function(prefixes, suffixes, sep="_"){
   # paste two string vectors as follows:
   # for example if prefixes = c("a", "b", "c") and suffixes = c("1", "2")
   # the result would be c("a_1", "a_2", "b_1", "b_2", "c_1", "c_2") in that order
-  outer(prefixes, suffixes, FUN = paste, sep = "_") |>
+  outer(prefixes, suffixes, FUN = paste, sep = sep) |>
     t() |>
     c()
 }
@@ -48,12 +54,12 @@ Combine column-name prefixes with suffixes (gender) to have column names we will
 
 # create lists of column name prefixes (gender will be suffix)
 normal_pre <- c("regular_k12_instructional", "regular_nonk12_instructional",
-  "special_risk_all", "elected_officers", "senior_management")
+  "special_risk_all", "elected_officers", "seniormanagement") # note senior.management is 1 word
 
 early_pre <- normal_pre[-1]
 
 drop_pre <- c("regular_k12_instructional", "regular_nonk12_instructional",
-              "special_risk_xleo", "special_risk_leo", "other")
+              "special_risk_nonleo", "special_risk_leo", "other")
 
 gender <- c("female", "male")
 
@@ -64,51 +70,73 @@ drop <- list(fnbase="drop entry", cols=combine(drop_pre, gender))
 # inspect the list
 rrlist <- list(normal, early, drop)
 rrlist[[1]]
-
+# rrlist[[3]]
 
 ```
 
-## Function to get tier1 and tier2 retirement rate tables
+## Function to get tier1 and tier2 retirement rate tables from Excel
 
 tier 1 and tier 2 are in separate sheets. The function reads both sheets and stacks the results
 
 ```{r}
-#| label: function-tiers-1and2
+#| label: functions-tiers
 
-get_retrates <- function(info, rrpath){
-  fnames <- paste0(info$fnbase, c(" tier 1", " tier 2"), ".xlsx")
+get_tier <- function(fpath, colnames){
+  # get a single tier from an excel sheet and clean it up
+  print(fpath)
+  
+  # base file name without extension
+  fnbase <- fpath |> 
+    fs::path_file() |> 
+    fs::path_ext_remove()
+
+  # get everything before "tier"
+  retirement_type <- str_extract(fnbase, ".*(?=tier)") |> 
+    str_trim() |> 
+    str_replace(" ", "_")
+  
+  # get everything from "tier" to the end
+  tier <- str_extract(fnbase, "tier.*") |> 
+    str_remove(" ")
+
+  tier_df <- read_excel(fpath,
+                    sheet = 1,
+                    range = cellranger::cell_cols(1:length(colnames)),
+                    col_names = colnames,
+                    col_types = "text")
+
+  # we only want rows for which age is good
+  first_data_row <- which(tier_df$agec=="Age")[1] + 1
+
+  # last data row is last not-na row after first data row
+  na_indices <- which(is.na(tier_df$agec))
+  last_data_row <- na_indices[na_indices > first_data_row][1] - 1
+
+  tier_df <- tier_df |>
+    slice(first_data_row:last_data_row) |>
+    mutate(retirement_type=retirement_type, tier=tier) |>
+    pivot_longer(cols=-c(retirement_type, tier, agec),
+                 values_to = "rate") |>
+    filter(!is.na(rate)) |>
+    select(retirement_type, tier, name, agec, rate)
+
+  tier_df
+}
+
+get_retrates <- function(rrpath, fnbase, cols){
+  
+  # given a base file name and set of columns that are common to two tiers,
+  # e.g., "normal retirement"
+  # call get_tier for each tier and combine the resulting data frames
+  
+  fnames <- paste0(fnbase, c(" tier 1", " tier 2"), ".xlsx")
   fpaths <- fs::path(rrpath, fnames)
-  colnames <- c("agec", info$cols) # agec means age as character
+  tier1_path <- fpaths[1]
+  tier2_path <- fpaths[2]
+  colnames <- c("agec", cols) # agec is age as character
 
-  get_df <- function(fpath){
-    print(fpath)
-    tier <- str_sub(fpath, -11, -6) |>
-      str_remove(" ")
-
-    df1 <- read_excel(fpath,
-                      sheet = 1,
-                      range = cellranger::cell_cols(1:length(colnames)),
-                      col_names = colnames,
-                      col_types = "text")
-
-    # we only want rows for which age is good
-    first_data_row <- which(df1$agec=="Age")[1] + 1
-
-    # last data row is last not-na row after first data row
-    na_indices <- which(is.na(df1$agec))
-    last_data_row <- na_indices[na_indices > first_data_row][1] - 1
-
-    df2 <- df1 |>
-      slice(first_data_row:last_data_row) |>
-      mutate(system="frs", retirement_type=info$fnbase, tier=tier) |>
-      pivot_longer(cols=-c(system, retirement_type, tier, agec),
-                   values_to = "rate") |>
-      filter(!is.na(rate)) |>
-      select(system, retirement_type, tier, name, agec, rate)
-
-    df2
-  }
-  bind_rows(get_df(fpaths[1]), get_df(fpaths[2]))
+  bind_rows(get_tier(tier1_path, colnames), 
+            get_tier(tier2_path, colnames))
 }
 
 ```
@@ -122,48 +150,255 @@ get_retrates <- function(info, rrpath){
 # count(tmp, agec)
 
 rrates_raw <- rrlist |>
-  purrr::map(\(x) get_retrates(x, dxi)) |>
+  purrr::map(\(x) get_retrates(rrpath=dxi, fnbase=x$fnbase, cols=x$cols)) |>
   list_rbind() |>
-  separate(name, into = c("vname", "gender"), sep = "_(?=[^_]+$)", remove = TRUE)
+  separate(name, into = c("vname", "gender"), sep = "_(?=[^_]+$)", remove = FALSE)
 
-# count(rrates_raw, agec)
 # glimpse(rrates_raw)
+# count(rrates_raw, agec)
+count(rrates_raw, retirement_type)
 
 saveRDS(rrates_raw, path(drds, "rrates_raw.rds"))
 ```
 
+
+## Replace each summary age 70-79 record with one record for individual age
+
+-   All retirement types and tiers: Create a new row for each individual age from 70-79 that has the retirement rate for the 70-79 age group, in place of the grouped row (Reason "Florida FRS benefit model.R" lines 300-323, clean_retire_rate_table())
+
+
 ```{r}
-#| label: clean-save
+#| label: add-records-7079
 
-# clean and save retirement rates
-# see  Florida FRS benefit model.R clean_retire_rate_table
-rrraw <- readRDS(path(drds, "rrates_raw.rds"))
-ht(rrraw)
+rr1 <- readRDS(path(drds, "rrates_raw.rds"))
+ht(rr1)
+rr1$agec |> unique() |> sort()
 
-rrraw$agec |> unique() |> sort()
-
-# we need to fill in the 70-79 age group by repeating 70 - interpolation probably better
-
-# function to replace 70-79 with 10 rows like 70
-
-rr2 <- rrraw |>
+# fill in the 70-79 age group by repeating 70 - interpolation probably better
+rr2 <- rr1 |>
   mutate(reps=ifelse(agec=="70-79", 10, 1)) |>
   uncount(reps) |> # 10 copies of each 70-79 record
   mutate(age=as.numeric(agec),
          rate=as.numeric(rate)) |>
-  mutate(age=ifelse(agec=="70-79", 70:79, age), .by=c(system, retirement_type, tier, vname, gender))
-count(rr2, agec, age)
-
-ht(rr2)
-
-rr3 <- rr2 |>
-  select(system, retirement_type, tier, vname, gender, age, rate)
-
-ht(rr3)
-skim(rr3)
-saveRDS(rr3, path(drds, "retirement_rates.rds"))
+  mutate(age=ifelse(agec=="70-79", 70:79, age), .by=c(retirement_type, tier, vname, gender)) |>
+  select(-agec) |> 
+  arrange(retirement_type, tier, name, age)
 
 ```
+
+
+## Add zero-records for ages 45-49 for normal retirement tier 2
+
+-   Normal retirement tier 2: Create new rows for individual ages 45-49 with zero retirement rate (this matches the min retirement age in the data for normal tier 1) (Reason "Florida FRS benefit model.R" lines 353-355) **What's the general rule here? Do we want retirement rates starting at age 45 for all retirement types and tiers?**
+
+
+```{r}
+#| label: add-records-normal-4549
+
+rr2 |>
+  summarise(minage=min(age), maxage=max(age), .by=c(retirement_type, tier))
+
+new_rows <- rr2 |> 
+  filter(retirement_type=="normal_retirement", tier=="tier2") |> 
+  select(-c(age, rate)) |> 
+  distinct() |> # we don't want all ages
+  mutate(reps=5) |> 
+  uncount(reps) |>
+  mutate(age=45:49,
+         rate=0, .by=c(retirement_type, tier, name))
+
+# count(new_rows, age)
+# count(new_rows, retirement_type, tier, name)
+# glimpse(new_rows)
+
+rr3 <- bind_rows(rr2, new_rows) |> 
+  arrange(retirement_type, tier, name)
+
+# skim(rr3)
+
+# the result
+rr3 |>
+  summarise(minage=min(age), maxage=max(age), .by=c(retirement_type, tier))
+
+```
+
+## Replace special risk DROP entry records with average of LEO and non-LEO values
+
+See "Florida FRS benefit model.R" lines 358-372.
+
+```{r}
+#| label: special-risk-DROP-combine
+
+to_replace <- expression(retirement_type=="drop_entry" & str_detect(name, "special")) # boolean
+
+replacement_recs <- rr3 |> 
+  filter(eval(to_replace)) |> 
+  summarise(rate=mean(rate), .by=c(retirement_type, tier, gender, age)) |> 
+  mutate(vname="special_risk") |> 
+  unite(name, vname, gender, remove = FALSE)
+
+# glimpse(replacement_recs)
+# count(replacement_recs, gender)
+# count(replacement_recs, age)
+# skim(replacement_recs)
+
+rr4 <- rr3 |> 
+  filter(!eval(to_replace)) |> 
+  bind_rows(replacement_recs) |> 
+  arrange(retirement_type, tier, name, vname, gender, age) |> 
+  relocate(rate, .after = age)
+
+```
+
+
+## Compute summary retirement rates for each group and tier
+
+This translates get_normal_retire_rate_table()
+
+See "Florida FRS benefit model.R" lines 374-453.
+
+Reason gets a single retirement rate by age, for each class-tier group.
+
+For group and age:
+
+-   First, for each employee_type Reason adds retirement + drop-entry rates.
+-   The single rate is then the mean of these sums.
+
+
+```{r}
+#| label: compute-summary-retirement-rates
+
+rr5 <- rr4 |> 
+  mutate(group=str_split(string = name, pattern = "_", n = 2, simplify = TRUE)[, 1]) |> 
+  summarise(rate=sum(rate), .by=c(group, tier, vname, gender, age)) |> 
+  summarise(rate=mean(rate), .by=c(group, tier, age))
+
+count(rr5, group, tier)
+# rr5 is the base we use to create full retirement rate tables for all classes
+
+```
+
+## Final file
+
+Match retirement rates with classes, retirement_types, and tiers to create a file that has a single retirement rate for each class, retirement_type, tier, and age combination.
+
+```{r}
+#| label: final-file
+
+# frs_constants$classes
+
+class_group_xwalk <- tribble(
+  ~class, ~normal_retirement, ~drop_entry,
+  "regular", "regular", "regular",
+  "special", "special", "special",
+  "admin", "special", "special",
+  "eco", "elected", "other",
+  "eso", "elected", "other",
+  "judges", "elected", "other",
+  "seniormanagement", "seniormanagement", "other"
+  ) |> 
+  pivot_longer(cols = -class, 
+               names_to = "retirement_type",
+               values_to = "group")
+
+rr6 <- class_group_xwalk |> 
+  right_join(rr5,
+             by = join_by(group),
+             relationship = "many-to-many")
+
+# count(rr6, class)
+# count(rr6, retirement_type)
+# count(rr6, tier)
+# count(rr6, class, retirement_type, tier)
+
+```
+
+
+## Save final retirement rates file
+
+
+```{r}
+#| label: save-retirement-rates
+
+saveRDS(rr6, path(drds, "retirement_rates.rds"))
+
+```
+
+
+
+## Reason code
+
+```{r}
+#| label: truong-special-risk-DROP
+#| eval: false
+
+special_risk_drop_entry_tier_1_table <- drop_entry_tier_1_table %>% 
+  select(age, contains("special_risk")) %>% 
+  mutate(
+    special_risk_female = (special_risk_non_leo_female + special_risk_leo_female)/2,
+    special_risk_male = (special_risk_non_leo_male + special_risk_leo_male)/2,
+    .keep = "unused"
+    )
+
+special_risk_drop_entry_tier_2_table <- drop_entry_tier_2_table %>% 
+  select(age, contains("special_risk")) %>% 
+  mutate(
+    special_risk_female = (special_risk_non_leo_female + special_risk_leo_female)/2,
+    special_risk_male = (special_risk_non_leo_male + special_risk_leo_male)/2,
+    .keep = "unused"
+  )
+
+```
+
+
+
+```{r}
+#| label: truong-get_normal_retire_rate_table
+#| eval: false
+
+  
+get_normal_retire_rate_table <- function(class_name, drop_entry_table, normal_retire_rate_table){
+  
+  if (class_name %in% c("eco", "eso", "judge")) {
+    search_text_in_drop_entry_table = "other"
+    search_text_in_normal_retire_table = "eco_eso_jud"
+  } else if (class_name == "senior management") {
+    search_text_in_drop_entry_table = "other"
+    search_text_in_normal_retire_table = "senior_management"
+  } else if (class_name == "admin"){
+    search_text_in_drop_entry_table = search_text_in_normal_retire_table = "special"
+  } else {
+    search_text_in_drop_entry_table = search_text_in_normal_retire_table = class_name
+  }
+  
+  normal_retire_rate_table <- (drop_entry_table %>% select(contains(search_text_in_drop_entry_table)) + 
+                                 normal_retire_rate_table %>% select(contains(search_text_in_normal_retire_table))) %>% 
+    add_column(age = drop_entry_table$age, .before = 1) %>% 
+    rowwise() %>% 
+    mutate(normal_retire_rate = mean(c_across(-age)), .keep = "unused") %>% 
+    ungroup()
+  
+  return(normal_retire_rate_table)
+}
+
+regular_normal_retire_rate_tier_1_table <- get_normal_retire_rate_table(class_name = "regular",
+                                                                        drop_entry_table = drop_entry_tier_1_table,
+                                                                        normal_retire_rate_table = normal_retire_rate_tier_1_table)
+
+...
+
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 

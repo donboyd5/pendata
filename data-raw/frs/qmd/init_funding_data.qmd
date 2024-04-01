@@ -9,7 +9,7 @@ Get initial funding data from `Florida FRS inputs.xlsx`, sheet = "Funding Input"
 #| label: setup
 #| output: false
 
-source("../_common_frs.R")
+source(here::here("data-raw", "frs", "_common_frs.R"))
 
 ```
 

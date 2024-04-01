@@ -28,8 +28,7 @@ Consider:
 #| label: setup
 #| output: false
 
-source("../_common_frs.R")
-
+source(here::here("data-raw", "frs", "_common_frs.R"))
 ```
 
 ## Get vector of salary sheetnames
