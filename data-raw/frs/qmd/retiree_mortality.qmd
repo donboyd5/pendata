@@ -86,6 +86,7 @@ saveRDS(bmt3, fs::path(drds, "retiree_mortality_rates.rds"))
 ## Compare to Reason
 ```{r}
 #| label: comp-reason
+#| eval: false
 
 
 reas_brmt <- readRDS(fs::path(dfreason, "base_regular_mort_table.rds"))
