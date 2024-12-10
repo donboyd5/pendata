@@ -11,5 +11,10 @@ This package contains commonly used actuarial tables plus system-specific tables
 \author{
 \strong{Maintainer}: Don Boyd \email{donboyd5@gmail.com}
 
+Authors:
+\itemize{
+  \item Gang Chen \email{gchen3@albany.edu}
+}
+
 }
 \keyword{internal}

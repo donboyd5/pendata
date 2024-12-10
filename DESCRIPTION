@@ -1,8 +1,9 @@
 Package: pendata
 Title: Pension Data for the Reason-Rockefeller Pension Policy Analysis Tool
-Version: 0.0.0.9000
-Authors@R: 
-    person("Don", "Boyd", , "donboyd5@gmail.com", role = c("aut", "cre"))
+Version: 0.0.0.9100
+Authors@R: c(
+    person("Don", "Boyd", email = "donboyd5@gmail.com", role = c("aut", "cre")),
+    person("Gang", "Chen", email = "gchen3@albany.edu", role = "aut"))
 Description: This package contains commonly used actuarial tables plus system-specific tables.
 License: MIT + file LICENSE
 Encoding: UTF-8
