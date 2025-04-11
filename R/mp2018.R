@@ -1,0 +1,38 @@
+#' Mortality Improvement Scale MP-2018
+#'
+#' @description Contains mortality improvement rates from Scale MP-2018,
+#' published by the Society of Actuaries' Retirement Plans Experience Committee
+#' (RPEC). This scale represents annual rates of mortality improvement by age,
+#' gender, and calendar year.
+#'
+#' @details The data has been transformed from the original wide format to long
+#' format for easier analysis. Mortality improvement rates can be positive
+#' (indicating mortality improvement) or negative (indicating mortality
+#' deterioration).
+#'
+#' @format A tibble with 16,968 rows and 4 columns:
+#' \describe{
+#'   \item{gender}{Factor with levels 'male' and 'female' indicating biological sex}
+#'   \item{year}{Integer representing calendar year, ranging from 1951 to 2034}
+#'   \item{age}{Integer representing age in years, ranging from 20 to 120}
+#'   \item{mp}{Numeric mortality improvement rate as a decimal (e.g., 0.01 = 1% improvement)}
+#' }
+#'
+#' @note The scale includes both historical data (1951-2018) and projected
+#' improvements (2019-2034). Negative values in the 'mp' column indicate
+#' mortality deterioration for that specific age/gender/year combination.
+#'
+#' @source Society of Actuaries (2018). Mortality Improvement Scale MP-2018.
+#' \url{https://www.soa.org/resources/experience-studies/2018/mortality-improvement-scale-mp-2018/}
+#'
+#' @examples
+#' # Filter for females age 65 in 2020
+#' mp2018 |>
+#'   dplyr::filter(gender == "female", age == 65, year == 2020)
+#'
+#' # Calculate average improvement rate by gender for 2020
+#' mp2018  |>
+#'   dplyr::filter(year == 2020) |>
+#'   dplyr::group_by(gender) |>
+#'   dplyr::summarise(avg_improvement = mean(mp))
+"mp2018"
