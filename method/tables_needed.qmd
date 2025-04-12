@@ -1,0 +1,71 @@
+---
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+# Tables needed
+
+## Gang's tables
+
+1.  Salary and headcount
+    -   salary_headcount_table
+2.  Separation tables
+    -   term_rate_age
+    -   mort_table
+3.  Entrant Profile
+    -   entrant_profile_table
+4.  Mortality Tables (Retirees)
+    -   mort_retire_table
+5.  Normal Retirement Rate
+    -   normal_retire_rate_table
+6.  Early Retirement Rate
+    -   early_retire_rate_table
+7.  Separation Rate Tables
+    -   separation_rate_table
+8.  Salary growth rate table
+    -   salary_growth_table
+
+## Formats
+
+### salary_headcount_table
+
+![](images/clipboard-1969995984.png)
+
+### term_rate_age
+
+![](images/clipboard-3479558445.png){width="523"}
+
+### mort_table
+
+![](images/clipboard-61814095.png)
+
+### entrant_profile_table
+
+![](images/clipboard-3688103912.png)
+
+### mort_retire_table
+
+![](images/clipboard-85038419.png)
+
+### normal_retire_rate_table
+
+![](images/clipboard-2594117173.png)
+
+### early_retire_rate_table
+
+![](images/clipboard-2802893458.png)
+
+### separation_rate_table
+
+![](images/clipboard-3151827964.png)
+
+### salary_growth_table
+
+![](images/clipboard-2703049918.png)
+
+### 
+
+```{r stop_here, echo=FALSE}
+knitr::knit_exit()
+```
