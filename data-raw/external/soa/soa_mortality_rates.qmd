@@ -10,8 +10,9 @@ params:
 
 -   [Pub-2010 Public Retirement Plans Mortality Tables Report](https://www.soa.org/globalassets/assets/files/resources/research-report/2019/pub-2010-mort-report.pdf)
 
--   [Pub.H-2010 Headcount-Weighted Mortality Rates (pub-2010-headcount-mort-rates.xlsx)](https://www.soa.org/49347a/globalassets/assets/files/resources/research-report/2019/pub-2010-headcount-mort-rates.xlsx) spreadsheet used by Reason, which has mortality rates for general, safety, and teacher workers as of 2010.
+-   [Pub.H-2010 Headcount-Weighted Mortality Rates (pub-2010-headcount-mort-rates.xlsx)](https://www.soa.org/49347a/globalassets/assets/files/resources/research-report/2019/pub-2010-headcount-mort-rates.xlsx) spreadsheet with headcount-weighted mortality rates for general, safety, and teacher workers as of 2010. Used by Reason for FRS.
 
+-   [Pub.H-2010 Amount-Weighted Mortality Rates (pub-2010-amount-mort-rates.xlsx)](https://www.soa.org/49347a/globalassets/assets/files/resources/research-report/2019/pub-2010-amount-mort-rates.xlsx) spreadsheet with headcount-weighted mortality rates for general, safety, and teacher workers as of 2010. Used by Reason for FRS.
 
 ## Setup
 
@@ -19,7 +20,7 @@ params:
 #| label: setup
 #| output: false
 
-source("_common_soa.R")
+source(here::here("data-raw", "external", "soa", "_common_soa.R"))
 
 ```
 
@@ -36,10 +37,13 @@ source("_common_soa.R")
 #| eval: !expr params$download
 
 url <- "https://www.soa.org/49347a/globalassets/assets/files/resources/research-report/2019/pub-2010-headcount-mort-rates.xlsx"
-# path_file(url)
 
+# headcount-weighted rates
 download.file(url, fs::path(dsoa, path_file(url)), mode = "wb")
 
+# amount-weighted rates
+url <- "https://www.soa.org/49347a/globalassets/assets/files/resources/research-report/2019/pub-2010-amount-mort-rates.xlsx"
+download.file(url, fs::path(dsoa, path_file(url)), mode = "wb")
 
 ```
 
@@ -116,10 +120,42 @@ get_mort <- function(sheet, fullpath){
 
 ```
 
-## Read and stack the SOA mortality tables
+
+## Get, stack, and save Pub 2010 amount-weighted mortality tables
 
 ```{r}
-#| label: read-stack
+#| label: read-stack-amount
+
+
+fname <- "pub-2010-amount-mort-rates.xlsx"
+fullpath <- fs::path(dsoa, fname)
+
+sheets <- c("PubT-2010(B)")
+
+mort <- sheets |>
+  purrr::map(\(x) get_mort(x, fullpath)) |>
+  list_rbind() |>
+  filter(!is.na(rate))
+
+```
+
+Save the mortality rates in the package data folder as `pub2010amount_mortality_rates`, making them available to users of `pendata`.
+
+```{r}
+#| label: save-amount
+#| eval: true
+
+pub2010amount_mortality_rates <- mort
+
+usethis::use_data(pub2010amount_mortality_rates, overwrite = TRUE)
+
+```
+
+
+## Get, stack, and save Pub 2010 headcount-weighted mortality tables
+
+```{r}
+#| label: read-stack-headcount
 
 # general, teacher, and safety all involve the same cleaning
 
@@ -134,9 +170,6 @@ mort <- sheets |>
   filter(!is.na(rate))
 
 ```
-
-
-## Save the SOA mortality rates
 
 Save the mortality rates in the package data folder as `pub2010hc_mortality_rates`, making them available to users of `pendata`.
 
@@ -171,15 +204,29 @@ DT::datatable(pub2010hc_mortality_rates,
 # formatRound(columns = c("cumprod_increase"), digits=4)
 # formatCurrency(columns = c("ptarget"), currency="", digits=0)
 
+
+# avoid the need to install
+devtools::load_all()
+
+DT::datatable(pub2010amount_mortality_rates,
+          options = list(scrollX = TRUE, scrollY = TRUE, paging = TRUE, pageLength = 20),
+          filter="top") |>
+  formatPercentage(columns = c("rate"), digits=3) 
+
+
 ```
 
 
-## Inspect the mortality tables
+## Inspect the headcount-weighted mortality tables
 
 ```{r}
 #| label: explore
 
 # names(mort) |> kable(caption="Names")
+devtools::load_all()
+
+mort <- pub2010hc_mortality_rates
+mort <- pub2010amount_mortality_rates
 
 head(mort) |> 
   gt() |> 

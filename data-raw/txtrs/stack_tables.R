@@ -14,13 +14,8 @@
 
 source(here::here("data-raw", "libraries.r"))
 # search()
-# sessionInfo()
-# options(devtools.quartoskip = TRUE)  # Skip Quarto check
-# devtools::session_info()
 sessioninfo::session_info()
-# sessioninfo::session_info(
-#   include_base = TRUE  # Optional: show base R packages
-# )
+
 
 ddata <- here::here("data")
 draw <- here::here("data-raw")
@@ -29,13 +24,23 @@ dtxtrs <- fs::path(draw, "txtrs")
 fname <- "TxTRS_BM_Inputs.xlsx"
 fpath <- fs::path(dtxtrs, fname)
 
-# djb -  use the pub-2010 amount table from SOA!!! ----
-SurvivalRates_ <- read_excel("Inputs/pub-2010-amount-mort-rates.xlsx", sheet = "PubT-2010(B)")
+# base mortality table -  use the pub-2010 amount table from SOA ----
+
+base_mort_table <- pub2010amount_mortality_rates |>
+  select(age, beneficiary_type, gender, rate)
+glimpse(base_mort_table) # stacked version
+
+# age beneficiary_type gender rate
+
+# mortality improvement table ----
 male_mp_table_ <- read_excel('Inputs/mp-2021-rates.xlsx', sheet = "Male")
 female_mp_table_ <- read_excel('Inputs/mp-2021-rates.xlsx', sheet = "Female")
 
 
 # tx trs tables Reason used ----
+fname <- "TxTRS_BM_Inputs.xlsx"
+fpath <- fs::path(dtxtrs, fname)
+
 survival_rates <- read_excel(fpath, sheet = "Mortality Rates")
 
 MaleMP <- read_excel(fpath, sheet = "MP-2018_Male")
@@ -59,7 +64,7 @@ funding_data <- read_excel(fpath, sheet = "Funding Data")
 return_scenarios <- read_excel(fpath, sheet = "Return Scenarios")
 
 
-# Reason code from TxTRS_model_inputs.R ----
+# DON'T RUN -- Reason code from TxTRS_model_inputs.R ----
 #7. Import key data tables
 FileName <- 'TxTRS_BM_Inputs.xlsx'
 
