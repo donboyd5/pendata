@@ -108,9 +108,11 @@ clean_mp <- function(url){
 }
 
 mp2018 <- clean_mp(urates_2018)
+comment(mp2018) <- "Mortality Improvement Scale MP-2018"
 usethis::use_data(mp2018, overwrite = TRUE)
 
 mp2021 <- clean_mp(urates_2021)
+comment(mp2021) <- "Mortality Improvement Scale MP-2021"
 usethis::use_data(mp2021, overwrite = TRUE)
 
 
