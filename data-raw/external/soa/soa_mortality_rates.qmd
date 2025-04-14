@@ -146,6 +146,7 @@ Save the mortality rates in the package data folder as `pub2010amount_mortality_
 #| eval: true
 
 pub2010amount_mortality_rates <- mort
+comment(pub2010amount_mortality_rates) <- "Pub.H-2010 Amount-Weighted Mortality Rates"
 
 usethis::use_data(pub2010amount_mortality_rates, overwrite = TRUE)
 
