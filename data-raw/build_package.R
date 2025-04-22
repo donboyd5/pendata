@@ -22,7 +22,8 @@ source(fs::path(draw, "libraries.r"))
 # Render the entire project
 
 a <- proc.time()
-quarto_render(draw, execute_params=list(download="true"), as_job = FALSE)
+# quarto_render(draw, execute_params=list(download="true"), as_job = FALSE)
+quarto_render(draw, execute_params=list(download="false"), as_job = FALSE)
 b <- proc.time()
 
 b - a

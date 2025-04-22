@@ -176,7 +176,7 @@ Save the mortality rates in the package data folder as `pub2010hc_mortality_rate
 
 
 ```{r}
-#| label: save
+#| label: save-headcount
 #| eval: true
 
 pub2010hc_mortality_rates <- mort
@@ -185,6 +185,10 @@ usethis::use_data(pub2010hc_mortality_rates, overwrite = TRUE)
 
 ```
 
+
+```{r stop_here, echo=FALSE}
+knitr::knit_exit()
+```
 
 ## Show the SOA mortality rates
 

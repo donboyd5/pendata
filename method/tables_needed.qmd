@@ -6,65 +6,89 @@ editor_options:
 
 # Tables needed
 
-## Gang's tables
+## Format comparison
 
-1.  Salary and headcount
-    -   salary_headcount_table
-2.  Separation tables
-    -   term_rate_age
-    -   mort_table
-3.  Entrant Profile
-    -   entrant_profile_table
-4.  Mortality Tables (Retirees)
-    -   mort_retire_table
-5.  Normal Retirement Rate
-    -   normal_retire_rate_table
-6.  Early Retirement Rate
-    -   early_retire_rate_table
-7.  Separation Rate Tables
-    -   separation_rate_table
-8.  Salary growth rate table
-    -   salary_growth_table
+### Questions
 
-## Formats
+-   table names -- include "\_table"? (term_rate_age does not)
 
-### salary_headcount_table
+-   variable/column names'
 
-![](images/clipboard-1969995984.png)
+    -   class or employee_class? (salary_growth_table uses "class")
 
-### term_rate_age
+-   Why don't I have early retirement table?
 
-![](images/clipboard-3479558445.png){width="523"}
+### Amortization layers - Gang will need one
 
-### mort_table
+![](images/clipboard-642382071.png)
+
+### Entrant profiles - preliminarily looks good
+
+![](images/clipboard-1490095870.png)
+
+![](images/clipboard-1049312510.png)
+
+### Mortality tables -- base - Gang does not have
+
+![](images/clipboard-801529478.png)
+
+### Mortality tables -- retired- Gang does not have
+
+![](images/clipboard-3107022485.png)
+
+### Mortality improvement - Gang does not have
+
+No Gang counterpart yet
+
+![](images/clipboard-2256485498.png)
+
+### Mortality tables -- improved - why the differences?
+
+Shouldn't mortality rate depend on dist_age and dist_year and statuses?
 
 ![](images/clipboard-61814095.png)
 
-### entrant_profile_table
+![](images/clipboard-1638693088.png)
 
-![](images/clipboard-3688103912.png)
+![](images/clipboard-1948264183.png)
 
-### mort_retire_table
+### Retirement rates
 
-![](images/clipboard-85038419.png)
-
-### normal_retire_rate_table
+#### normal_retire_rate_table - preliminarily looks good
 
 ![](images/clipboard-2594117173.png)
 
-### early_retire_rate_table
+![](images/clipboard-2133166673.png)
+
+#### early_retire_rate_table - why don't I have an early table??
 
 ![](images/clipboard-2802893458.png)
 
-### separation_rate_table
+![](images/clipboard-1984737888.png)
 
-![](images/clipboard-3151827964.png)
+### Salary growth - preliminarily looks good
 
-### salary_growth_table
+salary_growth_table
 
 ![](images/clipboard-2703049918.png)
 
-### 
+![](images/clipboard-1902265527.png)
+
+### Salary headcount - preliminarily looks good
+
+![](images/clipboard-1153265994.png)
+
+![](images/clipboard-3116999622.png)
+
+### Separation rate table - No Boyd counterpart??
+
+![](images/clipboard-3151827964.png)
+
+### Termination rates – Gang has single year of age (why?) but otherwise looks same
+
+![](images/clipboard-3479558445.png){width="523"}
+
+![](images/clipboard-890201614.png)
 
 ```{r stop_here, echo=FALSE}
 knitr::knit_exit()

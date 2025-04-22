@@ -118,7 +118,9 @@ usethis::use_data(mp2021, overwrite = TRUE)
 
 ```
 
-
+```{r stop_here, echo=FALSE}
+knitr::knit_exit()
+```
 
 ## Show SOA mortality-improvement rates
 

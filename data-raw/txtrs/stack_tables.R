@@ -15,20 +15,29 @@
 source(here::here("data-raw", "libraries.r"))
 # search()
 sessioninfo::session_info()
+library(pendata)
 
 
 ddata <- here::here("data")
 draw <- here::here("data-raw")
 dtxtrs <- fs::path(draw, "txtrs")
+system_name <- "txtrs"
 
 fname <- "TxTRS_BM_Inputs.xlsx"
 fpath <- fs::path(dtxtrs, fname)
 
+txtrs <- list()
+
 # base mortality table -  use the pub-2010 amount table from SOA ----
 
-base_mort_table <- pub2010amount_mortality_rates |>
-  select(age, beneficiary_type, gender, rate)
-glimpse(base_mort_table) # stacked version
+base_mortality_rates <- pub2010amount_mortality_rates |>
+  mutate(system = system_name) |>
+  select(system, employee_type, beneficiary_type, gender, age, rate)
+glimpse(base_mortality_rates) # stacked version
+txtrs$base_mortality_rates <- base_mortality_rates
+
+usethis::use_data(txtrs, overwrite = TRUE)
+
 
 # age beneficiary_type gender rate
 
