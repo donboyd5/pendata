@@ -1,0 +1,7 @@
+# Ignore everything in this directory if the line below (*) is uncommented
+# *
+
+# Except this file, if the line below is uncommented
+#  !.gitignore
+
+/.quarto/
