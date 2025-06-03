@@ -8,6 +8,7 @@
 # folders for books and similar
 *_*/
 
+# file types
 *.png
 *.rds
 
