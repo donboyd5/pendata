@@ -8,12 +8,13 @@
 # folders for books and similar
 *_*/
 
+# file types
 *.png
 *.rds
 
 # temp files associated with an open Excel file:
 # (they may not have been cleaned up)
-~$.*
+~$*
 
 # files that I make notes in:
 *_djb*

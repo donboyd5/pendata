@@ -1,6 +1,6 @@
 Package: pendata
 Title: Pension Data for the Reason-Rockefeller Pension Policy Analysis Tool
-Version: 0.0.0.9100
+Version: 0.0.0.9200
 Authors@R: c(
     person("Don", "Boyd", email = "donboyd5@gmail.com", role = c("aut", "cre")),
     person("Gang", "Chen", email = "gchen3@albany.edu", role = "aut"))
@@ -14,5 +14,6 @@ Imports:
     rlang, 
     tidyselect
 Depends: 
-    R (>= 3.5)
+    R (>= 4.1.0)
 LazyData: true
+LazyDataCompression: xz

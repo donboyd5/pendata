@@ -1,0 +1,49 @@
+project:
+  type: book
+  output-dir: _web
+  
+execute:
+  eval: true
+  echo: false
+  output: false
+  freeze: auto  # auto, true, or false
+
+book:
+  title: "Data methods"
+  subtitle: ""
+  author: "Don Boyd and Gang Chen"
+  date: today
+  date-format: long
+  chapters:
+    - index.qmd
+    - tables_needed.qmd
+    # - part: "Get and save needed datasets"
+    #   chapters:        
+    #   - get_qcew_data.qmd
+
+format:
+  html:
+    theme: cosmo
+    code-fold: true
+    number-depth: 5
+    toc-depth: 5
+    toc-expand: false
+
+editor_options:
+  chunk_output_type: console
+  
+# ---
+# output: html_document
+# editor_options:
+#   chunk_output_type: console
+# ---
+# 
+# ```{r stop_here, echo=FALSE}
+# knitr::knit_exit()
+# ```
+
+# useful reminders of quarto commands:
+# quarto publish netlify --no-render
+# quarto publish netlify --no-browser --no-prompt
+# quarto publish netlify --no-render --no-browser --no-prompt 
+# 

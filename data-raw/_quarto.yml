@@ -8,6 +8,11 @@ execute:
   output: true
   freeze: false  # auto: during global project renders, re-render only when source changes
 
+# in terminal
+# cd data-raw
+# quarto render your-document.qmd -P download:true
+# quarto render -P download:false
+
 book:
   title: "pendata"
   author: "Don Boyd"
@@ -94,5 +99,9 @@ editor_options:
 # editor_options:
 #   chunk_output_type: console
 # ---
+
+# ```{r stop_here, echo=FALSE}
+# knitr::knit_exit()
+# ```
 
 

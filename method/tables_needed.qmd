@@ -1,0 +1,95 @@
+---
+output: html_document
+editor_options:
+  chunk_output_type: console
+---
+
+# Tables needed
+
+## Format comparison
+
+### Questions
+
+-   table names -- include "\_table"? (term_rate_age does not)
+
+-   variable/column names'
+
+    -   class or employee_class? (salary_growth_table uses "class")
+
+-   Why don't I have early retirement table?
+
+### Amortization layers - Gang will need one
+
+![](images/clipboard-642382071.png)
+
+### Entrant profiles - preliminarily looks good
+
+![](images/clipboard-1490095870.png)
+
+![](images/clipboard-1049312510.png)
+
+### Mortality tables -- base - Gang does not have
+
+![](images/clipboard-801529478.png)
+
+### Mortality tables -- retired- Gang does not have
+
+![](images/clipboard-3107022485.png)
+
+### Mortality improvement - Gang does not have
+
+No Gang counterpart yet
+
+![](images/clipboard-2256485498.png)
+
+### Mortality tables -- improved - why the differences?
+
+Shouldn't mortality rate depend on dist_age and dist_year and statuses?
+
+![](images/clipboard-61814095.png)
+
+![](images/clipboard-1638693088.png)
+
+![](images/clipboard-1948264183.png)
+
+### Retirement rates
+
+#### normal_retire_rate_table - preliminarily looks good
+
+![](images/clipboard-2594117173.png)
+
+![](images/clipboard-2133166673.png)
+
+#### early_retire_rate_table - why don't I have an early table??
+
+![](images/clipboard-2802893458.png)
+
+![](images/clipboard-1984737888.png)
+
+### Salary growth - preliminarily looks good
+
+salary_growth_table
+
+![](images/clipboard-2703049918.png)
+
+![](images/clipboard-1902265527.png)
+
+### Salary headcount - preliminarily looks good
+
+![](images/clipboard-1153265994.png)
+
+![](images/clipboard-3116999622.png)
+
+### Separation rate table - No Boyd counterpart??
+
+![](images/clipboard-3151827964.png)
+
+### Termination rates – Gang has single year of age (why?) but otherwise looks same
+
+![](images/clipboard-3479558445.png){width="523"}
+
+![](images/clipboard-890201614.png)
+
+```{r stop_here, echo=FALSE}
+knitr::knit_exit()
+```
