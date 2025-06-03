@@ -82,7 +82,7 @@ mort$ScaleMultiple <- 0.9
 
 ```
 
-# 2. Benefit assumptions
+## 2. Benefit assumptions
 
 ```{r}
 #| label: defined-benefit
@@ -156,7 +156,7 @@ dc <- within(dc, {
 
 ```
 
-# 3. Funding assumptions
+## 3. Funding assumptions
 
 ```{r}
 #| label: funding
@@ -179,7 +179,7 @@ funding <- within(funding, {
 
 
 
-# 4. Investment assumptions
+## 4. Investment assumptions
 
 ```{r}
 #| label: investment-assumptions
@@ -192,7 +192,7 @@ invest <- within(invest, {
 
 ```
 
-# 5. Plan design assumptions
+## 5. Plan design assumptions
 ```{r}
 #| label: plan-design
 
@@ -201,7 +201,7 @@ design$db_new_ratio_ <- 1 #% of new hires that will join the DB plan.
 
 ```
 
-# 6. Model assumptions
+## 6. Model assumptions
 
 ```{r}
 #| label: model-assumptions
@@ -239,7 +239,7 @@ model <- within(model, {
 ```
 
 
-# 7. Import key data tables
+## 7. Import key data tables
 
 ```{r}
 #| label: get-data
