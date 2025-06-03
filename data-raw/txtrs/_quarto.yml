@@ -1,6 +1,6 @@
 project:
   type: book
-  output-dir: _webpage
+  output-dir: _txtrs
 
 execute:
   eval: true
@@ -13,6 +13,14 @@ format:
     theme: cosmo
     code-fold: true
 
+editor:
+  console: true
+  markdown:
+    canonical: true
+
+editor_options:
+  chunk_output_type: console    
+
 book:
   title: "Texas TRS"
   author: "Don Boyd and Gang Chen"
@@ -22,31 +30,17 @@ book:
     collapse-level: 1
   chapters:
     - index.qmd # index.qmd must be in the quarto project root folder
-    - part: frs/qmd/_frs.qmd
-      chapters:
-      # Stand-alone items (only requiring access to frs_constants)
+    - create_stacked_txtrs_tables.qmd
+    # - part: frs/qmd/_frs.qmd
+    #   chapters:
+    #   # Stand-alone items (only requiring access to frs_constants)
 
-      # Data that depend on previously created data
-      - frs/qmd/divider_dependencies.qmd
-      - frs/qmd/base_mortality_rates.qmd
-      - frs/qmd/mortality_improvement.qmd
-      - frs/qmd/final_mortality_rates.qmd # must come after mortality improvement
-      - frs/qmd/retiree_mortality.qmd
-      - frs/qmd/termination_rates.qmd
-      - frs/qmd/salary_headcount_entrants.qmd # combine 2 previous files, add growth, extract entrants
-      - frs/qmd/miscellaneous_info.qmd
-
-      # Assemble list of data for package
-      - frs/qmd/divider_assemble.qmd
-      - frs/qmd/assemble_list.qmd
+    #   # Data that depend on previously created data
+    #   - frs/qmd/divider_dependencies.qmd
 
 # bibliography: references.bib
 # devtools::load_all("./")
 # from pendata folder, in powershell, enter ./runall.bat
-
-
-editor_options:
-  chunk_output_type: console
 
 # additional execution options
   # error: false
@@ -77,11 +71,12 @@ editor_options:
   # pdf:
   #   documentclass: scrreprt
 
-# possibly use this at start of each doc??
+# My preferred file top matter:
+
 # ---
-# output: html_document
-# editor_options:
-#   chunk_output_type: console
+# format: html
+# editor-options: 
+#   chunk-output-type: console
 # ---
 
 # ```{r stop_here, echo=FALSE}
