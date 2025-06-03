@@ -1,0 +1,408 @@
+---
+format: html
+editor-options: 
+  chunk-output-type: console
+---
+
+# Texas TRS
+
+## Tables needed
+
+-   salary_headcount_table
+-   term_rate_age
+-   mort_table
+-   entrant_profile_table
+-   mort_retire_table
+-   normal_retire_rate_table
+-   early_retire_rate_table
+-   separation_rate_table
+-   salary_growth_table
+
+## Setup
+
+```{r}
+#| label: libraries
+
+source(here::here("data-raw", "txtrs", "libraries.r"))
+# search() # list attached packages and R objects
+# sessioninfo::session_info()
+# library(pendata)
+
+```
+
+```{r}
+#| label: constants-and-folders
+
+system_name <- "txtrs"
+
+ddata <- here::here("data")
+draw <- here::here("data-raw")
+dtxtrs <- fs::path(draw, "txtrs")
+dinputs <- fs::path(dtxtrs, "Inputs")
+
+fname <- "TxTRS_BM_Inputs.xlsx"
+fpath <- fs::path(dtxtrs, fname)
+
+```
+
+## Overview
+
+Create a set of lists that will be elements in a master list called txtrs
+
+```{r}
+#| label: start-txtrs
+
+txtrs <- list()
+```
+
+
+## 1. Actuarial and economic assumptions
+
+```{r}
+#| label: actuarial
+
+rates <- list()
+rates <- within(rates, {
+  dr_current_ <- 0.07 # discount rate for current members
+  dr_new_ <- 0.07 # discount rate for new members
+  payroll_growth_ <- 0.029 # payroll growth assumption
+  pop_growth_ <- 0 # plan's active population growth assumption
+  inf_rate <- 0.023 # inflation rate assumption
+  workforce_scenario_ <- "baseline"
+})
+
+
+```
+
+```{r}
+#| label: mortality
+
+mort <- list()
+mort$ScaleMultiple <- 0.9
+
+```
+
+# 2. Benefit assumptions
+
+```{r}
+#| label: defined-benefit
+
+#.. Defined benefit assumptions: ----
+db <- list()
+db <- within(db, {
+  ReduceRetAge <- 55
+  EarlyRetYOS <- 30
+  NormalRetAgeI <- 65
+  NormalYOSI <- 5
+  NormalRetRule <- 80
+  NormalRetRuleAgeI <- 60
+  NormalRetRuleAgeII <- 62
+
+  FinAvgSalaryYears_current <- 5 #final average salary period
+  FinAvgSalaryYears_gft <- 3 #final average salary period for grandfathered members
+
+  Interest <- 0.02 #interest on DB employee balance
+  BenMult <- 0.023 #DB benefit multiplier
+})
+
+```
+
+```{r}
+#| label: cola
+
+#.. Cost of living adjustment (COLA) assumptions: ----
+cola <- list()
+cola <- within(cola, {
+  COLA_current_active <- 0 #COLA for current active members
+  COLA_new_active <- 0 #COLA for new active members (note that this applies to the cash balance plan too if new members go to the CB plan)
+  COLA_current_retire <- 0 #COLA for current retirees
+  COLA_current_retire_one <- 0 #One-time COLA for current retirees
+  one_time_cola_ <- F #One-time COLA or not? True means yes, False means no
+})
+
+```
+
+```{r}
+#| label: cash-balance
+
+#.. Cash balance benefit assumptions ----
+cashbal <- list()
+cashbal <- within(cashbal, {
+  CB_EE_paycredit <- 0.06 #Cash balance employee contribution rate
+  CB_ER_paycredit <- 0.09 #Cash balance employer pay credit
+  CB_vesting <- 5
+
+  icr_smooth_period_ <- 5 #Smoothing period for the interest crediting rate (ICR)
+  icr_floor_ <- 0.04 #Minimum ICR granted
+  icr_cap_ <- 0.07 #Maximum ICR granted
+  icr_upside_share_ <- 0.5 #Upside sharing ratio of the ICR
+  icr_return_vol_ <- 0.12 #Assumed annual volatility of the investment returns to be used for the ICR calculation
+
+  ACR <- 0.04 #Annuity Conversion Rate: interest rate to convert the cash balance into retirement annuity
+})
+
+```
+
+```{r}
+#| label: defined-contribution
+
+#.. DC benefit assumptions ----
+dc <- list()
+dc <- within(dc, {
+  dc_ee_cont_ <- 0.0825 - cashbal$CB_EE_paycredit #Defined contribution employee contribution rate
+  dc_arith_return_ <- 0.07 #Arithmetic return assumption for the DC plan
+  dc_return_sd_ <- 0.12 #Return volatility assumption for the DC plan
+})
+
+```
+
+# 3. Funding assumptions
+
+```{r}
+#| label: funding
+
+funding <- list()
+funding <- within(funding, {
+  DB_EE_cont <- 0.0825
+  extra_er_stat_cont_ <- 0 #Additional employer contribution rate for the statutory funding policy
+  public_edu_payroll_percent_ <- 0.588 #Percent of total payroll eligible for the Public Education Employer Contribution
+  funding_policy_ <- "statutory" #"ADC"
+
+  #.. Amortization policy ----
+  amo_pay_growth_ <- 0.029
+  amo_period_current_ <- 30
+  amo_period_new_ <- 30
+  amo_method_ <- "level %"
+})
+
+``` 
+
+
+
+# 4. Investment assumptions
+
+```{r}
+#| label: investment-assumptions
+
+invest <- list()
+invest <- within(invest, {
+  return_scen_ <- "assumption" #"recession", "recur_recession", "constant_6"
+  model_return_ <- 0.07
+})
+
+```
+
+# 5. Plan design assumptions
+```{r}
+#| label: plan-design
+
+design <- list()
+design$db_new_ratio_ <- 1 #% of new hires that will join the DB plan.
+
+```
+
+# 6. Model assumptions
+
+```{r}
+#| label: model-assumptions
+
+model <- list()
+model <- within(model, {
+  ModelPeriod <- 30 #Projection period (typically 30 years)
+  MinAge <- 20 #Age of the typical youngest member
+  MaxAge <- 120 #Max age from mortality assumptions
+  YearStart <- 2024 #Year of the latest val report
+  MinYear <- 1980 #No hard rule about this. Should get back to about 40 years from now.
+  MaxYear <- YearStart + ModelPeriod + MaxAge - MinAge
+
+  EntryYear <- MinYear:(YearStart + ModelPeriod)
+  Years <- MinYear:MaxYear
+  Age <- MinAge:MaxAge
+  YOS <- 0:70
+  RetirementAge <- Age
+
+  retiree_pop_current <- 508701
+  ben_payment_current <- 15258219146
+  retire_refund_ratio_ <- 0.3
+
+  cal_factor_ <- 12.1 / 12.189475 #This is to adjust the DB benefits to result in a PVFB that matches (or mostly matches) the plan's number. Update this when a new valuation report is released.
+  nc_cal_ <- 12.1 / 12.1117 #This is to further calibrate the normal cost in the funding model. Update this when a new valuation report is released.
+  ben_cal_ <- 1 # 1.06               #This is to calibrate the benefit payments and the PV of future benefits for current retirees. Update this when a new valuation report is released.
+
+  # $10,237,518,335 is the PVFB for current term vested members
+  # $6,471,070,551  is the remaining gap between the val's AAL and the model's AAL.
+  # Update this when a new valuation report is released.
+  PVFB_term_current <- 273095060051 - 262639131631 #Val's AAL - model's AAL
+  amo_period_term <- 50
+})
+
+```
+
+
+# 7. Import key data tables
+
+```{r}
+#| label: get-data
+
+FileName <- 'TxTRS_BM_Inputs.xlsx'
+FileName <- fs::path(dtxtrs, FileName)
+
+#.. survival and mortality rates ----
+SurvivalRates <- read_excel(FileName, sheet = 'Mortality Rates')
+
+MaleMP <- read_excel(FileName, sheet = 'MP-2018_Male')
+FemaleMP <- read_excel(FileName, sheet = 'MP-2018_Female')
+
+#.. soa survival rates ....
+SurvivalRates_ <- read_excel(
+  fs::path(dtxtrs, "Inputs/pub-2010-amount-mort-rates.xlsx"),
+  sheet = "PubT-2010(B)"
+)
+
+male_mp_table_ <- read_excel(
+  fs::path(dtxtrs, 'Inputs/mp-2021-rates.xlsx'),
+  sheet = "Male"
+)
+
+female_mp_table_ <- read_excel(
+  fs::path(dtxtrs, 'Inputs/mp-2021-rates.xlsx'),
+  sheet = "Female"
+)
+
+SalaryGrowthYOS <- read_excel(FileName, sheet = "Salary Growth YOS")
+SalaryMatrix <- read_excel(FileName, sheet = "Salary Matrix")
+HeadCountMatrix <- read_excel(FileName, sheet = "Head Count Matrix")
+SalaryEntry <- read_excel(FileName, sheet = "Entrant Profile")
+
+TerminationRateAfter10 <- read_excel(
+  FileName,
+  sheet = 'Termination Rates after 10'
+)
+
+TerminationRateBefore10 <- read_excel(
+  FileName,
+  sheet = 'Termination Rates before 10'
+)
+
+RetirementRates <- read_excel(FileName, sheet = 'Retirement Rates')
+
+ReducedGFT <- read_excel(FileName, sheet = "Reduced GFT")
+ReducedOthers <- read_excel(FileName, sheet = "Reduced Others")
+
+RetireeDistribution <- read_excel(FileName, sheet = "Retiree Distribution")
+
+funding_data <- read_excel(FileName, sheet = "Funding Data")
+return_scenarios <- read_excel(FileName, sheet = "Return Scenarios")
+
+```
+
+
+## Save the txtrs list
+
+```{r}
+#| label: save-txtrs
+
+# usethis::use_data(txtrs, overwrite = TRUE)
+
+```
+
+```{r}
+#| label: stop-here
+knitr::knit_exit()
+
+```
+
+
+## base mortality table -  use the pub-2010 amount table from SOA ----
+
+```{r}
+#| label: base-mortality
+#| eval: false
+
+load(here::here("data", "pub2010amount_mortality_rates.rda"))
+
+base_mortality_rates <- pub2010amount_mortality_rates |>
+  mutate(system = system_name) |>
+  select(system, employee_type, beneficiary_type, gender, age, rate)
+glimpse(base_mortality_rates) # stacked version
+txtrs$base_mortality_rates <- base_mortality_rates
+
+```
+
+
+## mortality improvement table
+
+```{r}
+#| label: mortality-improvement
+
+# these appear to be soi mp tables?
+fpath <- fs::path(dinputs, "mp-2021-rates.xlsx")
+male_mp_table_ <- read_excel(fpath, sheet = "Male")
+female_mp_table_ <- read_excel(fpath, sheet = "Female")
+
+```
+
+
+
+# age beneficiary_type gender rate
+
+# mortality improvement table ----
+male_mp_table_ <- read_excel('Inputs/mp-2021-rates.xlsx', sheet = "Male")
+female_mp_table_ <- read_excel('Inputs/mp-2021-rates.xlsx', sheet = "Female")
+
+
+# tx trs tables Reason used ----
+fname <- "TxTRS_BM_Inputs.xlsx"
+fpath <- fs::path(dtxtrs, fname)
+
+survival_rates <- read_excel(fpath, sheet = "Mortality Rates")
+
+MaleMP <- read_excel(fpath, sheet = "MP-2018_Male")
+FemaleMP <- read_excel(fpath, sheet = "MP-2018_Female")
+
+SalaryGrowthYOS <- read_excel(fpath, sheet = "Salary Growth YOS")
+SalaryMatrix <- read_excel(fpath, sheet = "Salary Matrix")
+HeadCountMatrix <- read_excel(fpath, sheet = "Head Count Matrix")
+SalaryEntry <- read_excel(fpath, sheet = "Entrant Profile")
+
+TerminationRateAfter10 <- read_excel(fpath, sheet = 'Termination Rates after 10')
+TerminationRateBefore10 <- read_excel(fpath, sheet = 'Termination Rates before 10')
+RetirementRates <- read_excel(fpath, sheet = 'Retirement Rates')
+
+ReducedGFT <- read_excel(fpath, sheet = "Reduced GFT")
+ReducedOthers <- read_excel(fpath, sheet = "Reduced Others")
+
+RetireeDistribution <- read_excel(fpath, sheet = "Retiree Distribution")
+
+funding_data <- read_excel(fpath, sheet = "Funding Data")
+return_scenarios <- read_excel(fpath, sheet = "Return Scenarios")
+
+
+# DON'T RUN -- Reason code from TxTRS_model_inputs.R ----
+#7. Import key data tables
+FileName <- 'TxTRS_BM_Inputs.xlsx'
+
+SurvivalRates <- read_excel(FileName, sheet = 'Mortality Rates')
+MaleMP <- read_excel(FileName, sheet = 'MP-2018_Male')
+FemaleMP <- read_excel(FileName, sheet = 'MP-2018_Female')
+
+SurvivalRates_ <- read_excel("Inputs/pub-2010-amount-mort-rates.xlsx", sheet = "PubT-2010(B)")
+male_mp_table_ <- read_excel('Inputs/mp-2021-rates.xlsx', sheet = "Male")
+female_mp_table_ <- read_excel('Inputs/mp-2021-rates.xlsx', sheet = "Female")
+
+SalaryGrowthYOS <- read_excel(FileName, sheet = "Salary Growth YOS")
+SalaryMatrix <- read_excel(FileName, sheet = "Salary Matrix")
+HeadCountMatrix <- read_excel(FileName, sheet = "Head Count Matrix")
+SalaryEntry <- read_excel(FileName, sheet = "Entrant Profile")
+
+TerminationRateAfter10 <- read_excel(FileName, sheet = 'Termination Rates after 10')
+TerminationRateBefore10 <- read_excel(FileName, sheet = 'Termination Rates before 10')
+RetirementRates <- read_excel(FileName, sheet = 'Retirement Rates')
+
+ReducedGFT <- read_excel(FileName, sheet = "Reduced GFT")
+ReducedOthers <- read_excel(FileName, sheet = "Reduced Others")
+
+RetireeDistribution <- read_excel(FileName, sheet = "Retiree Distribution")
+
+funding_data <- read_excel(FileName, sheet = "Funding Data")
+return_scenarios <- read_excel(FileName, sheet = "Return Scenarios")
