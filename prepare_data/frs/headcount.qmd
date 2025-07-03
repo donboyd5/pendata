@@ -1,0 +1,76 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---    
+
+# Headcount
+
+```{r}
+#| label: setup
+
+source(here::here("R", "folders.R"))
+source(here::here("R", "libraries.R"))
+
+# get raw extracted data as a list
+plan <- "frs"
+plandir <- fs::path(DPLANS, plan)
+xddir <- fs::path(plandir, "extracted_data")
+
+rawdata <- readRDS(fs::path(xddir, "frs_inputs_raw.rds"))
+
+```
+
+```{r}
+
+# define headcount sheets
+(hcnames <- str_subset(names(rawdata), "headcount"))
+
+```
+
+Get the headcount data
+define rows and columns
+pivot
+
+```{r}
+
+hcnum <- 1
+info <- rawdata[[hcnames[hcnum]]]$info
+data <- rawdata[[hcnames[hcnum]]]$data
+
+agelb <- c(0, seq(20, 65, 5), 0)
+ageub <- c(20, seq(24, 64, 5), 110, 110)
+agelabels <- data |> pull(1)
+cbind(agelabels, agelb, ageub)
+
+yoslabels <- names(data)[-1]
+yoslb <- c(0, seq(5, 50, 5), 0)
+yosub <- c(seq(4, 49, 5), 70, 70)
+cbind(yoslabels, yoslb, yosub)
+yostbl <- tibble(yoslabel = yoslabels, yoslb, yosub)
+
+hclong <- data |>
+  rename(agelabel = 1) |>
+  mutate(agelb = agelb, ageub = ageub) |>
+  pivot_longer(
+    cols = -c(agelabel, agelb, ageub),
+    names_to = "yoslabel",
+    values_to = "headcount"
+  ) |>
+  left_join(yostbl, by = join_by(yoslabel)) |>
+  select(agelb, ageub, agelabel, yoslb, yosub, yoslabel, headcount) |>
+  arrange(agelb, ageub, yoslb, yosub) |>
+  mutate(headcount = replace_na(as.numeric(headcount), 0))
+
+hclong |>
+  mutate(agetype = ifelse(agelabel == "Total Count", "total", "detail")) |>
+  summarise(headcount = sum(headcount), .by = agetype)
+
+hclong |>
+  mutate(yostype = ifelse(yoslabel == "All Years", "total", "detail")) |>
+  summarise(headcount = sum(headcount), .by = yostype)
+
+```
