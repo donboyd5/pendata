@@ -30,4 +30,4 @@ book:
     - index.qmd # index.qmd must be in the quarto project root folder
     - save_worksheet_data.qmd
     - run_tests.qmd
-    # - show_worksheets.qmd
+    - show_worksheets.qmd

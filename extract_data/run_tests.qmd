@@ -7,6 +7,8 @@ format:
     css: wider.css
 ---    
 
+# Tests
+
 
 ```{r}
 #| label: setup
@@ -21,8 +23,6 @@ source(fs::path(DXDATA, "functions_data.R"))
 ```
 
 
-
-
 ```{r}
 #| eval: false
 
@@ -31,7 +31,6 @@ input_data_list <- readRDS(fs::path(xddir, fname))
 
 ```
 
-# Tests
 
 ## Test whether necessary sheets are included
 

@@ -1,0 +1,12 @@
+/* wider.css */
+main.content {
+  max-width: 2000px !important;
+}
+
+div.quarto-layout-panel {
+  max-width: 2000px !important;
+}
+
+.quarto-figure {
+  max-width: 100% !important;
+}
