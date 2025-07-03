@@ -1,0 +1,22 @@
+---
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+
+This quarto project examines an Excel data workbook for a pension plan. It:
+
+-   Gets all of the data sheets and their metadata, puts them into a list, and saves them as an .rds file
+-   Checks to see whether the data has the minimum number and kind of sheets required
+-   Runs selected tests on the data to see whether it meets requirements
+-   For each sheet, shows its metadata and data
+
+<!-- The goal is to find problems as early as possible in the process. -->
+
+## Setting up the Excel workbook
+
+-   Remove any information below the last data row (e.g., footnotes) so that the data area is defined by the start_col, end_col, start_row, and all non-empty cells below the start row
+
+
+
