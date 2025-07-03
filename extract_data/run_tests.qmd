@@ -1,0 +1,74 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---    
+
+
+```{r}
+#| label: setup
+
+source(here::here("R", "folders.R"))
+source(here::here("R", "libraries.R"))
+
+# plan-specific setup
+source(fs::path(DXDATA, "plan_name.R"))
+source(fs::path(DXDATA, "functions_data.R"))
+
+```
+
+
+
+
+```{r}
+#| eval: false
+
+fname <- paste0(plan, "_inputs_raw.rds")
+input_data_list <- readRDS(fs::path(xddir, fname))
+
+```
+
+# Tests
+
+## Test whether necessary sheets are included
+
+```{r}
+#| label: sheets-tests
+
+test_results <- testthat::test_file(
+  fs::path(DXDATA, "tests/testthat/test_sheets.R"),
+  reporter = testthat::TapReporter$new()
+)
+
+```
+
+## Test benefit-multiplier rules and function
+
+```{r}
+#| label: benefit-multiplier-tests
+#| echo: true
+
+test_results <- testthat::test_file(
+  # "tests/testthat/test-benefit-multiplier.R",
+  fs::path(DXDATA, "tests/testthat/test_benefit_multiplier.R"),
+  reporter = TapReporter$new()
+)
+
+# test_results |>
+#   as_tibble() |>
+#   filter(failed > 0)
+
+# Extract all test expectations
+# all_expectations <- unlist(lapply(test_results$results, function(x) x))
+
+# # Find failed expectations
+# failures <- Filter(function(x) inherits(x, "expectation_failure"), all_expectations)
+
+# if (length(failures) > 0 {
+#   waldo::compare(failures[[1]]$expected, failures[[1]]$actual)
+# }
+
+```
