@@ -18,9 +18,7 @@ source(here::here("R", "libraries.R"))
 
 # plan-specific setup
 source(fs::path(DXDATA, "plan_name.R"))
-
 source(fs::path(DXDATA, "functions_data.R"))
-
 
 ```
 
@@ -36,12 +34,13 @@ sheets_get <- sheets[!stringr::str_starts(sheets, "0_")] |> sort()
 ```
 
 
-## Get and save extracted inputs
+## Create and save list
 
 Put info into a list, save as rds.
 
 ```{r}
 #| label: get-save-inputs
+#| output: false
 
 inputs_list <- sheets_get |>
   rlang::set_names() |>
