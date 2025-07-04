@@ -27,7 +27,7 @@ rawdata <- readRDS(fs::path(xddir, "frs_inputs_raw.rds"))
 ```{r}
 
 # define headcount sheets
-(hcnames <- str_subset(names(rawdata), "headcount"))
+(hcsheets <- str_subset(names(rawdata), "headcount"))
 
 ```
 
@@ -37,9 +37,88 @@ pivot
 
 ```{r}
 
+agelb <- c(0, seq(20, 65, 5), 0)
+ageub <- c(20, seq(24, 64, 5), 110, 110)
+# agelabels <- data |> pull(1)
+
+yoslabels <- names(data)[-1]
+yoslb <- c(0, seq(5, 50, 5), 0)
+yosub <- c(seq(4, 49, 5), 70, 70)
+
+
+f <- function(
+  data,
+  rowvar,
+  colvar,
+  rowlb,
+  rowub,
+  rowlabels = data |> pull(1),
+  collb,
+  colub,
+  collabels = names(data)[-1]
+) {
+  coltbl <- tibble(collabel = collabels, collb, colub)
+
+  datalong <- data |>
+    select(-1) |>
+    mutate(rowlabel = rowlabels, rowlb = rowlb, rowub = rowub) |>
+    pivot_longer(
+      cols = -c(rowlabel, rowlb, rowub),
+      names_to = "collabel"
+    ) |>
+    left_join(coltbl, by = join_by(collabel)) |>
+    relocate(value, .after = colub) |>
+    rename_with(
+      .fn = \(x) str_replace(x, "row", paste0(rowvar, "_")),
+      .cols = starts_with("row")
+    ) |>
+    rename_with(
+      .fn = \(x) str_replace(x, "col", paste0(colvar, "_")),
+      .cols = starts_with("col")
+    )
+  #      mutate(!!rowvar := rowlabels) |>
+  datalong
+}
+
+f(
+  data,
+  rowvar = "age",
+  colvar = "yos",
+  rowlb = agelb,
+  rowub = ageub,
+  collb = yoslb,
+  colub = yosub
+)
+
+# result <- imap(nested_list, ~ {
+#   .x$data  # Equivalent to nested_list[[.y]]$data
+# })
+
+result <- hcsheets |>
+  map(\(x) pluck(rawdata, x, "data")) |>
+  setNames(hcsheets)
+
+res2 <- purrr::map(
+  result,
+  f,
+  rowvar = "age",
+  colvar = "yos",
+  rowlb = agelb,
+  rowub = ageub,
+  collb = yoslb,
+  colub = yosub
+)
+
+hclong <- list_rbind(res2, names_to = "class") # djb this is good
+
+count(hclong, yos_label)
+count(hclong, class)
+
+# !!glue("{colname}_lower") := value
+# explore a single sheet
 hcnum <- 1
-info <- rawdata[[hcnames[hcnum]]]$info
-data <- rawdata[[hcnames[hcnum]]]$data
+info <- rawdata[[hcsheets[hcnum]]]$info
+data <- rawdata[[hcsheets[hcnum]]]$data
 
 agelb <- c(0, seq(20, 65, 5), 0)
 ageub <- c(20, seq(24, 64, 5), 110, 110)
