@@ -66,7 +66,7 @@ flip <- function(
     ) |>
     left_join(coltbl, by = join_by(collabel)) |>
     relocate(value, .after = colub) |>
-    mutate(value = as.numeric(value)) |>
+    mutate(value = replace_na(as.numeric(value), 0)) |>
     rename_with(
       .fn = \(x) str_replace(x, "row", paste0(rowvar, "_")),
       .cols = starts_with("row")
@@ -144,14 +144,14 @@ count(hclong, class)
 ```
 
 ```{r}
-#| label: check-totals
+#| label: check-headcount-totals
 
 hclong |>
   mutate(agetype = ifelse(age_label == "Total Count", "total", "detail")) |>
   summarise(value = sum(value), .by = agetype)
 
 hclong |>
-  mutate(yostype = ifelse(yoslabel == "All Years", "total", "detail")) |>
+  mutate(yostype = ifelse(yos_label == "All Years", "total", "detail")) |>
   summarise(value = sum(value), .by = yostype)
 
 ```
@@ -165,7 +165,7 @@ hclong |>
 
 result <- salsheets |>
   map(\(x) pluck(rawdata, x, "data")) |>
-  setNames(hcsheets)
+  setNames(salsheets)
 
 res2 <- purrr::map(
   result,
@@ -186,14 +186,17 @@ count(sallong, class)
 ```
 
 ```{r}
-#| label: check-totals
+#| label: check-salary-averages
+#| eval: false
+
+# TO COME
 
 sallong |>
-  mutate(agetype = ifelse(agelabel == "Total Count", "total", "detail")) |>
-  summarise(headcount = sum(headcount), .by = agetype)
+  mutate(agetype = ifelse(age_label == "Total Count", "total", "detail")) |>
+  summarise(value = sum(value), .by = agetype)
 
 sallong |>
-  mutate(yostype = ifelse(yoslabel == "All Years", "total", "detail")) |>
-  summarise(headcount = sum(headcount), .by = yostype)
+  mutate(yostype = ifelse(yos_label == "All Years", "total", "detail")) |>
+  summarise(value = sum(value), .by = yostype)
 
 ```
