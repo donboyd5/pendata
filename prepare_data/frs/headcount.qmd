@@ -21,6 +21,16 @@ plandir <- fs::path(DPLANS, plan)
 xddir <- fs::path(plandir, "extracted_data")
 
 rawdata <- readRDS(fs::path(xddir, "frs_inputs_raw.rds"))
+names(rawdata)
+
+```
+
+```{r}
+#| label: data-for-experimentation
+
+sheet <- "headcount_admin"
+info <- rawdata[[sheet]]$info
+data <- rawdata[[sheet]]$data
 
 ```
 
@@ -56,6 +66,7 @@ flip <- function(
     ) |>
     left_join(coltbl, by = join_by(collabel)) |>
     relocate(value, .after = colub) |>
+    mutate(value = as.numeric(value)) |>
     rename_with(
       .fn = \(x) str_replace(x, "row", paste0(rowvar, "_")),
       .cols = starts_with("row")
@@ -67,100 +78,48 @@ flip <- function(
   return(datalong)
 }
 
-flip(
-  data,
-  rowvar = "age",
-  colvar = "yos",
-  rowlb = agelb,
-  rowub = ageub,
-  collb = yoslb,
-  colub = yosub
-)
-
-flip(
-  data,
-  rowvar = "age",
-  colvar = "yos" # ,
-  # rowlb = agelb,
-  # rowub = ageub,
-  # collb = yoslb,
-  # colub = yosub
-)
+# flip(
+#   data,
+#   rowvar = "age",
+#   colvar = "yos",
+#   rowlb = agelb,
+#   rowub = ageub,
+#   collb = yoslb,
+#   colub = yosub
+# )
 
 ```
 
-```{r}
+## Define sheets, labels, bounds and other flip arguments for headcount and salary
 
-# define headcount sheets
+```{r}
+#| label: define-sheets
+
 (hcsheets <- stringr::str_subset(names(rawdata), "headcount_"))
+(salsheets <- stringr::str_subset(names(rawdata), "salary_"))
 
 ```
 
-Get the headcount data
-define rows and columns
-pivot
-
 ```{r}
+#| label: define-arguments
+
+# these pertain both to headcount and salary
+
+rowvar <- "age"
+colvar <- "yos"
 
 agelb <- c(0, seq(20, 65, 5), 0)
 ageub <- c(20, seq(24, 64, 5), 110, 110)
-# agelabels <- data |> pull(1)
 
-yoslabels <- names(data)[-1]
 yoslb <- c(0, seq(5, 50, 5), 0)
 yosub <- c(seq(4, 49, 5), 70, 70)
 
+```
 
-f <- function(
-  data,
-  rowvar, # name to use as prefix for row identifiers -- e.g., "age"
-  colvar, # name to use as prefix for column identifiers -- e.g., "yos"
-  rowlb = NULL, # lower bounds for the row -- numeric vector -- e.g., 10 if the row label is "10-19"
-  rowub = NULL, # upper bounds for the row -- numeric vector
-  rowlabels = NULL, # string vector, if NULL will use 1st column
-  collb, # lower bounds for the columns in the raw data -- numeric vector -- e.g., 20 if column label is "20-24"
-  colub, # upper bounds for the column -- numeric vector
-  collabels = NULL # if NULL will use column names
-) {
-  coltbl <- tibble(collabel = collabels, collb, colub)
+## Headcount data
 
-  # data |> pull(1)
-  # names(data)[-1]
-
-  datalong <- data |>
-    select(-1) |>
-    mutate(rowlabel = rowlabels, rowlb = rowlb, rowub = rowub) |>
-    pivot_longer(
-      cols = -c(rowlabel, rowlb, rowub),
-      names_to = "collabel"
-    ) |>
-    left_join(coltbl, by = join_by(collabel)) |>
-    relocate(value, .after = colub) |>
-    rename_with(
-      .fn = \(x) str_replace(x, "row", paste0(rowvar, "_")),
-      .cols = starts_with("row")
-    ) |>
-    rename_with(
-      .fn = \(x) str_replace(x, "col", paste0(colvar, "_")),
-      .cols = starts_with("col")
-    )
-  #      mutate(!!rowvar := rowlabels) |>
-  datalong
-}
-
-f(
-  data,
-  rowvar = "age",
-  colvar = "yos",
-  rowlb = agelb,
-  rowub = ageub,
-  collb = yoslb,
-  colub = yosub
-)
-
-# result <- imap(nested_list, ~ {
-#   .x$data  # Equivalent to nested_list[[.y]]$data
-# })
+```{r}
+#| label: get-headcount
 
 result <- hcsheets |>
   map(\(x) pluck(rawdata, x, "data")) |>
@@ -168,9 +127,9 @@ result <- hcsheets |>
 
 res2 <- purrr::map(
   result,
-  f,
-  rowvar = "age",
-  colvar = "yos",
+  flip,
+  rowvar = rowvar,
+  colvar = colvar,
   rowlb = agelb,
   rowub = ageub,
   collb = yoslb,
@@ -182,41 +141,58 @@ hclong <- list_rbind(res2, names_to = "class") # djb this is good
 count(hclong, yos_label)
 count(hclong, class)
 
-# !!glue("{colname}_lower") := value
-# explore a single sheet
-hcnum <- 1
-info <- rawdata[[hcsheets[hcnum]]]$info
-data <- rawdata[[hcsheets[hcnum]]]$data
+```
 
-agelb <- c(0, seq(20, 65, 5), 0)
-ageub <- c(20, seq(24, 64, 5), 110, 110)
-agelabels <- data |> pull(1)
-cbind(agelabels, agelb, ageub)
-
-yoslabels <- names(data)[-1]
-yoslb <- c(0, seq(5, 50, 5), 0)
-yosub <- c(seq(4, 49, 5), 70, 70)
-cbind(yoslabels, yoslb, yosub)
-yostbl <- tibble(yoslabel = yoslabels, yoslb, yosub)
-
-hclong <- data |>
-  rename(agelabel = 1) |>
-  mutate(agelb = agelb, ageub = ageub) |>
-  pivot_longer(
-    cols = -c(agelabel, agelb, ageub),
-    names_to = "yoslabel",
-    values_to = "headcount"
-  ) |>
-  left_join(yostbl, by = join_by(yoslabel)) |>
-  select(agelb, ageub, agelabel, yoslb, yosub, yoslabel, headcount) |>
-  arrange(agelb, ageub, yoslb, yosub) |>
-  mutate(headcount = replace_na(as.numeric(headcount), 0))
+```{r}
+#| label: check-totals
 
 hclong |>
+  mutate(agetype = ifelse(age_label == "Total Count", "total", "detail")) |>
+  summarise(value = sum(value), .by = agetype)
+
+hclong |>
+  mutate(yostype = ifelse(yoslabel == "All Years", "total", "detail")) |>
+  summarise(value = sum(value), .by = yostype)
+
+```
+
+
+
+## Salary data
+
+```{r}
+#| label: get-salaries
+
+result <- salsheets |>
+  map(\(x) pluck(rawdata, x, "data")) |>
+  setNames(hcsheets)
+
+res2 <- purrr::map(
+  result,
+  flip,
+  rowvar = rowvar,
+  colvar = colvar,
+  rowlb = agelb,
+  rowub = ageub,
+  collb = yoslb,
+  colub = yosub
+)
+
+sallong <- list_rbind(res2, names_to = "class") # djb this is good
+
+count(sallong, yos_label)
+count(sallong, class)
+
+```
+
+```{r}
+#| label: check-totals
+
+sallong |>
   mutate(agetype = ifelse(agelabel == "Total Count", "total", "detail")) |>
   summarise(headcount = sum(headcount), .by = agetype)
 
-hclong |>
+sallong |>
   mutate(yostype = ifelse(yoslabel == "All Years", "total", "detail")) |>
   summarise(headcount = sum(headcount), .by = yostype)
 
