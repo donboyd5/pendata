@@ -98,6 +98,8 @@ flip <- function(
 (hcsheets <- stringr::str_subset(names(rawdata), "headcount_"))
 (salsheets <- stringr::str_subset(names(rawdata), "salary_"))
 
+# make sure these look right
+
 ```
 
 ```{r}
@@ -105,28 +107,38 @@ flip <- function(
 
 # these pertain both to headcount and salary
 
+agemax <- 110
+yosmax <- 70
+
 rowvar <- "age"
 colvar <- "yos"
 
 agelb <- c(0, seq(20, 65, 5), 0)
-ageub <- c(20, seq(24, 64, 5), 110, 110)
+ageub <- c(20, seq(24, 64, 5), agemax, agemax)
 
 yoslb <- c(0, seq(5, 50, 5), 0)
-yosub <- c(seq(4, 49, 5), 70, 70)
+yosub <- c(seq(4, 49, 5), yosmax, yosmax)
+
+# make sure these look right
+cbind(agelb, ageub)
+cbind(yoslb, yosub)
 
 ```
 
-## Headcount data
+## Get headcount and salary sheets and create a long tibble
 
 ```{r}
-#| label: get-headcount
 
-result <- hcsheets |>
+sheet_names <- c(hcsheets, salsheets)
+
+data_list <- sheet_names |>
   map(\(x) pluck(rawdata, x, "data")) |>
-  setNames(hcsheets)
+  setNames(sheet_names)
 
-res2 <- purrr::map(
-  result,
+names(data_list)
+
+tbl_list <- purrr::map(
+  data_list,
   flip,
   rowvar = rowvar,
   colvar = colvar,
@@ -136,10 +148,15 @@ res2 <- purrr::map(
   colub = yosub
 )
 
-hclong <- list_rbind(res2, names_to = "class") # djb this is good
-
-count(hclong, yos_label)
-count(hclong, class)
+hcs_tbl <- list_rbind(tbl_list, names_to = "src") |>
+  separate(src, into = c("variable", "class"), sep = "_", extra = "merge") |>
+  mutate(
+    rectype = case_when(
+      age_label == "Total Count" ~ "total",
+      yos_label == "All Years" ~ "total",
+      .default = "detail"
+    )
+  )
 
 ```
 
