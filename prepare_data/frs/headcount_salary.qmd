@@ -160,16 +160,18 @@ hcs_tbl <- list_rbind(tbl_list, names_to = "src") |>
 
 ```
 
+
 ```{r}
-#| label: check-headcount-totals
+#| label: hcs-tbl-inspect
 
-hclong |>
-  mutate(agetype = ifelse(age_label == "Total Count", "total", "detail")) |>
-  summarise(value = sum(value), .by = agetype)
-
-hclong |>
-  mutate(yostype = ifelse(yos_label == "All Years", "total", "detail")) |>
-  summarise(value = sum(value), .by = yostype)
+glimpse(hcs_tbl)
+summary(hcs_tbl) # no missing values
+skimr::skim_without_charts(hcs_tbl)
+skimr::skim(hcs_tbl)
+count(hcs_tbl, age_lb, age_ub, age_label)
+count(hcs_tbl, yos_lb, yos_ub, yos_label) # note that yos max is 1 less than what the label shows
+count(hcs_tbl, variable, class)
+count(hcs_tbl, variable, rectype)
 
 ```
 
