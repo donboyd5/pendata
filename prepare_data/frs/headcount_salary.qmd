@@ -177,6 +177,8 @@ count(hcs_tbl, variable, rectype)
 
 ## Tests
 
+For now, put tests inline. Later move or add them to package tests.
+
 ```{r}
 
 testthat::local_edition(3)
@@ -210,6 +212,19 @@ test_that("headcount detail sums equal headcount totals, all yos groups", {
       yos_label != "All Years"
     ) |>
     summarise(value = sum(value), .by = c(class, yos_label, rectype)) |>
+    pivot_wider(names_from = rectype)
+
+  expect_equal(hcsums$detail, hcsums$total, tolerance = 1e-8)
+})
+
+test_that("headcount detail sums equal headcount totals, grand total", {
+  hcsums <- hcs_tbl |>
+    filter(
+      variable == "headcount",
+      rectype == "detail" |
+        (age_label == "Total Count" & yos_label == "All Years")
+    ) |>
+    summarise(value = sum(value), .by = c(class, rectype)) |>
     pivot_wider(names_from = rectype)
 
   expect_equal(hcsums$detail, hcsums$total, tolerance = 1e-8)
