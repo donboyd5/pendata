@@ -175,47 +175,44 @@ count(hcs_tbl, variable, rectype)
 
 ```
 
-
-
-## Salary data
+## Tests
 
 ```{r}
-#| label: get-salaries
 
-result <- salsheets |>
-  map(\(x) pluck(rawdata, x, "data")) |>
-  setNames(salsheets)
+testthat::local_edition(3)
+library(testthat)
+withr::deferred_clear()
 
-res2 <- purrr::map(
-  result,
-  flip,
-  rowvar = rowvar,
-  colvar = colvar,
-  rowlb = agelb,
-  rowub = ageub,
-  collb = yoslb,
-  colub = yosub
-)
+hcsums <- hcs_tbl |>
+  filter(
+    variable == "headcount",
+    class == "regular"
+  ) |>
+  summarise(value = sum(value), .by = c(class, age_label, rectype)) |>
+  pivot_wider(names_from = rectype)
 
-sallong <- list_rbind(res2, names_to = "class") # djb this is good
+test_that("headcount detail sums equal headcount totals, all age groups", {
+  hcsums <- hcs_tbl |>
+    filter(
+      variable == "headcount",
+      age_label != "Total Count"
+    ) |>
+    summarise(value = sum(value), .by = c(class, age_label, rectype)) |>
+    pivot_wider(names_from = rectype)
 
-count(sallong, yos_label)
-count(sallong, class)
+  expect_equal(hcsums$detail, hcsums$total, tolerance = 1e-8)
+})
 
-```
+test_that("headcount detail sums equal headcount totals, all yos groups", {
+  hcsums <- hcs_tbl |>
+    filter(
+      variable == "headcount",
+      yos_label != "All Years"
+    ) |>
+    summarise(value = sum(value), .by = c(class, yos_label, rectype)) |>
+    pivot_wider(names_from = rectype)
 
-```{r}
-#| label: check-salary-averages
-#| eval: false
-
-# TO COME
-
-sallong |>
-  mutate(agetype = ifelse(age_label == "Total Count", "total", "detail")) |>
-  summarise(value = sum(value), .by = agetype)
-
-sallong |>
-  mutate(yostype = ifelse(yos_label == "All Years", "total", "detail")) |>
-  summarise(value = sum(value), .by = yostype)
+  expect_equal(hcsums$detail, hcsums$total, tolerance = 1e-8)
+})
 
 ```
