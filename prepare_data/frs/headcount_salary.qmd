@@ -187,6 +187,12 @@ testthat::local_edition(3)
 library(testthat)
 withr::deferred_clear()
 
+# later, use the following:
+# test_results <- testthat::test_file(
+#   fs::path(DXDATA, "tests/testthat/test_sheets.R"),
+#   reporter = testthat::TapReporter$new()
+# )
+
 hcsums <- hcs_tbl |>
   filter(
     variable == "headcount",
@@ -233,7 +239,7 @@ test_that("headcount detail sums equal headcount totals, grand total", {
 })
 
 
-test_that("calculated column salary totals (age groups) equal reported", {
+test_that("calculated average salaries in totals column (age groups) are within $1 of reported", {
   reported <- hcs_tbl |>
     filter(
       variable == "salary",
@@ -267,7 +273,7 @@ test_that("calculated column salary totals (age groups) equal reported", {
   expect_true(all(abs(compare$calculated - compare$reported) < 1)) # relaxed test
 })
 
-test_that("calculated row salary totals (yos groups) equal reported", {
+test_that("calculated average salaries in totals row (yos groups) are within $1 of reported", {
   reported <- hcs_tbl |>
     filter(
       variable == "salary",
