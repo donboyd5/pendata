@@ -7,8 +7,10 @@
 desktop.ini
 
 # folders
-*_files/**   # ignore everything inside all folders that end with _files
-old/  # ignore this anywhere
+# ignore all folders that end with _files
+*_files/
+# ignore old/ folders anywhere
+old/  
 _webpage/
 
 # file types
