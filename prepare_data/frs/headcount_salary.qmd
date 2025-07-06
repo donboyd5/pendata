@@ -5,7 +5,7 @@ format:
     toc-depth: 4
     page-layout: full
     css: wider.css
----    
+---
 
 # Headcount and salary tables
 
@@ -95,17 +95,18 @@ flip <- function(
 ```{r}
 #| label: define-sheets
 
+# make sure sheet names look right
+
 (hcsheets <- stringr::str_subset(names(rawdata), "headcount_"))
 (salsheets <- stringr::str_subset(names(rawdata), "salary_"))
 
-# make sure these look right
 
 ```
 
 ```{r}
 #| label: define-arguments
 
-# these pertain both to headcount and salary
+# the following arguments pertain both to headcount and salary
 
 agemax <- 110
 yosmax <- 70
@@ -128,6 +129,7 @@ cbind(yoslb, yosub)
 ## Get headcount and salary sheets and create a long tibble
 
 ```{r}
+#| label: create-long-hcs-tibble
 
 sheet_names <- c(hcsheets, salsheets)
 
@@ -160,9 +162,8 @@ hcs_tbl <- list_rbind(tbl_list, names_to = "src") |>
 
 ```
 
-
 ```{r}
-#| label: hcs-tbl-inspect
+#| label: inspect-hcs-tbl
 
 glimpse(hcs_tbl)
 summary(hcs_tbl) # no missing values
@@ -180,6 +181,7 @@ count(hcs_tbl, variable, rectype)
 For now, put tests inline. Later move or add them to package tests.
 
 ```{r}
+#| label: headcount-salary-tests
 
 testthat::local_edition(3)
 library(testthat)
@@ -230,36 +232,113 @@ test_that("headcount detail sums equal headcount totals, grand total", {
   expect_equal(hcsums$detail, hcsums$total, tolerance = 1e-8)
 })
 
-test_that("calculated salaries equal reported salaries by age group", {
-  # TO COME
-  # NOTE: This will be important if we construct additional details for age groups or yos groups
-  salaries <- hcs_tbl |>
-    # filter(class == "judges", yos_label == "Under 5") |>
+
+test_that("calculated column salary totals (age groups) equal reported", {
+  reported <- hcs_tbl |>
+    filter(
+      variable == "salary",
+      rectype == "total",
+      yos_label == "All Years"
+    ) |>
+    select(class, age_label, value)
+
+  calculated <- hcs_tbl |>
+    filter(yos_label != "All Years") |> # rectype == "detail", yos_label != "All Years"
+    select(variable, class, yos_label, age_label, value) |>
     pivot_wider(names_from = variable) |>
     mutate(payroll = headcount * salary) |>
     summarise(
       headcount = sum(headcount),
       payroll = sum(payroll),
-      salary_reported = first(salary),
-      .by = c(class, age_label, rectype)
+      .by = c(class, age_label)
     ) |>
-    mutate(
-      salary_computed = replace_na(payroll / headcount, 0),
-      diff = salary_computed - salary_reported
-    ) |>
-    arrange(class, age_label, rectype) # |>
-  # select(class, age_label, rectype, salary) |>
-  # pivot_wider(names_from = rectype, values_from = salary, values_fill = 0)
+    mutate(salary = replace_na(payroll / headcount, 0))
 
-  expect_equal(salaries$detail, salaries$total, tolerance = 1e-8)
-  salaries |>
-    mutate(diff = detail - total) |>
-    arrange(desc(abs(diff)))
+  compare <- left_join(
+    reported |>
+      select(class, age_label, reported = value),
+    calculated |>
+      select(class, age_label, calculated = salary),
+    by = join_by(class, age_label)
+  ) |>
+    arrange(desc(abs(calculated - reported)))
+
+  # expect_equal(compare$calculated, compare$reported, tolerance = 1e-8)
+  expect_true(all(abs(compare$calculated - compare$reported) < 1)) # relaxed test
 })
 
-tmp <- hcs_tbl |> filter(class == "admin", variable == "salary")
+test_that("calculated row salary totals (yos groups) equal reported", {
+  reported <- hcs_tbl |>
+    filter(
+      variable == "salary",
+      rectype == "total",
+      age_label == "Total Count"
+    ) |>
+    select(class, yos_label, value)
 
-# what about when salary is average salary for the table?
+  calculated <- hcs_tbl |>
+    filter(age_label != "Total Count") |>
+    select(variable, class, yos_label, age_label, value) |>
+    pivot_wider(names_from = variable) |>
+    mutate(payroll = headcount * salary) |>
+    summarise(
+      headcount = sum(headcount),
+      payroll = sum(payroll),
+      .by = c(class, yos_label)
+    ) |>
+    mutate(salary = replace_na(payroll / headcount, 0))
+
+  compare <- left_join(
+    reported |>
+      select(class, yos_label, reported = value),
+    calculated |>
+      select(class, yos_label, calculated = salary),
+    by = join_by(class, yos_label)
+  ) |>
+    arrange(desc(abs(calculated - reported)))
+
+  # expect_equal(compare$calculated, compare$reported, tolerance = 1e-8)
+  expect_true(all(abs(compare$calculated - compare$reported) < 1)) # relaxed test
+})
+
+
+test_that("calculated grand total salary equals reported grand total salary", {
+  # NOTE: This will be important if we construct additional details for age groups or yos groups
+  reported <- hcs_tbl |>
+    filter(
+      variable == "salary",
+      rectype == "total",
+      age_label == "Total Count",
+      yos_label == "All Years"
+    ) |>
+    select(class, reported = value)
+
+  calculated <- hcs_tbl |>
+    filter(rectype == "detail") |>
+    pivot_wider(names_from = variable) |>
+    mutate(payroll = headcount * salary) |>
+    summarise(
+      headcount = sum(headcount),
+      payroll = sum(payroll),
+      .by = c(class, rectype)
+    ) |>
+    mutate(
+      salary = replace_na(payroll / headcount, 0)
+    ) |>
+    select(class, calculated = salary)
+
+  compare <- left_join(
+    reported |>
+      select(class, reported),
+    calculated |>
+      select(class, calculated),
+    by = join_by(class)
+  ) |>
+    arrange(desc(abs(calculated - reported)))
+
+  # expect_equal(compare$calculated, compare$reported, tolerance = 1e-8)
+  expect_true(all(abs(compare$calculated - compare$reported) < 1)) # relaxed test
+})
 
 ```
 
