@@ -1,0 +1,79 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---
+
+# Salary-growth table
+
+```{r}
+#| label: setup
+
+source(here::here("R", "folders.R"))
+source(here::here("R", "libraries.R"))
+
+# get raw extracted data as a list
+plan <- "frs"
+plandir <- fs::path(DPLANS, plan)
+xddir <- fs::path(plandir, "extracted_data")
+
+rawdata <- readRDS(fs::path(xddir, "frs_inputs_raw.rds"))
+names(rawdata)
+
+```
+
+```{r}
+#| label: data-for-experimentation
+
+sheet <- "salarygrowth"
+info <- rawdata[[sheet]]$info
+data <- rawdata[[sheet]]$data
+
+```
+
+```{r}
+class_mapping <- tribble(
+  ~class,
+  ~class_label,
+  "regular",
+  "Regular",
+  "special",
+  "Special Risk",
+  "admin",
+  "Special Risk Admin",
+  "eco",
+  "ECO",
+  "eso",
+  "ESO",
+  "judges",
+  "Judges",
+  "senior_management",
+  "Senior Management"
+)
+class_mapping
+
+```
+
+```{r}
+
+f <- function(colname, class_mapping) {
+  pos <- match(colname, class_mapping$class_label)
+  class_mapping$class[pos]
+}
+
+sg1 <- data |>
+  rename(yos = 1) |>
+  rename_with(f, .cols = -1, class_mapping) |>
+  pivot_longer(cols = -yos, names_to = "class") |> 
+  mutate(value = as.numeric(value))
+
+sg1
+summary(sg1)
+
+# yos is chr, what to do about 30+??
+
+```
+
