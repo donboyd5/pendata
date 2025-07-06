@@ -7,8 +7,8 @@
 desktop.ini
 
 # folders
-check_inputs_files/
-**/old/
+*_files/  # all folders that end with _files
+old/  # ignore this anywhere
 _webpage/
 
 # file types
