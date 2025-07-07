@@ -14,10 +14,14 @@ format:
 
 source(here::here("R", "folders.R"))
 source(here::here("R", "libraries.R"))
+source(here::here("R", "constants.R"))
+source(here::here("R", "params.R"))
+
+source(here::here("R", "functions.R"))
 
 # get raw extracted data as a list
-plan <- "frs"
-plandir <- fs::path(DPLANS, plan)
+
+plandir <- fs::path(DPLANS, PLAN)
 xddir <- fs::path(plandir, "extracted_data")
 
 rawdata <- readRDS(fs::path(xddir, "frs_inputs_raw.rds"))
@@ -36,22 +40,14 @@ data <- rawdata[[sheet]]$data
 
 ```{r}
 class_mapping <- tribble(
-  ~class,
-  ~class_label,
-  "regular",
-  "Regular",
-  "special",
-  "Special Risk",
-  "admin",
-  "Special Risk Admin",
-  "eco",
-  "ECO",
-  "eso",
-  "ESO",
-  "judges",
-  "Judges",
-  "senior_management",
-  "Senior Management"
+ ~class, ~class_label,
+ "regular", "Regular",
+ "special", "Special Risk",
+ "admin", "Special Risk Admin",
+ "eco", "ECO",
+ "eso", "ESO",
+ "judges", "Judges",
+ "senior_management", "Senior Management"
 )
 class_mapping
 
@@ -67,7 +63,7 @@ f <- function(colname, class_mapping) {
 sg1 <- data |>
   rename(yos = 1) |>
   rename_with(f, .cols = -1, class_mapping) |>
-  pivot_longer(cols = -yos, names_to = "class") |> 
+  pivot_longer(cols = -yos, names_to = "class") |>
   mutate(value = as.numeric(value))
 
 sg1
