@@ -1,0 +1,2 @@
+AGEMAX <- 110
+YOSMAX <- 70
