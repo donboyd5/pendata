@@ -9,6 +9,7 @@ desktop.ini
 # folders
 # ignore all folders that end with _files
 *_files/
+_frs/
 # ignore old/ folders anywhere
 old/  
 _webpage/
