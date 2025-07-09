@@ -1,2 +1,6 @@
-AGEMAX <- 110
-YOSMAX <- 70
+# top level constants for all plans
+
+CONSTANTS <- list(
+  maxage = 110,
+  maxyos = 70
+)
