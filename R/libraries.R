@@ -7,6 +7,7 @@ libs <- function() {
   options(tibble.print_max = tprint, tibble.print_min = tprint) # show up to tprint rows
 
   # tools
+  library(jsonlite)
   library(fs)
   library(stringr)
   library(vroom)
