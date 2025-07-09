@@ -1,6 +1,7 @@
 project:
   type: book
-  output-dir: _webpage  
+  output-dir: _frs
+  
 
 format:
   html:
@@ -20,7 +21,7 @@ execute:
   freeze: false  # auto: during global project renders, re-render only when source changes
 
 book:
-  title: "Check inputs for a plan"
+  title: "Prepare plan data in a consistent format"
   author: "Reason Foundation and Rockefeller College"
   date: today
   date-format: long
@@ -28,6 +29,12 @@ book:
     collapse-level: 1
   chapters:
     - index.qmd # index.qmd must be in the quarto project root folder
-    - save_worksheet_data.qmd
-    - run_tests.qmd
-    - show_worksheets.qmd
+    - headcount_salary.qmd
+    - salary_growth.qmd
+    # - assemble_list.qmd
+
+
+# creating a package
+# install.packages(c("devtools", "usethis", "roxygen2", "testthat", "pkgdown"))
+# library(devtools)  # Includes usethis
+# usethis::create_package("E:/R_projects/Reason/pendata")

@@ -13,15 +13,11 @@ format:
 ```{r}
 #| label: setup
 
-# source(here::here("R", "folders.R"))
-# source(here::here("R", "libraries.R"))
-
-source(here::here("R", "setup.R"))
+source(here::here("data-raw", "R", "setup.R"))
 DIRS <- set_plan_dirs(PLAN_CONSTANTS)
 
-# plan-specific setup
+# # plan-specific setup
 source(fs::path(DIRS$extract_data, "functions_data.R"))
-
 
 ```
 
@@ -45,9 +41,12 @@ Put info into a list, save as rds.
 #| label: get-save-inputs
 #| output: false
 
+a <- proc.time()
 inputs_list <- sheets_get |>
   rlang::set_names() |>
   purrr::map(get_data, DIRS$plan_xdfile)
+b <- proc.time()
+b - a # 3 secs
 
 names(inputs_list)
 inputs_list$benefit_rules

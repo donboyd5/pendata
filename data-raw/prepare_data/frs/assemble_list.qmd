@@ -1,0 +1,30 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---
+
+# Assemble list
+
+```{r}
+#| label: setup
+
+source(here::here("R", "setup.R"))
+DIRS <- set_plan_dirs(PLAN_CONSTANTS)
+
+```
+
+
+```{r}
+
+files <- fs::dir_ls(DIRS$staged)
+
+rds <- files |> 
+    stringr::str_subset(".rds")
+
+
+
+```

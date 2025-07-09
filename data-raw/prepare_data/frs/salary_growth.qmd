@@ -47,20 +47,33 @@ class_mapping
 ```{r}
 
 f <- function(colname, class_mapping) {
-  pos <- match(colname, class_mapping$class_label)
-  class_mapping$class[pos]
+  index <- match(colname, class_mapping$class_label)
+  class_mapping$class[index]
 }
 
+# will generate warning for numeric conversion -- ok to ignore
 sg1 <- data |>
-  rename(yos = 1) |>
+  rename(yos_label = 1) |>
   rename_with(f, .cols = -1, class_mapping) |>
-  pivot_longer(cols = -yos, names_to = "class") |>
-  mutate(value = as.numeric(value))
+  pivot_longer(cols = -yos_label, names_to = "class") |>
+  mutate(
+    yos_lb = ifelse(yos_label == "30+", 30L, as.integer(yos_label)),
+    yos_ub = ifelse(
+      yos_label == "30+",
+      CONSTANTS$maxyos,
+      as.integer(yos_label)
+    ),
+    value = as.numeric(value)
+  ) |>
+  select(class, yos_lb, yos_ub, yos_label, value) |>
+  arrange(class, yos_lb, yos_ub)
 
+glimpse(sg1)
 sg1
 summary(sg1)
+skimr::skim(sg1) # verify no missing values, no implausible values
 
-# yos is chr, what to do about 30+??
+saveRDS(sg1, fs::path(DIRS$staged, "salarygrowth.rds"))
 
 ```
 
