@@ -1,15 +1,10 @@
 testthat::local_edition(3)
 library(testthat)
 
-source(here::here("R", "folders.R"))
-source(here::here("R", "libraries.R"))
-source(here::here("R", "constants.R"))
-source(here::here("R", "params.R"))
+# source(here::here("R", "setup.R"))
+# DIRS <- set_plan_dirs("frs")
 
-source(here::here("R", "functions.R"))
-
-dwork <- fs::path(plandir, "work")
-hcs_tbl <- readRDS(fs::path(dwork, "hcs_tbl.rds"))
+hcs_tbl <- readRDS(fs::path(DIRS$work, "hcs_tbl.rds"))
 
 
 # tests ----

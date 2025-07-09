@@ -5,9 +5,9 @@ editor_options:
 
 # Introduction
 
-This quarto project prepares data for Florida FRS.
+This quarto project is part of a repo called pendata. This quarto project prepares Florida FRS data for inclusion in the `pendata` package. The Florida FRS data used in this quarto project were extracted from source documents in the data extraction subproject of this repo.
 
 
+## TODO:
 
-
-
+- amortization_bases has multiple NA columns - delete them in the next extracted_data xlsm file
