@@ -12,23 +12,16 @@ format:
 ```{r}
 #| label: setup
 
-source(here::here("R", "folders.R"))
-source(here::here("R", "libraries.R"))
-source(here::here("R", "constants.R"))
-source(here::here("R", "params.R"))
-
-source(here::here("R", "functions.R"))
+source(here::here("R", "setup.R"))
+DIRS <- set_plan_dirs(PLAN_CONSTANTS)
 
 ```
 
 ```{r}
 #| label: get-raw-data
 
-# get raw extracted data as a list
-plandir <- fs::path(DPLANS, PLAN)
-xddir <- fs::path(plandir, "extracted_data")
-
-rawdata <- readRDS(fs::path(xddir, "frs_inputs_raw.rds"))
+# get the list of raw extracted data
+rawdata <- readRDS(fs::path(DIRS$xddir, "frs_inputs_raw.rds"))
 names(rawdata)
 
 ```
@@ -65,10 +58,10 @@ rowvar <- "age"
 colvar <- "yos"
 
 agelb <- c(0, seq(20, 65, 5), 0)
-ageub <- c(20, seq(24, 64, 5), AGEMAX, AGEMAX)
+ageub <- c(20, seq(24, 64, 5), CONSTANTS$maxage, CONSTANTS$maxyos)
 
 yoslb <- c(0, seq(5, 50, 5), 0)
-yosub <- c(seq(4, 49, 5), YOSMAX, YOSMAX)
+yosub <- c(seq(4, 49, 5), CONSTANTS$maxyos, CONSTANTS$maxyos)
 
 # make sure these look right
 cbind(agelb, ageub)
@@ -111,8 +104,7 @@ hcs_tbl <- list_rbind(tbl_list, names_to = "src") |>
   )
 
 # save the first-cut headcount-salary table in the plan's working directory so that we can use it in tests
-dwork <- fs::path(plandir, "work")
-saveRDS(hcs_tbl, fs::path(dwork, "hcs_tbl.rds"))
+saveRDS(hcs_tbl, fs::path(DIRS$work, "hcs_tbl.rds"))
 
 ```
 
@@ -142,7 +134,7 @@ For now, put tests inline. Later move or add them to package tests.
 
 # NOTE: We can only run the headcount_salary tests if a plan's headcount and salary data has row and column totals
 testthat::test_file(
-  fs::path(DPREP, "tests/testthat/test_headcount_salary.R"),
+  fs::path(DIRS$prepare_data, "tests/testthat/test_headcount_salary.R"),
   reporter = testthat::TapReporter$new()
 )
 
@@ -152,5 +144,22 @@ testthat::test_file(
 
 ```{r}
 #| label: clean-and-save
+
+glimpse(hcs_tbl)
+
+# remove the totals records
+# drop unnecessary columns
+# make wide
+# sort
+
+headcount_salary <- hcs_tbl |>
+  filter(rectype == "detail") |>
+  select(-rectype) |>
+  pivot_wider(names_from = variable) |>
+  arrange(class, age_lb, age_ub, yos_lb, yos_ub)
+
+skimr::skim(headcount_salary) # make sure no missing values and no implausible values
+
+saveRDS(headcount_salary, fs::path(DIRS$staged, "headcount_salary.rds"))
 
 ```
