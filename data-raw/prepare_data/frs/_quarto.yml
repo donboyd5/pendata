@@ -1,5 +1,6 @@
 project:
   type: book
+  execute-dir: project  # quarto should look to the project root (pendata)  
   output-dir: _frs
   
 
