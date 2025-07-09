@@ -13,12 +13,15 @@ format:
 ```{r}
 #| label: setup
 
-source(here::here("R", "folders.R"))
-source(here::here("R", "libraries.R"))
+# source(here::here("R", "folders.R"))
+# source(here::here("R", "libraries.R"))
+
+source(here::here("R", "setup.R"))
+DIRS <- set_plan_dirs(PLAN_CONSTANTS)
 
 # plan-specific setup
-source(fs::path(DXDATA, "plan_name.R"))
-source(fs::path(DXDATA, "functions_data.R"))
+source(fs::path(DIRS$extract_data, "functions_data.R"))
+
 
 ```
 
@@ -28,7 +31,7 @@ source(fs::path(DXDATA, "functions_data.R"))
 ```{r}
 #| label: get-sheetnames
 
-sheets <- readxl::excel_sheets(xdpath)
+sheets <- readxl::excel_sheets(DIRS$plan_xdfile)
 sheets_get <- sheets[!stringr::str_starts(sheets, "0_")] |> sort()
 
 ```
@@ -44,13 +47,13 @@ Put info into a list, save as rds.
 
 inputs_list <- sheets_get |>
   rlang::set_names() |>
-  purrr::map(get_data, xdpath)
+  purrr::map(get_data, DIRS$plan_xdfile)
 
 names(inputs_list)
 inputs_list$benefit_rules
 
-fname <- paste0(plan, "_inputs_raw.rds")
-saveRDS(inputs_list, fs::path(xddir, fname))
+fname <- paste0(PLAN_CONSTANTS$plan, "_inputs_raw.rds")
+saveRDS(inputs_list, fs::path(DIRS$xddir, fname))
 
 ```
 
@@ -58,7 +61,7 @@ saveRDS(inputs_list, fs::path(xddir, fname))
 #| label: check-inputs
 #| eval: false
 
-check <- readRDS(fs::path(xddir, fname))
+check <- readRDS(fs::path(DIRS$xddir, fname))
 
 names(check)
 

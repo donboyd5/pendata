@@ -3,11 +3,8 @@
 testthat::local_edition(3)
 library(testthat)
 
-source(here::here("R", "folders.R"))
-source(fs::path(DXDATA, "plan_name.R"))
-
-fname <- paste0(plan, "_inputs_raw.rds")
-input_data_list <- readRDS(fs::path(xddir, fname))
+fname <- paste0(PLAN_CONSTANTS$plan, "_inputs_raw.rds")
+input_data_list <- readRDS(fs::path(DIRS$xddir, fname))
 
 # sheets <- readxl::excel_sheets(xdpath)
 sheets <- names(input_data_list)

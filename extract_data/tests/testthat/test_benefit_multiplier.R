@@ -1,21 +1,13 @@
 testthat::local_edition(3)
 library(testthat)
 library(dplyr)
-library(readxl)
 
-source(here::here("R", "folders.R"))
-source(fs::path(DXDATA, "plan_name.R"))
-# source(here::here("functions-data.R"))
-
-fname <- paste0(plan, "_inputs_raw.rds")
-input_data_list <- readRDS(fs::path(xddir, fname))
+fname <- paste0(PLAN_CONSTANTS$plan, "_inputs_raw.rds")
+input_data_list <- readRDS(fs::path(DIRS$xddir, fname))
 
 # Source benefit-multiplier functions
-source(fs::path(DPLANS, plan, "R", "benefit_functions.R"))
-source(fs::path(DPLANS, plan, "R", "lookup_functions.R"))
-
-# source(here::here("plans", plan, "benefit-functions.R"))
-# source(here::here("plans", plan, "lookup-functions.R"))
+source(fs::path(DIRS$plandir, "R", "benefit_functions.R"))
+source(fs::path(DIRS$plandir, "R", "lookup_functions.R"))
 
 benefit_rules <- input_data_list[["benefit_rules"]]$data |>
   mutate(
