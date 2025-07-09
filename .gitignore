@@ -1,6 +1,6 @@
 # project infrastructure
 .quarto/
-/.quarto/
+
 .Rproj.user
 .Rhistory
 *.Rproj
