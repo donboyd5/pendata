@@ -12,7 +12,7 @@ format:
 ```{r}
 #| label: setup
 
-source(here::here("R", "setup.R"))
+source(here::here("data-raw", "R", "setup.R"))
 DIRS <- set_plan_dirs(PLAN_CONSTANTS)
 
 ```
