@@ -7,13 +7,15 @@
 desktop.ini
 
 # folders
-# ignore all folders that end with _files
-*_files/
+
+# ignore selected folders anywhere they appear
 _frs/
-# ignore old/ folders anywhere
 old/  
 site_libs/
 _webpage/
+
+# ignore all folders that end with text after the *
+*_files/
 
 # file types
 *.csv
