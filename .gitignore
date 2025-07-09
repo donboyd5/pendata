@@ -12,6 +12,7 @@ desktop.ini
 _frs/
 # ignore old/ folders anywhere
 old/  
+site_libs/
 _webpage/
 
 # file types
