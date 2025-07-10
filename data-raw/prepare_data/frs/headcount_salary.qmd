@@ -56,15 +56,15 @@ data <- rawdata[[sheet]]$data
 rowvar <- "age"
 colvar <- "yos"
 
+agelabel <- data |> pull(1)
 agelb <- c(CONSTANTS$minage, seq(20, 65, 5), CONSTANTS$minage)
-ageub <- c(20, seq(24, 64, 5), CONSTANTS$maxage, CONSTANTS$maxage)
+ageub <- c(19, seq(24, 64, 5), CONSTANTS$maxage, CONSTANTS$maxage)
+cbind(agelabel, agelb, ageub)
 
+yoslabel <- names(data)[-1] # for info only, not to be used
 yoslb <- c(CONSTANTS$minyos, seq(5, 50, 5), CONSTANTS$minyos)
 yosub <- c(seq(4, 49, 5), CONSTANTS$maxyos, CONSTANTS$maxyos)
-
-# make sure these look right
-cbind(agelb, ageub)
-cbind(yoslb, yosub)
+cbind(yoslabel, yoslb, yosub)
 
 ```
 
@@ -75,25 +75,21 @@ cbind(yoslb, yosub)
 
 sheet_names <- c(hcsheets, salsheets)
 
-data_list <- sheet_names |>
-  map(\(x) pluck(rawdata, x, "data")) |>
-  setNames(sheet_names)
-
-names(data_list)
-
-tbl_list <- purrr::map(
-  data_list,
-  flip,
-  rowvar = rowvar,
-  colvar = colvar,
+long1 <- flip_stack(
+  sheet_names,
+  rawdata,
+  rowvar,
+  colvar,
   rowlb = agelb,
   rowub = ageub,
   collb = yoslb,
   colub = yosub
 )
+skimr::skim(long1)
+glimpse(long1)
 
-hcs_tbl <- list_rbind(tbl_list, names_to = "src") |>
-  separate(src, into = c("variable", "class"), sep = "_", extra = "merge") |>
+hcs_tbl <- long1 |>
+  rename(class = group) |>
   mutate(
     rectype = case_when(
       age_label == "Total Count" ~ "total",
