@@ -62,7 +62,7 @@ sheets_to_show <- names(input_data_list)
 ```{r}
 #| label: sheet-functions
 
-show_sheets <- function(sheets_to_show, data) {
+show_sheets <- function(sheets_to_show, data, show_data = FALSE) {
   for (s in sheets_to_show) {
     msg <- paste0("\n## ", s, "\n\n")
     cat(msg)
@@ -85,17 +85,21 @@ show_sheets <- function(sheets_to_show, data) {
     }
 
     cat("\n### Data\n\n")
-    if (interactive() & !is.null(res$data)) {
-      print(knitr::kable(res$data)) # Simple table for interactive
-    } else if (!is.null(res$data)) {
-      print(
-        knitr::kable(res$data) %>%
-          kableExtra::kable_styling(
-            bootstrap_options = "striped",
-            full_width = FALSE
-          ) |>
-          kableExtra::scroll_box(width = "100%", height = "auto")
-      )
+    if (!show_data) {
+      # do nothing
+    } else {
+      if (interactive() & !is.null(res$data)) {
+        print(knitr::kable(res$data)) # Simple table for interactive
+      } else if (!is.null(res$data)) {
+        print(
+          knitr::kable(res$data) %>%
+            kableExtra::kable_styling(
+              bootstrap_options = "striped",
+              full_width = FALSE
+            ) |>
+            kableExtra::scroll_box(width = "100%", height = "auto")
+        )
+      }
     }
   }
 }
@@ -110,7 +114,7 @@ show_sheets <- function(sheets_to_show, data) {
 #| message: true
 
 # sheets_to_show <- sheets_sort
-show_sheets(sheets_to_show, input_data_list)
+show_sheets(sheets_to_show, input_data_list, show_data = FALSE)
 
 ```
 
