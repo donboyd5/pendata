@@ -1,0 +1,52 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---
+
+# Withdrawal tables
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+DIRS <- set_plan_dirs(PLAN_CONSTANTS)
+
+```
+
+```{r}
+#| label: get-raw-data
+
+# get the list of raw extracted data
+rawdata <- readRDS(fs::path(DIRS$xddir, "frs_inputs_raw.rds"))
+names(rawdata)
+
+```
+
+```{r}
+#| label: data-for-experimentation
+
+sheet <- "withdrawal_male_admin"
+sheet <- "withdrawal_eco"
+info <- rawdata[[sheet]]$info
+data <- rawdata[[sheet]]$data
+
+# withdrawal_eco is yos by age_group
+# withdrawal_male_admin has the same format
+
+```
+
+
+## Define sheets, labels, and more for withdrawal
+
+```{r}
+#| label: define-sheets
+
+# make sure sheet names look right
+
+(wdsheets <- stringr::str_subset(names(rawdata), "withdrawal_"))
+
+```
