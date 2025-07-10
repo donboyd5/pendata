@@ -56,10 +56,10 @@ data <- rawdata[[sheet]]$data
 rowvar <- "age"
 colvar <- "yos"
 
-agelb <- c(0, seq(20, 65, 5), 0)
+agelb <- c(CONSTANTS$minage, seq(20, 65, 5), CONSTANTS$minage)
 ageub <- c(20, seq(24, 64, 5), CONSTANTS$maxage, CONSTANTS$maxage)
 
-yoslb <- c(0, seq(5, 50, 5), 0)
+yoslb <- c(CONSTANTS$minyos, seq(5, 50, 5), CONSTANTS$minyos)
 yosub <- c(seq(4, 49, 5), CONSTANTS$maxyos, CONSTANTS$maxyos)
 
 # make sure these look right
