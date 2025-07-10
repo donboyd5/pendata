@@ -113,13 +113,14 @@ skimr::skim(long2) # some large values; no missing values
 
 long2 |> filter(value >= .2) # only occurs for yos 0
 
-# collapse by class with averaging
+# collapse by class with averaging, thereby averaging male and female
 long3 <- long2 |>
   summarise(
     value = mean(value),
     .by = c(class, starts_with("yos"), starts_with("age"))
   )
 glimpse(long3)
+skimr::skim(long3) # note that p100 for averages is smaller than before
 
 # extend the tibble to all possible yos as Reason does
 long4 <- long3 |>
@@ -147,6 +148,7 @@ This next part strikes me as suboptimal.
 ```{r}
 # final computations
 wd1 <- readRDS(fs::path(DIRS$work, "withdrawal_prelim.rds"))
+skimr::skim(wd1)
 
 ```
 
@@ -160,6 +162,14 @@ wd1 <- readRDS(fs::path(DIRS$work, "withdrawal_prelim.rds"))
 This function is informational only, to show how Reason approached data preparation for the withdrawal (i.e., term rate) tables.
 
 Note that it does many things including merging against retirement rate tables.
+
+Among other things:
+
+-   it expands grid to cover all combinations of entry years, term ages, and yos
+-   VERIFY (1970-2100 w/b ~ 130, 50-90 w/b ~ 40, 0-50 wb ~ 50 = 130 x 40 x 50 = 260k)
+    entry_year = entry_year_range_,
+    term_age = age_range_,
+    yos = yos_range_
 
 ```{r}
 #| eval: false
