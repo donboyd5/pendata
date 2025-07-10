@@ -10,6 +10,7 @@ This quarto project is part of a repo called pendata. This quarto project prepar
 
 ## TODO:
 
-- uddate frs_extracted_data_v<#>.xlsm
+- uddate frs_extracted_data_v<#>.xlsm file
+- define classes and longer class names in a separate sheet?
 - ok -- amortization_bases has multiple NA columns - delete them in the next extracted_data xlsm file
 - ok -- withdrawal_eco info has note with NA value
