@@ -137,10 +137,14 @@ long_tbl4 <- long_tbl3 |>
   complete(yos_lb = 31:CONSTANTS$maxyos) |>
   arrange(yos_lb, .by_group = TRUE) |>
   fill(value, .direction = "down") |>
-  # reconstruct yos_label and yos_ub
   ungroup() |>
-  # filter(class == "regular", yos_lb %in% 29:33) |>
+  # reconstruct yos_label and yos_ub
+  mutate(yos_ub = yos_lb, yos_label = as.character(yos_lb)) |>
   arrange(class, yos_lb, age_lb)
+
+glimpse(long_tbl4)
+skimr::skim(long_tbl4)
+count(long_tbl4, yos_lb, yos_ub, yos_label)
 
 # final computations
 
