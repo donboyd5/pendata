@@ -1,5 +1,3 @@
-
-
 flip <- function(
   data, # data frame to be flipped
   rowvar, # name to use as prefix for row identifiers -- string -- e.g., "age"
@@ -39,6 +37,44 @@ flip <- function(
       .cols = starts_with("col")
     )
   return(datalong)
+}
+
+flip_stack <- function(
+  sheet_names,
+  rawdata,
+  rowvar,
+  colvar,
+  rowlb,
+  rowub,
+  collb,
+  colub
+) {
+  # get data sheets from rawdata, flip and stack, and return a long tibble
+
+  # create data_list -- each sheet is an element
+  data_list <- sheet_names |>
+    purrr::map(\(x) pluck(rawdata, x, "data")) |>
+    setNames(sheet_names)
+
+  # create tbl_list where each sheet has been flipped
+  tbl_list <- purrr::map(
+    data_list,
+    flip,
+    rowvar,
+    colvar,
+    rowlb,
+    rowub,
+    rowlabels = NULL,
+    collb,
+    colub,
+    collabels = NULL
+  )
+
+  # bind the sheets into a long tibble
+  long_tbl <- list_rbind(tbl_list, names_to = "src") |>
+    separate(src, into = c("variable", "group"), sep = "_", extra = "merge")
+
+  return(long_tbl)
 }
 
 # flip(
