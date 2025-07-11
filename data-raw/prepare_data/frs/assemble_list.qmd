@@ -32,11 +32,10 @@ plan <- rds_files |>
 
 plan <- append(list(plan_shortname = PLAN_CONSTANTS$plan), plan)
 
-new_name <- PLAN_CONSTANTS$plan
-assign(new_name, plan) # Assign 'plan' to the new name (no intermediate variable)
-save_name <- paste0(new_name, ".rda")
+assign(PLAN_CONSTANTS$plan, plan) # Assign 'plan' to the new name (no intermediate variable)
+save_name <- paste0(PLAN_CONSTANTS$plan, ".rda")
 fpath <- here::here("data", save_name)
-save(list = new_name, file = fpath, compress = "xz")
+save(list = PLAN_CONSTANTS$plan, file = fpath, compress = "xz")
 
 # devtools::load_all()
 # check <- pendata::frs
