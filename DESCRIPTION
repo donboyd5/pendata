@@ -1,11 +1,10 @@
 Package: pendata
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Pension Plan Data for the `penmod` Package
+Version: 0.0.0.1000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Don", "Boyd", , "donboyd5@gmail.com", role = c("aut", "cre"))
+Description: For a given plan, this package (1) extracts data from a previously prepared xlsm file, (2) prepares data tables and objects needed for `penmod`, (3) consolidates these objects in a list e.g., `frs`, and (4) puts the list in an rda file in the data folder, for export to and use by `penmod`.
+License: use_mit_license()
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
