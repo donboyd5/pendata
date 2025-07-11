@@ -9,7 +9,7 @@ desktop.ini
 # folders
 
 # ignore selected folders anywhere they appear
-_frs/
+_freeze/
 old/  
 site_libs/
 _webpage/

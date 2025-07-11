@@ -1,0 +1,89 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---
+
+# Amortization bases
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+DIRS <- set_plan_dirs(PLAN_CONSTANTS)
+
+rawdata <- readRDS(fs::path(DIRS$xddir, "frs_inputs_raw.rds"))
+names(rawdata)
+
+```
+
+```{r}
+#| label: get-data
+
+sheet <- "amortization_bases"
+info <- rawdata[[sheet]]$info
+data <- rawdata[[sheet]]$data
+
+```
+
+
+```{r}
+#| label: explore-data
+
+info # are there any notes of interest?
+data
+
+```
+
+## Clean the data
+
+-       Convert dates to date class
+-       Convert amortization values to numeric
+-       Examine plausibility
+
+
+```{r}
+#| label: clean-data
+
+count(data, class) # note that drop is one of the classes
+count(data, date)
+count(data, amo_period)
+
+data |> filter(is.na(class))
+data |> filter(amo_period == "n/a")
+
+amo1 <- data |>
+  filter(!is.na(class)) |>
+  mutate(
+    date2 = lubridate::mdy(date),
+    amo_period2 = as.integer(amo_period),
+    amo_balance2 = as.numeric(amo_balance)
+  )
+
+# inspect values
+skimr::skim(amo1) # only amo_period2 has missing values - the n/a values from before
+
+amo2 <- amo1 |>
+  select(
+    class,
+    date = date2,
+    amo_period = amo_period2,
+    amo_balance = amo_balance2
+  ) |>
+  arrange(class, date)
+skimr::skim(amo2)
+
+```
+
+
+## After all tests are passed save file to staging area
+
+```{r}
+#| label: clean-and-save
+
+saveRDS(amo2, fs::path(DIRS$staged, "amortization_bases.rds"))
+
+```

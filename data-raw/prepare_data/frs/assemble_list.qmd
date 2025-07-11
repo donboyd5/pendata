@@ -26,12 +26,19 @@ element_names <- rds_files |>
   path_file() |>
   path_ext_remove()
 
-frs <- rds_files |>
+plan <- rds_files |>
   purrr::map(readRDS) |>
   rlang::set_names(element_names)
 
-frs <- append(list(plan = PLAN_CONSTANTS$plan), frs) 
+plan <- append(list(plan_shortname = PLAN_CONSTANTS$plan), plan)
 
-usethis::use_data(frs, overwrite = TRUE)
+new_name <- PLAN_CONSTANTS$plan
+assign(new_name, plan) # Assign 'plan' to the new name (no intermediate variable)
+save_name <- paste0(new_name, ".rda")
+fpath <- here::here("data", save_name)
+save(list = new_name, file = fpath, compress = "xz")
+
+# devtools::load_all()
+# check <- pendata::frs
 
 ```
