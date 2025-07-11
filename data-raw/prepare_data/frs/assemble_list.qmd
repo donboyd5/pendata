@@ -20,17 +20,6 @@ DIRS <- set_plan_dirs(PLAN_CONSTANTS)
 
 ```{r}
 
-# files <- fs::dir_ls(DIRS$staged)
-
-# rds_files <- files |>
-#   stringr::str_subset(".rds")
-
-# for (file in rds_files) {
-#   obj_name <- fs::path_file(file) |> fs::path_ext_remove()
-#   assign(objname, readRDS(file))
-#   usethis::use_data(objname, overwrite = TRUE)
-# }
-
 rds_files <- fs::dir_ls(DIRS$staged, glob = "*.rds")
 
 element_names <- rds_files |>
@@ -40,6 +29,8 @@ element_names <- rds_files |>
 frs <- rds_files |>
   purrr::map(readRDS) |>
   rlang::set_names(element_names)
+
+frs <- append(list(plan = PLAN_CONSTANTS$plan), frs) 
 
 usethis::use_data(frs, overwrite = TRUE)
 
