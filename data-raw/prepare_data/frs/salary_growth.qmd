@@ -73,7 +73,24 @@ sg1
 summary(sg1)
 skimr::skim(sg1) # verify no missing values, no implausible values
 
-saveRDS(sg1, fs::path(DIRS$staged, "salarygrowth.rds"))
-
 ```
 
+## After all tests are passed save file to staging area
+
+```{r}
+#| label: clean-and-save
+
+saveRDS(sg1, fs::path(DIRS$staged, "salarygrowth.rds"))
+
+# remove the totals records
+# drop unnecessary columns
+# make wide
+# sort
+
+# headcount_salary <- hcs_tbl |>
+#   filter(rectype == "detail") |>
+#   select(-rectype) |>
+#   pivot_wider(names_from = variable) |>
+#   arrange(class, age_lb, age_ub, yos_lb, yos_ub)
+
+```
