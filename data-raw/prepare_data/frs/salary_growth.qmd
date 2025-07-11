@@ -1,0 +1,96 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---
+
+# Salary-growth table
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+DIRS <- set_plan_dirs(PLAN_CONSTANTS)
+
+rawdata <- readRDS(fs::path(DIRS$xddir, "frs_inputs_raw.rds"))
+names(rawdata)
+
+```
+
+```{r}
+#| label: data-for-experimentation
+
+sheet <- "salarygrowth"
+info <- rawdata[[sheet]]$info
+data <- rawdata[[sheet]]$data
+
+```
+
+```{r}
+class_mapping <- tribble(
+ ~class, ~class_label,
+ "regular", "Regular",
+ "special", "Special Risk",
+ "admin", "Special Risk Admin",
+ "eco", "ECO",
+ "eso", "ESO",
+ "judges", "Judges",
+ "senior_management", "Senior Management"
+)
+class_mapping
+
+```
+
+```{r}
+
+f <- function(colname, class_mapping) {
+  index <- match(colname, class_mapping$class_label)
+  class_mapping$class[index]
+}
+
+# will generate warning for numeric conversion -- ok to ignore
+sg1 <- data |>
+  rename(yos_label = 1) |>
+  rename_with(f, .cols = -1, class_mapping) |>
+  pivot_longer(cols = -yos_label, names_to = "class") |>
+  mutate(
+    yos_lb = ifelse(yos_label == "30+", 30L, as.integer(yos_label)),
+    yos_ub = ifelse(
+      yos_label == "30+",
+      CONSTANTS$maxyos,
+      as.integer(yos_label)
+    ),
+    value = as.numeric(value)
+  ) |>
+  select(class, yos_lb, yos_ub, yos_label, value) |>
+  arrange(class, yos_lb, yos_ub)
+
+glimpse(sg1)
+sg1
+summary(sg1)
+skimr::skim(sg1) # verify no missing values, no implausible values
+
+```
+
+## After all tests are passed save file to staging area
+
+```{r}
+#| label: clean-and-save
+
+saveRDS(sg1, fs::path(DIRS$staged, "salarygrowth.rds"))
+
+# remove the totals records
+# drop unnecessary columns
+# make wide
+# sort
+
+# headcount_salary <- hcs_tbl |>
+#   filter(rectype == "detail") |>
+#   select(-rectype) |>
+#   pivot_wider(names_from = variable) |>
+#   arrange(class, age_lb, age_ub, yos_lb, yos_ub)
+
+```

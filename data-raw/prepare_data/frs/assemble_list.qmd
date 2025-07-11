@@ -1,0 +1,37 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---
+
+# Assemble list
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+DIRS <- set_plan_dirs(PLAN_CONSTANTS)
+
+```
+
+
+```{r}
+
+rds_files <- fs::dir_ls(DIRS$staged, glob = "*.rds")
+
+element_names <- rds_files |>
+  path_file() |>
+  path_ext_remove()
+
+frs <- rds_files |>
+  purrr::map(readRDS) |>
+  rlang::set_names(element_names)
+
+frs <- append(list(plan = PLAN_CONSTANTS$plan), frs) 
+
+usethis::use_data(frs, overwrite = TRUE)
+
+```

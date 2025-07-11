@@ -1,0 +1,160 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---
+
+# Headcount and salary tables
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+DIRS <- set_plan_dirs(PLAN_CONSTANTS)
+
+```
+
+```{r}
+#| label: get-raw-data
+
+# get the list of raw extracted data
+rawdata <- readRDS(fs::path(DIRS$xddir, "frs_inputs_raw.rds"))
+names(rawdata)
+
+```
+
+```{r}
+#| label: data-for-experimentation
+
+sheet <- "headcount_admin"
+info <- rawdata[[sheet]]$info
+data <- rawdata[[sheet]]$data
+
+```
+
+
+## Define sheets, labels, bounds and other flip arguments for headcount and salary
+
+```{r}
+#| label: define-sheets
+
+# make sure sheet names look right
+
+(hcsheets <- stringr::str_subset(names(rawdata), "headcount_"))
+(salsheets <- stringr::str_subset(names(rawdata), "salary_"))
+
+```
+
+```{r}
+#| label: define-arguments
+
+# the following arguments pertain both to headcount and salary
+
+rowvar <- "age"
+colvar <- "yos"
+
+agelabel <- data |> pull(1)
+agelb <- c(CONSTANTS$minage, seq(20, 65, 5), CONSTANTS$minage)
+ageub <- c(19, seq(24, 64, 5), CONSTANTS$maxage, CONSTANTS$maxage)
+cbind(agelabel, agelb, ageub)
+
+yoslabel <- names(data)[-1] # for info only, not to be used
+yoslb <- c(CONSTANTS$minyos, seq(5, 50, 5), CONSTANTS$minyos)
+yosub <- c(seq(4, 49, 5), CONSTANTS$maxyos, CONSTANTS$maxyos)
+cbind(yoslabel, yoslb, yosub)
+
+```
+
+## Get headcount and salary sheets and create a long tibble
+
+```{r}
+#| label: create-long-hcs-tibble
+
+sheet_names <- c(hcsheets, salsheets)
+
+long1 <- flip_stack(
+  sheet_names,
+  rawdata,
+  rowvar,
+  colvar,
+  rowlb = agelb,
+  rowub = ageub,
+  collb = yoslb,
+  colub = yosub
+)
+skimr::skim(long1)
+glimpse(long1)
+
+hcs_tbl <- long1 |>
+  rename(class = group) |>
+  mutate(
+    rectype = case_when(
+      age_label == "Total Count" ~ "total",
+      yos_label == "All Years" ~ "total",
+      .default = "detail"
+    )
+  )
+
+# save the first-cut headcount-salary table in the plan's working directory so that we can use it in tests
+saveRDS(hcs_tbl, fs::path(DIRS$work, "hcs_tbl.rds"))
+
+```
+
+```{r}
+#| label: inspect-hcs-tbl
+
+glimpse(hcs_tbl)
+summary(hcs_tbl) # no missing values
+skimr::skim_without_charts(hcs_tbl)
+skimr::skim(hcs_tbl)
+count(hcs_tbl, age_lb, age_ub, age_label)
+count(hcs_tbl, yos_lb, yos_ub, yos_label) # note that yos max is 1 less than what the label shows
+count(hcs_tbl, variable, class)
+count(hcs_tbl, variable, rectype)
+
+```
+
+## Tests
+
+For now, put tests inline. Later move or add them to package tests.
+
+```{r}
+#| label: headcount-salary-tests
+
+# testthat::local_edition(3)
+# library(testthat)
+
+# NOTE: We can only run the headcount_salary tests if a plan's headcount and salary data has row and column totals
+testthat::test_file(
+  fs::path(DIRS$prepare_data, "tests/testthat/test_headcount_salary.R"),
+  reporter = testthat::TapReporter$new()
+)
+
+```
+
+## If tests pass, drop totals, do final cleanup, and save details for later inclusion in package
+
+```{r}
+#| label: clean-and-save
+
+glimpse(hcs_tbl)
+
+# remove the totals records
+# drop unnecessary columns
+# make wide
+# sort
+
+headcount_salary <- hcs_tbl |>
+  filter(rectype == "detail") |>
+  select(-rectype) |>
+  pivot_wider(names_from = variable) |>
+  arrange(class, age_lb, age_ub, yos_lb, yos_ub)
+
+skimr::skim(headcount_salary) # make sure no missing values and no implausible values
+
+saveRDS(headcount_salary, fs::path(DIRS$staged, "headcount_salary.rds"))
+
+```

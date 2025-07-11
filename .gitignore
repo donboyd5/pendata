@@ -1,17 +1,21 @@
 # project infrastructure
 .quarto/
-/.quarto/
+
 .Rproj.user
 .Rhistory
 *.Rproj
 desktop.ini
 
 # folders
-# ignore all folders that end with _files
-*_files/
-# ignore old/ folders anywhere
+
+# ignore selected folders anywhere they appear
+_frs/
 old/  
+site_libs/
 _webpage/
+
+# ignore all folders that end with text after the *
+*_files/
 
 # file types
 *.csv
@@ -23,5 +27,8 @@ _webpage/
 *.vdoc*
 *.xls*
 
-# individual files
-plans/frs/work/reason/Florida FRS model input_djb.R
+# specific files to track despite being gitignored above
+!data-raw/plans/frs/extracted_data/frs_extracted_data_v5.xlsm
+
+# specific files to ignore even if a rule above does not gitignore it
+data-raw/plans/frs/work/reason/Florida FRS model input_djb.R

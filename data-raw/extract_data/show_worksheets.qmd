@@ -1,0 +1,125 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---    
+
+# Show plan worksheets
+
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+DIRS <- set_plan_dirs(PLAN_CONSTANTS)
+
+# plan-specific setup
+source(fs::path(DIRS$extract_data, "functions_data.R"))
+
+```
+
+
+## Define plan to check
+
+```{r}
+#| label: get-sheetnames
+
+fname <- paste0(PLAN_CONSTANTS$plan, "_inputs_raw.rds")
+input_data_list <- readRDS(fs::path(DIRS$xddir, fname))
+
+# sheets <- readxl::excel_sheets(xdpath)
+sheets_to_show <- names(input_data_list)
+
+```
+
+## Setup
+
+```{r}
+#| label: copy-file
+#| eval: false
+
+# fs::file_copy(path = template_path, new_path = check_path, overwrite = TRUE)
+
+```
+
+## Get extracted inputs
+
+```{r}
+#| label: get-sheets
+
+# define sheets to show
+# exclude <- c("process", "conventions", "abbreviations", "sheets")
+# exclude <- c("0_process", "0_conventions", "0_abbreviations", "0_sheets")
+# sheets_show <- setdiff(sheets, exclude)
+# sheets_sort <- sheets_show |> sort()
+
+```
+
+
+```{r}
+#| label: sheet-functions
+
+show_sheets <- function(sheets_to_show, data, show_data = FALSE) {
+  for (s in sheets_to_show) {
+    msg <- paste0("\n## ", s, "\n\n")
+    cat(msg)
+    # message("Sheet: ", s)
+    writeLines(paste("Sheet:", s), con = stderr())
+    # res <- get_data(s, path)
+    res <- data[[s]]
+
+    cat("\n### Info\n\n")
+    if (interactive()) {
+      print(knitr::kable(res$info)) # Simple table for interactive
+    } else {
+      print(
+        knitr::kable(res$info) %>%
+          kableExtra::kable_styling(
+            bootstrap_options = "striped",
+            full_width = FALSE
+          )
+      )
+    }
+
+    cat("\n### Data\n\n")
+    if (!show_data) {
+      # do nothing
+    } else {
+      if (interactive() & !is.null(res$data)) {
+        print(knitr::kable(res$data)) # Simple table for interactive
+      } else if (!is.null(res$data)) {
+        print(
+          knitr::kable(res$data) %>%
+            kableExtra::kable_styling(
+              bootstrap_options = "striped",
+              full_width = FALSE
+            ) |>
+            kableExtra::scroll_box(width = "100%", height = "auto")
+        )
+      }
+    }
+  }
+}
+
+```
+
+
+## Show sheets
+```{r}
+#| label: show-sheets
+#| results: asis
+#| message: true
+
+# sheets_to_show <- sheets_sort
+show_sheets(sheets_to_show, input_data_list, show_data = FALSE)
+
+```
+
+
+```{r echo=FALSE}
+knitr::knit_exit()
+```
+

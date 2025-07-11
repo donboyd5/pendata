@@ -1,0 +1,314 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---
+
+# Withdrawal tables
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+DIRS <- set_plan_dirs(PLAN_CONSTANTS)
+
+```
+
+```{r}
+#| label: get-raw-data
+
+# get the list of raw extracted data
+rawdata <- readRDS(fs::path(DIRS$xddir, "frs_inputs_raw.rds"))
+names(rawdata)
+
+```
+
+```{r}
+#| label: data-for-experimentation
+
+sheet <- "withdrawal_male_admin"
+sheet <- "withdrawal_eco"
+info <- rawdata[[sheet]]$info
+data <- rawdata[[sheet]]$data
+
+# withdrawal_eco is yos by age_group
+# withdrawal_male_admin has the same format
+
+```
+
+## Observations
+
+The withdrawal tables do NOT have row or column totals
+
+## Steps
+
+For Reason's file-reading see "Florida FRS model input.R". Steps are based on Reason "Florida FRS benefit model.R" function get_separation_table(class_name) – see appendix:
+
+-   By class, get average of male and female tables where both are available (regular, special, admin, senior_management); otherwise use unisex table
+-   Add a row for each yos beyond highest yos in the table up until max yos; fill with the value for the highest yos
+
+```{r}
+#| label: define-sheets
+
+# make sure sheet names look right
+
+(sheet_names <- stringr::str_subset(names(rawdata), "withdrawal_"))
+
+```
+
+```{r}
+#| label: define-arguments
+
+# note that withdrawal tables are yos x age (headcount & salary were age x yos)
+rowvar <- "yos"
+colvar <- "age"
+
+# 31 rows
+yoslabel <- data |> pull(1)
+yoslb <- yoslabel |> stringr::str_remove(coll("+")) |> as.integer()
+yosub <- ifelse(yoslb == max(yoslb), CONSTANTS$maxyos, yoslb)
+cbind(yoslabel, yoslb, yosub)
+
+# 6 columns
+# under_25	25_to_29	30_to_34	35_to_44	45_to_54	55+
+agelabel <- names(data)[-1] # for info only, not to be used
+agelb <- c(CONSTANTS$minage, 25, 30, 35, 45, 55)
+ageub <- c(agelb[-1] - 1, CONSTANTS$maxage)
+cbind(agelabel, agelb, ageub)
+
+```
+
+```{r}
+#| label: prepare-data
+
+long1 <- flip_stack(
+  sheet_names,
+  rawdata,
+  rowvar,
+  colvar,
+  rowlb = yoslb,
+  rowub = yosub,
+  collb = agelb,
+  colub = ageub
+)
+
+glimpse(long1)
+count(long1, variable, group)
+
+long2 <- long1 |>
+  # get better way for defining class
+  mutate(
+    class = stringr::str_remove(group, "female_"),
+    class = stringr::str_remove(class, "male_"),
+    class = ifelse(class == "senior_mgt", "senior_management", class)
+  ) |>
+  relocate(class, .after = group)
+
+glimpse(long2)
+count(long2, group, class)
+skimr::skim(long2) # some large values; no missing values
+
+long2 |> filter(value >= .2) # only occurs for yos 0
+
+# collapse by class with averaging, thereby averaging male and female
+long3 <- long2 |>
+  summarise(
+    value = mean(value),
+    .by = c(class, starts_with("yos"), starts_with("age"))
+  )
+glimpse(long3)
+skimr::skim(long3) # note that p100 for averages is smaller than before
+
+# extend the tibble to all possible yos as Reason does
+long4 <- long3 |>
+  group_by(class, age_label, age_lb, age_ub) |>
+  complete(yos_lb = 31:CONSTANTS$maxyos) |>
+  arrange(yos_lb, .by_group = TRUE) |>
+  fill(value, .direction = "down") |>
+  ungroup() |>
+  # reconstruct yos_label and yos_ub
+  mutate(yos_ub = yos_lb, yos_label = as.character(yos_lb)) |>
+  arrange(class, yos_lb, age_lb) |>
+  select(class, yos_label, yos_lb, yos_ub, age_label, age_lb, age_ub, value)
+
+glimpse(long4)
+skimr::skim(long4)
+count(long4, yos_lb, yos_ub, yos_label)
+
+# save before final computations
+saveRDS(long4, file = fs::path(DIRS$work, "withdrawal_prelim.rds"))
+
+```
+
+This next part strikes me as suboptimal.
+
+```{r}
+# final computations
+wd1 <- readRDS(fs::path(DIRS$work, "withdrawal_prelim.rds"))
+skimr::skim(wd1)
+
+```
+
+
+## After all tests are passed save file to staging area
+
+```{r}
+#| label: clean-and-save
+
+wd1 <- readRDS(fs::path(DIRS$work, "withdrawal_prelim.rds"))
+skimr::skim(wd1)
+glimpse(wd1)
+
+saveRDS(wd1, fs::path(DIRS$staged, "withdrawal.rds"))
+
+# remove the totals records
+# drop unnecessary columns
+# make wide
+# sort
+
+```
+
+
+## Appendix: Structure of the withdrawal tables
+
+![](images/paste-1.png){width="693"}
+
+## Appendix: Reason get_separation_table() function
+
+This function is informational only, to show how Reason approached data preparation for the withdrawal (i.e., term rate) tables.
+
+Note that it does many things including merging against retirement rate tables.
+
+Among other things:
+
+-   it expands grid to cover all combinations of entry years, term ages, and yos
+-   VERIFY (1970-2100 w/b ~ 130, 50-90 w/b ~ 40, 0-50 wb ~ 50 = 130 x 40 x 50 = 260k)
+    entry_year = entry_year_range_,
+    term_age = age_range_,
+    yos = yos_range_
+
+```{r}
+#| eval: false
+
+get_separation_table <- function(class_name) {
+  # class_name <- gsub(" ", "_", class_name)
+  class_name <- str_replace(class_name, " ", "_")
+
+  assign(
+    "term_rate_male_table",
+    get(paste0(class_name, "_term_rate_male_table_"))
+  )
+  assign(
+    "term_rate_female_table",
+    get(paste0(class_name, "_term_rate_female_table_"))
+  )
+
+  assign(
+    "normal_retire_rate_tier_1_table",
+    get(paste0(class_name, "_normal_retire_rate_tier_1_table"))
+  )
+  assign(
+    "normal_retire_rate_tier_2_table",
+    get(paste0(class_name, "_normal_retire_rate_tier_2_table"))
+  )
+
+  assign(
+    "early_retire_rate_tier_1_table",
+    get(paste0(class_name, "_early_retire_rate_tier_1_table"))
+  )
+  assign(
+    "early_retire_rate_tier_2_table",
+    get(paste0(class_name, "_early_retire_rate_tier_2_table"))
+  )
+
+  assign(
+    "entrant_profile_table",
+    get(paste0(class_name, "_entrant_profile_table"))
+  )
+
+  term_rate_table <- ((term_rate_male_table + term_rate_female_table) / 2) %>%
+    add_row(yos = (max(term_rate_male_table$yos) + 1):max(yos_range_)) %>%
+    fill(everything(), .direction = "down")
+
+  breaks <- c(-Inf, 24, 29, 34, 44, 54, Inf)
+  labels <- names(term_rate_table)[-1]
+
+  long_term_rate_table <- pivot_longer(
+    term_rate_table,
+    cols = -yos,
+    names_to = "age_group",
+    values_to = "term_rate"
+  )
+
+  sep_rate_table <- expand_grid(
+    entry_year = entry_year_range_,
+    term_age = age_range_,
+    yos = yos_range_
+  ) %>%
+    mutate(
+      entry_age = term_age - yos,
+      term_year = entry_year + yos,
+      age_group = cut(term_age, breaks, labels)
+    ) %>%
+    filter(entry_age %in% entrant_profile_table$entry_age) %>%
+    arrange(entry_year, entry_age, term_age) %>%
+    left_join(long_term_rate_table) %>%
+    left_join(
+      normal_retire_rate_tier_1_table %>%
+        rename(normal_retire_rate_tier_1 = normal_retire_rate),
+      by = c("term_age" = "age")
+    ) %>%
+    left_join(
+      normal_retire_rate_tier_2_table %>%
+        rename(normal_retire_rate_tier_2 = normal_retire_rate),
+      by = c("term_age" = "age")
+    ) %>%
+    left_join(
+      early_retire_rate_tier_1_table %>%
+        rename(early_retire_rate_tier_1 = early_retire_rate),
+      by = c("term_age" = "age")
+    ) %>%
+    left_join(
+      early_retire_rate_tier_2_table %>%
+        rename(early_retire_rate_tier_2 = early_retire_rate),
+      by = c("term_age" = "age")
+    ) %>%
+    group_by(entry_year, entry_age) %>%
+    fill(contains("retire_rate"), .direction = "downup") %>%
+    ungroup() %>%
+    mutate(
+      tier_at_term_age = get_tier(class_name, entry_year, term_age, yos),
+      separation_rate = case_when(
+        tier_at_term_age %in% c("tier_3_norm", "tier_2_norm") ~
+          normal_retire_rate_tier_2,
+        tier_at_term_age %in% c("tier_3_early", "tier_2_early") ~
+          early_retire_rate_tier_2,
+        tier_at_term_age == "tier_1_norm" ~ normal_retire_rate_tier_1,
+        tier_at_term_age == "tier_1_early" ~ early_retire_rate_tier_1,
+        str_detect(tier_at_term_age, "vested") ~ term_rate
+      )
+    ) %>%
+    group_by(entry_year, entry_age) %>%
+    mutate(
+      remaining_prob = cumprod(1 - lag(separation_rate, default = 0)),
+      separation_prob = lag(remaining_prob, default = 1) - remaining_prob
+    ) %>%
+    ungroup() %>%
+    select(
+      entry_year,
+      entry_age,
+      term_age,
+      yos,
+      term_year,
+      separation_rate,
+      remaining_prob,
+      separation_prob
+    )
+
+  return(sep_rate_table)
+}
+
+```
