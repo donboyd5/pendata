@@ -31,6 +31,7 @@ book:
     - index.qmd # index.qmd must be in the quarto project root folder
     - headcount_salary.qmd
     - salary_growth.qmd
+    - withdrawal.qmd
     - assemble_list.qmd
 
 
