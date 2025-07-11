@@ -20,10 +20,10 @@ DIRS <- set_plan_dirs(PLAN_CONSTANTS)
 
 ```{r}
 
-files <- fs::dir_ls(DIRS$staged)
+# files <- fs::dir_ls(DIRS$staged)
 
-rds_files <- files |>
-  stringr::str_subset(".rds")
+# rds_files <- files |>
+#   stringr::str_subset(".rds")
 
 # for (file in rds_files) {
 #   obj_name <- fs::path_file(file) |> fs::path_ext_remove()
@@ -32,6 +32,7 @@ rds_files <- files |>
 # }
 
 rds_files <- fs::dir_ls(DIRS$staged, glob = "*.rds")
+
 element_names <- rds_files |>
   path_file() |>
   path_ext_remove()
