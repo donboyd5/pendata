@@ -18,7 +18,7 @@ execute:
   eval: true
   echo: true
   output: true
-  freeze: auto  # auto: during global project renders, re-render only when source changes
+  freeze: false  # auto: during global project renders, re-render only when source changes
 
 book:
   title: "Prepare plan data in a consistent format"
