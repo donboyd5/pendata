@@ -15,7 +15,7 @@ format:
 source(here::here("data-raw", "R", "setup.R"))
 DIRS <- set_plan_dirs(PLAN_CONSTANTS)
 
-rawdata <- readRDS(fs::path(DIRS$xddir, "frs_inputs_raw.rds"))
+rawdata <- readRDS(fs::path(DIRS$work, "frs_inputs_raw.rds"))
 names(rawdata)
 
 ```
