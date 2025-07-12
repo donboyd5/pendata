@@ -7,14 +7,14 @@ format:
     css: wider.css
 ---
 
-# Benefit rules testdat4a
+# Benefit rules test cases
 ```{r}
 #| label: setup
 
 source(here::here("data-raw", "R", "setup.R"))
 DIRS <- set_plan_dirs(PLAN_CONSTANTS)
 
-rawdata <- readRDS(fs::path(DIRS$xddir, "frs_inputs_raw.rds"))
+rawdata <- readRDS(fs::path(DIRS$work, "frs_inputs_raw.rds"))
 names(rawdata)
 
 ```
@@ -22,7 +22,7 @@ names(rawdata)
 ```{r}
 #| label: get-data
 
-sheet <- "benefit_rules_test"
+sheet <- "benefit_rules_test_cases"
 info <- rawdata[[sheet]]$info
 data <- rawdata[[sheet]]$data
 
@@ -53,12 +53,12 @@ count(data, class) # no drop or frs total
 count(data, tier)
 count(data, early_retirement)
 
-benefit_rules_test <- data |>
+benefit_rules_test_cases <- data |>
   mutate(across(c(id, dist_age, yos, dist_year), as.integer)) |>
   mutate(expected_benmult = as.numeric(expected_benmult))
 
 # inspect values
-skimr::skim(benefit_rules_test) # why no zero for benmult??
+skimr::skim(benefit_rules_test_cases) # why no zero for benmult??
 
 ```
 
@@ -68,6 +68,9 @@ skimr::skim(benefit_rules_test) # why no zero for benmult??
 ```{r}
 #| label: clean-and-save
 
-saveRDS(benefit_rules_test, fs::path(DIRS$staged, "benefit_rules_test.rds"))
+saveRDS(
+  benefit_rules_test_cases,
+  fs::path(DIRS$staged, "benefit_rules_test_cases.rds")
+)
 
 ```
