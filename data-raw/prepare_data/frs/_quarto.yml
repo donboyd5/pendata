@@ -51,3 +51,4 @@ book:
 # devtools::install()
 # library(pendata)
 # plan <- pendata::frs
+# source(here::here("data-raw/R/buildit.R"))
