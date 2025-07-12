@@ -1,0 +1,37 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---    
+
+# Tests: Benefit-multiplier rules and function
+
+```{r}
+#| label: benefit-multiplier-tests
+#| echo: true
+
+# # here::here("data-raw/plans/tests/testthat/test_headcount_salary.R"),
+
+test_results <- testthat::test_file(
+  fs::path(DIRS$extract_data, "tests/testthat/test_benefit_multiplier.R"),
+  reporter = TapReporter$new()
+)
+
+# test_results |>
+#   as_tibble() |>
+#   filter(failed > 0)
+
+# Extract all test expectations
+# all_expectations <- unlist(lapply(test_results$results, function(x) x))
+
+# # Find failed expectations
+# failures <- Filter(function(x) inherits(x, "expectation_failure"), all_expectations)
+
+# if (length(failures) > 0 {
+#   waldo::compare(failures[[1]]$expected, failures[[1]]$actual)
+# }
+
+```

@@ -14,10 +14,11 @@ format:
 #| label: setup
 
 source(here::here("data-raw", "R", "setup.R"))
+source(here::here("data-raw", "R", "functions_data.R"))
+
 DIRS <- set_plan_dirs(PLAN_CONSTANTS)
 
 ```
-
 
 ## Define sheets to get
 

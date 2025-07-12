@@ -30,6 +30,7 @@ book:
   chapters:
     - index.qmd # index.qmd must be in the quarto project root folder
     - get_and_save_extracted_data.qmd
+    - test_extracted_data.qmd
     - amortization_bases.qmd
     - benefit_rules.qmd
     - benefit_rules_test_cases.qmd

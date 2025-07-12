@@ -1,0 +1,42 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---    
+
+# Tests: Extracted data
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+DIRS <- set_plan_dirs(PLAN_CONSTANTS)
+
+```
+
+
+```{r}
+#| eval: true
+
+fname <- paste0(PLAN_CONSTANTS$plan, "_inputs_raw.rds")
+input_data_list <- readRDS(fs::path(DIRS$work, fname))
+
+```
+
+
+## Test whether necessary sheets are included
+
+```{r}
+#| label: sheets-tests
+
+# here::here("data-raw/plans/tests/testthat/test_headcount_salary.R"),
+
+test_results <- testthat::test_file(
+  here::here("data-raw/plans/tests/testthat/test_sheets.R"),
+  reporter = testthat::TapReporter$new()
+)
+
+```
