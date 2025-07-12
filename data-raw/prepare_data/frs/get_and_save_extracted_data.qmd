@@ -1,0 +1,76 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---    
+
+# Get and save extracted inputs
+
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+DIRS <- set_plan_dirs(PLAN_CONSTANTS)
+
+# # plan-specific setup
+source(fs::path(DIRS$extract_data, "functions_data.R"))
+
+```
+
+
+## Define sheets to get
+
+```{r}
+#| label: get-sheetnames
+
+sheets <- readxl::excel_sheets(DIRS$plan_xdfile)
+sheets_get <- sheets[!stringr::str_starts(sheets, "0_")] |> sort()
+
+```
+
+
+## Create and save list
+
+Put info into a list, save as rds.
+
+```{r}
+#| label: get-save-inputs
+#| output: false
+
+a <- proc.time()
+inputs_list <- sheets_get |>
+  rlang::set_names() |>
+  purrr::map(get_data, DIRS$plan_xdfile)
+b <- proc.time()
+b - a # 3 secs
+
+names(inputs_list)
+inputs_list$benefit_rules
+
+fname <- paste0(PLAN_CONSTANTS$plan, "_inputs_raw.rds")
+saveRDS(inputs_list, fs::path(DIRS$work, fname))
+
+```
+
+```{r}
+#| label: check-inputs
+#| eval: false
+
+check <- readRDS(fs::path(DIRS$xddir, fname))
+
+names(check)
+
+```
+
+
+```{r}
+#| label: stop
+#| echo: false
+
+knitr::knit_exit()
+```
+
