@@ -1,0 +1,38 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---    
+
+# Tests: Extracted data
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+DIRS <- set_plan_dirs(PLAN_CONSTANTS)
+
+```
+
+
+```{r}
+#| eval: true
+
+fpath <- fs::path(DIRS$work, "tests_amortization_bases_results.csv")
+status <- readr::read_csv(fpath)
+
+if (status$passed) {
+  fname <- "amortization_bases.rds"
+  file_copy(
+    fs::path(DIRS$work, fname),
+    fs::path(DIRS$stage, fname),
+    overwrite = TRUE
+  )
+} else {
+  stop("amortization_bases failure")
+}
+
+```

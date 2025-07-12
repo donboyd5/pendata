@@ -1,0 +1,56 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---    
+
+# Tests: Amortization bases
+
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+DIRS <- set_plan_dirs(PLAN_CONSTANTS)
+
+```
+
+```{r}
+
+amortization_bases <- readRDS(fs::path(DIRS$work, "amortization_bases.rds"))
+
+```
+
+
+```{r}
+#| label: tests
+#| echo: true
+
+# # here::here("data-raw/plans/tests/testthat/test_headcount_salary.R"),
+
+test_results <- test_that("sum of amortization bases", {
+  amosum <- sum(amortization_bases$amo_balance)
+  expect_gte(amosum, 0)
+}) # returns a boolean; test_file returns a list
+
+```
+
+
+```{r}
+
+fpath <- fs::path(DIRS$work, "tests_amortization_bases_results.csv")
+
+if (fs::file_exists(fpath)) {
+  fs::file_delete(fpath)
+}
+
+tibble(
+  test = "all amortization_bases tests passed",
+  passed = test_results # all_tests_passed(test_results)
+) |>
+  readr::write_csv(fpath)
+
+```

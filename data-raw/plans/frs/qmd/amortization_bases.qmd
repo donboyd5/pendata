@@ -84,6 +84,6 @@ skimr::skim(amo2)
 ```{r}
 #| label: clean-and-save
 
-saveRDS(amo2, fs::path(DIRS$staged, "amortization_bases.rds"))
+saveRDS(amo2, fs::path(DIRS$work, "amortization_bases.rds"))
 
 ```

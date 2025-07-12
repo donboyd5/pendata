@@ -35,8 +35,25 @@ input_data_list <- readRDS(fs::path(DIRS$work, fname))
 # here::here("data-raw/plans/tests/testthat/test_headcount_salary.R"),
 
 test_results <- testthat::test_file(
-  here::here("data-raw/plans/tests/testthat/test_sheets.R"),
+  here::here("data-raw/plans/tests/testthat/test_extracted_sheets.R"),
   reporter = testthat::TapReporter$new()
 )
+
+```
+
+
+```{r}
+
+fpath <- fs::path(DIRS$work, "tests_extracted_data_results.csv")
+
+if (fs::file_exists(fpath)) {
+  fs::file_delete(fpath)
+}
+
+tibble(
+  test = "all data extraction tests passed",
+  passed = all_tests_passed(test_results)
+) |>
+  readr::write_csv(fpath)
 
 ```

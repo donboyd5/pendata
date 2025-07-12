@@ -29,13 +29,20 @@ book:
     collapse-level: 1
   chapters:
     - index.qmd # index.qmd must be in the quarto project root folder
+
     - get_and_save_extracted_data.qmd
-    - test_extracted_data.qmd
+    - test_extracted_data.qmd # no need to stage this as it is only in the work area
+
     - amortization_bases.qmd
+    - test_amortization_bases.qmd
+    - stage_amortization_bases.qmd
+
     - benefit_rules.qmd
     - benefit_rules_test_cases.qmd
+
     - headcount_salary.qmd
     - salary_growth.qmd
+
     - withdrawal.qmd
     - assemble_list.qmd
 
