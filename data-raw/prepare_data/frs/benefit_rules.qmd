@@ -1,0 +1,73 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---
+
+# Benefit rules
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+DIRS <- set_plan_dirs(PLAN_CONSTANTS)
+
+rawdata <- readRDS(fs::path(DIRS$xddir, "frs_inputs_raw.rds"))
+names(rawdata)
+
+```
+
+```{r}
+#| label: get-data
+
+sheet <- "benefit_rules"
+info <- rawdata[[sheet]]$info
+data <- rawdata[[sheet]]$data
+
+```
+
+
+```{r}
+#| label: explore-data
+
+info # are there any notes of interest?
+data
+
+skimr::skim(data)
+
+```
+
+## Clean the data
+
+-       Convert dates to date class
+-       Convert amortization values to numeric
+-       Examine plausibility
+
+
+```{r}
+#| label: clean-data
+
+count(data, class) # no drop or frs total
+count(data, tier)
+count(data, early_retirement)
+
+benefit_rules <- data |>
+  mutate(across(c(starts_with("dist_"), starts_with("yos_")), as.integer)) |>
+  mutate(benmult = as.numeric(benmult))
+
+# inspect values
+skimr::skim(benefit_rules) # why no zero for benmult??
+
+```
+
+
+## After all tests are passed save file to staging area
+
+```{r}
+#| label: clean-and-save
+
+saveRDS(benefit_rules, fs::path(DIRS$staged, "benefit_rules.rds"))
+
+```
