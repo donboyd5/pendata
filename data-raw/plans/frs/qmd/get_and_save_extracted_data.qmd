@@ -16,9 +16,6 @@ format:
 source(here::here("data-raw", "R", "setup.R"))
 DIRS <- set_plan_dirs(PLAN_CONSTANTS)
 
-# # plan-specific setup
-source(fs::path(DIRS$extract_data, "functions_data.R"))
-
 ```
 
 
@@ -60,7 +57,7 @@ saveRDS(inputs_list, fs::path(DIRS$work, fname))
 #| label: check-inputs
 #| eval: false
 
-check <- readRDS(fs::path(DIRS$xddir, fname))
+check <- readRDS(fs::path(DIRS$work, fname))
 
 names(check)
 

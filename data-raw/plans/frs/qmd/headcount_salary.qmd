@@ -129,7 +129,7 @@ For now, put tests inline. Later move or add them to package tests.
 
 # NOTE: We can only run the headcount_salary tests if a plan's headcount and salary data has row and column totals
 testthat::test_file(
-  fs::path(DIRS$prepare_data, "tests/testthat/test_headcount_salary.R"),
+  here::here("data-raw/plans/tests/testthat/test_headcount_salary.R"),
   reporter = testthat::TapReporter$new()
 )
 
