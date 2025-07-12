@@ -19,7 +19,7 @@ get_limits <- function(info) {
     end_col <- cellranger::letter_to_num(get_item("end_col", info))
     start_row <- get_item("start_row", info) |> as.numeric()
     # Create cell_limits object
-    limits <- cell_limits(
+    limits <- cellranger::cell_limits(
       ul = c(start_row, start_col),
       lr = c(NA, end_col) # NA means go to bottom of the sheet
     )
@@ -34,7 +34,7 @@ get_data <- function(sheet, path) {
     range = cell_cols("A:B"),
     col_names = c("item", "value")
   ))
-  info <- bind_rows(tibble(item = "sheet", value = sheet), info)
+  info <- dplyr::bind_rows(tibble(item = "sheet", value = sheet), info)
 
   limits <- get_limits(info)
 
