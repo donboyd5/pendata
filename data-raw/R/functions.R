@@ -86,3 +86,11 @@ flip_stack <- function(
 #   collb = yoslb,
 #   colub = yosub
 # )
+
+all_tests_passed <- function(test_results) {
+  # inspect a list of testthat results to see if all are passed
+  test_results |>
+    as_tibble() |>
+    pull(passed) |>
+    all()
+}
