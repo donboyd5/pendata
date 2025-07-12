@@ -30,6 +30,8 @@ book:
   chapters:
     - index.qmd # index.qmd must be in the quarto project root folder
     - amortization_bases.qmd
+    - benefit_rules.qmd
+    - benefit_rules_test.qmd
     - headcount_salary.qmd
     - salary_growth.qmd
     - withdrawal.qmd
@@ -41,10 +43,11 @@ book:
 # library(devtools)  # Includes usethis
 # usethis::create_package("E:/R_projects/Reason/pendata")
 
-# remove.packages("pendata")
 # detach(package:pendata)
+# remove.packages("pendata")
 # devtools::document()
 # close any externally open files (e.g., Excel) that are in project folders
-# devtools::build()
+#     devtools::build() # not needed when doing devtools::install()
+# devtools::install()
 # library(pendata)
 # plan <- pendata::frs
