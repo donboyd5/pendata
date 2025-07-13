@@ -7,7 +7,7 @@ format:
     css: wider.css
 ---    
 
-# Tests: Amortization bases
+# Stage: Amortization bases
 
 ```{r}
 #| label: setup
