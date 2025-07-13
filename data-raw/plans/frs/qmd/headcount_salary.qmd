@@ -117,44 +117,66 @@ count(hcs_tbl, variable, rectype)
 
 ```
 
-## Tests
+## Tests: Headcount-salary data
 
-For now, put tests inline. Later move or add them to package tests.
+For now, put tests inline. Maybe later, move or add them to package tests.
 
 ```{r}
 #| label: headcount-salary-tests
 
-# testthat::local_edition(3)
+testthat::local_edition(3)
 # library(testthat)
 
 # NOTE: We can only run the headcount_salary tests if a plan's headcount and salary data has row and column totals
-testthat::test_file(
+test_results <- testthat::test_file(
   here::here("data-raw/plans/tests/testthat/test_headcount_salary.R"),
   reporter = testthat::TapReporter$new()
 )
 
 ```
 
-## If tests pass, drop totals, do final cleanup, and save details for later inclusion in package
+```{r}
+#| label: save-test-results
+
+fpath <- fs::path(DIRS$work, "tests_headcount_salary_results.csv")
+
+if (fs::file_exists(fpath)) {
+  fs::file_delete(fpath)
+}
+
+tibble(
+  test = "all headcount-salary tests passed",
+  passed = all_tests_passed(test_results)
+) |>
+  readr::write_csv(fpath)
+
+
+```
+
+## Stage: If headcount-salary data tests pass, clean and stage data
 
 ```{r}
 #| label: clean-and-save
 
-glimpse(hcs_tbl)
+fpath <- fs::path(DIRS$work, "tests_headcount_salary_results.csv")
+status <- readr::read_csv(fpath)
 
 # remove the totals records
 # drop unnecessary columns
 # make wide
 # sort
+if (status$passed) {
+  hcs_tbl <- readRDS(fs::path(DIRS$work, "hcs_tbl.rds"))
 
-headcount_salary <- hcs_tbl |>
-  filter(rectype == "detail") |>
-  select(-rectype) |>
-  pivot_wider(names_from = variable) |>
-  arrange(class, age_lb, age_ub, yos_lb, yos_ub)
+  # glimpse(hcs_tbl)
+  headcount_salary <- hcs_tbl |>
+    filter(rectype == "detail") |>
+    select(-rectype) |>
+    pivot_wider(names_from = variable) |>
+    arrange(class, age_lb, age_ub, yos_lb, yos_ub)
 
-skimr::skim(headcount_salary) # make sure no missing values and no implausible values
-
-saveRDS(headcount_salary, fs::path(DIRS$staged, "headcount_salary.rds"))
+  # skimr::skim(headcount_salary) # make sure no missing values and no implausible values
+  saveRDS(headcount_salary, fs::path(DIRS$staged, "headcount_salary.rds"))
+}
 
 ```
