@@ -1,4 +1,4 @@
-reset_all <- function(plan, delete = TRUE) {
+reset_all <- function(plan, delete = FALSE) {
   data <- here::here("data")
   plan_dir <- here::here("data-raw", "plans", plan)
   work <- fs::path(plan_dir, "work")
@@ -45,7 +45,9 @@ reset_all <- function(plan, delete = TRUE) {
       }
     })
   } else {
-    message("Files available to delete:")
+    message(
+      "Files available to delete (call reset_all() with 'delete = TRUE'):"
+    )
     purrr::walk(files, message)
   }
 

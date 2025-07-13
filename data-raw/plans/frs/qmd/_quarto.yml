@@ -55,5 +55,6 @@ book:
 # source(here::here("data-raw/R/buildit.R"))
 
 # source(here::here("data-raw", "R", "functions_reset.R"))
-# reset_all("frs", delete=FALSE)
 # reset_all("frs")
+# reset_all("frs", delete=TRUE)
+
