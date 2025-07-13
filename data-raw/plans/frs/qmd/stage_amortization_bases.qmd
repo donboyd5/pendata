@@ -7,7 +7,7 @@ format:
     css: wider.css
 ---    
 
-# Tests: Extracted data
+# Tests: Amortization bases
 
 ```{r}
 #| label: setup
