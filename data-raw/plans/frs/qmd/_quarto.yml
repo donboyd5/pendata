@@ -17,7 +17,7 @@ editor_options:
 execute:
   eval: true
   echo: true
-  output: true
+  output: false
   freeze: false  # auto: during global project renders, re-render only when source changes
 
 book:
@@ -28,24 +28,30 @@ book:
   sidebar:
     collapse-level: 1
   chapters:
-    - index.qmd # index.qmd must be in the quarto project root folder
-
-    - get_and_save_extracted_data.qmd
-    - test_extracted_data.qmd # no need to stage this as it is only in the work area
-
-    - amortization_bases.qmd
-    - test_amortization_bases.qmd
-    - stage_amortization_bases.qmd
-
-    - benefit_rules.qmd
-    - benefit_rules_test_cases.qmd
-
-    - headcount_salary.qmd
-    - salary_growth.qmd
-
-    - withdrawal.qmd
-    - assemble_list.qmd
-
+    - index.qmd
+    - part: "Extract Data"
+      chapters:
+        - get_and_save_extracted_data.qmd
+        - test_extracted_data.qmd
+    - part: "Amortization Bases"
+      chapters:
+        - amortization_bases.qmd
+        - test_amortization_bases.qmd
+        - stage_amortization_bases.qmd
+    - part: "Benefit Rules"
+      chapters:
+        - benefit_rules.qmd
+        - benefit_rules_test_cases.qmd
+    - part: "Salary & Headcount"
+      chapters:
+        - headcount_salary.qmd
+        - salary_growth.qmd
+    - part: "Withdrawals"
+      chapters:
+        - withdrawal.qmd
+    - part: "Assemble list for `pendata` package"
+      chapters:
+        - assemble_list.qmd
 
 # creating a package
 # install.packages(c("devtools", "usethis", "roxygen2", "testthat", "pkgdown"))
