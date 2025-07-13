@@ -12,7 +12,7 @@ format:
 #| label: setup
 
 source(here::here("data-raw", "R", "setup.R"))
-DIRS <- set_plan_dirs(PLAN_CONSTANTS)
+DIRS <- set_plan_dirs(PLAN_CONSTANTS$plan)
 
 rawdata <- readRDS(fs::path(DIRS$work, "frs_inputs_raw.rds"))
 names(rawdata)

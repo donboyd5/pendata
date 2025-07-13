@@ -16,7 +16,7 @@ format:
 source(here::here("data-raw", "R", "setup.R"))
 source(here::here("data-raw", "R", "functions_data.R"))
 
-DIRS <- set_plan_dirs(PLAN_CONSTANTS)
+DIRS <- set_plan_dirs(PLAN_CONSTANTS$plan)
 
 ```
 
@@ -25,7 +25,8 @@ DIRS <- set_plan_dirs(PLAN_CONSTANTS)
 ```{r}
 #| label: get-sheetnames
 
-sheets <- readxl::excel_sheets(DIRS$plan_xdfile)
+xdpath <- fs::path(DIRS$xddir, PLAN_CONSTANTS$xd_filename)
+sheets <- readxl::excel_sheets(xdpath)
 sheets_get <- sheets[!stringr::str_starts(sheets, "0_")] |> sort()
 
 ```
@@ -42,7 +43,7 @@ Put info into a list, save as rds.
 a <- proc.time()
 inputs_list <- sheets_get |>
   rlang::set_names() |>
-  purrr::map(get_data, DIRS$plan_xdfile)
+  purrr::map(get_data, xdpath)
 b <- proc.time()
 b - a # 3 secs
 
