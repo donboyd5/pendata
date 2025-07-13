@@ -1,8 +1,11 @@
 reset_all <- function(plan, delete = FALSE) {
-  data <- here::here("data")
-  plan_dir <- here::here("data-raw", "plans", plan)
-  work <- fs::path(plan_dir, "work")
-  staged <- fs::path(plan_dir, "staged")
+  source(here::here("data-raw", "R", "functions_folders.R"))
+  DIRS <- set_plan_dirs(plan)
+
+  data <- DIRS$data
+  plan_dir <- DIRS$plan_dir
+  work <- DIRS$work
+  staged <- DIRS$staged
 
   # Data file path correction
   if (!fs::dir_exists(data)) {
@@ -55,5 +58,5 @@ reset_all <- function(plan, delete = FALSE) {
 }
 
 # Example usage
-# reset_all("frs", delete = FALSE)
 # reset_all("frs")
+# reset_all("frs", delete = TRUE)
