@@ -42,10 +42,15 @@ book:
       chapters:
         - benefit_rules.qmd
         - benefit_rules_test_cases.qmd
+    - part: "Retirees"
+      chapters:
+        - retirees.qmd
+        - test_retirees.qmd
+        - stage_retirees.qmd
     - part: "Salary & Headcount"
       chapters:
         - headcount_salary.qmd
-        - salary_growth.qmd
+        - salary_growth.qmd        
     - part: "Withdrawals"
       chapters:
         - withdrawal.qmd

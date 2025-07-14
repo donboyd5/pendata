@@ -1,0 +1,62 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---    
+
+# Tests: Retirees
+
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+DIRS <- set_plan_dirs(PLAN_CONSTANTS$plan)
+
+```
+
+```{r}
+
+retirees <- readRDS(fs::path(DIRS$work, "retirees_with_totals.rds"))
+
+```
+
+
+```{r}
+#| label: tests
+#| echo: true
+
+# here::here("data-raw/plans/tests/testthat/test_headcount_salary.R"),
+
+test_results <- test_that("sums equal reported totals", {
+  checksums <- retirees |>
+    mutate(rectype = ifelse(age_label == "Total", "total", "detail")) |>
+    pivot_longer(cols = c(count, benefits)) |>
+    summarise(value = sum(value), .by = c(type, rectype, name)) |>
+    pivot_wider(names_from = rectype)
+
+  expect_equal(checksums$detail, checksums$total)
+}) # returns a boolean; test_file returns a list
+
+```
+
+
+```{r}
+#| label: tests-passed
+
+fpath <- fs::path(DIRS$work, "tests_retirees.csv")
+
+if (fs::file_exists(fpath)) {
+  fs::file_delete(fpath)
+}
+
+tibble(
+  test = "all retirees tests passed",
+  passed = test_results # all_tests_passed(test_results)
+) |>
+  readr::write_csv(fpath)
+
+```
