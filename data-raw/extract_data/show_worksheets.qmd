@@ -14,7 +14,6 @@ format:
 #| label: setup
 
 source(here::here("data-raw", "R", "setup.R"))
-DIRS <- set_plan_dirs(PLAN_CONSTANTS$plan)
 
 # plan-specific setup
 source(fs::path(DIRS$extract_data, "functions_data.R"))

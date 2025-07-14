@@ -2,7 +2,6 @@ testthat::local_edition(3)
 library(testthat)
 
 # source(here::here("R", "setup.R"))
-# DIRS <- set_plan_dirs("frs")
 
 hcs_tbl <- readRDS(fs::path(DIRS$work, "hcs_tbl.rds"))
 

@@ -19,8 +19,6 @@ format:
 source(here::here("data-raw", "R", "setup.R"))
 source(here::here("data-raw", "R", "functions_get_excel_data.R")) # only needed for this qmd file so not in setup
 
-DIRS <- set_plan_dirs(PLAN_CONSTANTS$plan)
-
 ```
 
 ## Define sheets to get

@@ -8,3 +8,4 @@ source(here::here("data-raw", "R", "functions_folders.R"))
 source(here::here("data-raw", "R", "buildit.R"))
 
 PLAN_CONSTANTS <- jsonlite::fromJSON(here::here("data-raw", "plan_config.json"))
+DIRS <- set_plan_dirs(PLAN_CONSTANTS$plan)
