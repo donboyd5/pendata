@@ -33,6 +33,7 @@ book:
       chapters:
         - get_and_save_extracted_data.qmd
         - test_extracted_data.qmd
+        # extracted data stays in the work_data folder and does not need to be staged
     - part: "Amortization Bases"
       chapters:
         - amortization_bases.qmd
