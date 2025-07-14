@@ -21,7 +21,7 @@ DIRS <- set_plan_dirs(PLAN_CONSTANTS$plan)
 ```{r}
 #| eval: true
 
-fpath <- fs::path(DIRS$work, "tests_amortization_bases_results.csv")
+fpath <- fs::path(DIRS$work, "tests_amortization_bases.csv")
 status <- readr::read_csv(fpath)
 
 if (status$passed) {

@@ -9,12 +9,15 @@ format:
 
 # Get and save extracted inputs
 
+-   Read all sheets and their metadata
+-   Put them into a list
+-   Save as .rds in plan working folder
 
 ```{r}
 #| label: setup
 
 source(here::here("data-raw", "R", "setup.R"))
-source(here::here("data-raw", "R", "functions_data.R"))
+source(here::here("data-raw", "R", "functions_get_excel_data.R")) # only needed for this qmd file so not in setup
 
 DIRS <- set_plan_dirs(PLAN_CONSTANTS$plan)
 
@@ -59,6 +62,7 @@ saveRDS(inputs_list, fs::path(DIRS$work, fname))
 #| label: check-inputs
 #| eval: false
 
+fname <- paste0(PLAN_CONSTANTS$plan, "_inputs_raw.rds")
 check <- readRDS(fs::path(DIRS$work, fname))
 
 names(check)

@@ -41,7 +41,7 @@ test_results <- test_that("sum of amortization bases", {
 
 ```{r}
 
-fpath <- fs::path(DIRS$work, "tests_amortization_bases_results.csv")
+fpath <- fs::path(DIRS$work, "tests_amortization_bases.csv")
 
 if (fs::file_exists(fpath)) {
   fs::file_delete(fpath)
