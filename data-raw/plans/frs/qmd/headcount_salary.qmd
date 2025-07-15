@@ -137,7 +137,7 @@ test_results <- testthat::test_file(
 ```{r}
 #| label: save-test-results
 
-fpath <- fs::path(DIRS$work, "tests_headcount_salary_results.csv")
+fpath <- fs::path(DIRS$work, "tests_headcount_salary.csv")
 
 if (fs::file_exists(fpath)) {
   fs::file_delete(fpath)
@@ -157,7 +157,7 @@ tibble(
 ```{r}
 #| label: clean-and-save
 
-fpath <- fs::path(DIRS$work, "tests_headcount_salary_results.csv")
+fpath <- fs::path(DIRS$work, "tests_headcount_salary.csv")
 status <- readr::read_csv(fpath)
 
 # remove the totals records
