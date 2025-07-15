@@ -52,7 +52,7 @@ reset_all <- function(plan, delete = FALSE) {
       paste0(
         'Files below are available to delete. To delete, call `reset_all("',
         plan,
-        '", delete = TRUE).`\n'
+        '", delete = TRUE)`.\n'
       )
     )
     purrr::walk(files, message)
