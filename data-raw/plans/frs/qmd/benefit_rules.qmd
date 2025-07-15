@@ -62,11 +62,11 @@ skimr::skim(benefit_rules) # why no zero for benmult??
 ```
 
 
-## After all tests are passed save file to staging area
+## Save file to work folder
 
 ```{r}
 #| label: clean-and-save
 
-saveRDS(benefit_rules, fs::path(DIRS$staged, "benefit_rules.rds"))
+saveRDS(benefit_rules, fs::path(DIRS$work, "benefit_rules.rds"))
 
 ```
