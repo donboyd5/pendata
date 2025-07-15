@@ -10,28 +10,41 @@ format:
 # Tests: Benefit-multiplier rules and function
 
 ```{r}
+#| label: setup
+
+# source(here::here("data-raw", "R", "setup.R")) # loaded in test_benefit_multiplier.R
+
+```
+
+
+```{r}
 #| label: benefit-multiplier-tests
 #| echo: true
 
 # # here::here("data-raw/plans/tests/testthat/test_headcount_salary.R"),
 
 test_results <- testthat::test_file(
-  fs::path(DIRS$extract_data, "tests/testthat/test_benefit_multiplier.R"),
+  here::here("data-raw", "plans", "tests/testthat/test_benefit_multiplier.R"),
   reporter = TapReporter$new()
 )
 
-# test_results |>
-#   as_tibble() |>
-#   filter(failed > 0)
+```
 
-# Extract all test expectations
-# all_expectations <- unlist(lapply(test_results$results, function(x) x))
 
-# # Find failed expectations
-# failures <- Filter(function(x) inherits(x, "expectation_failure"), all_expectations)
 
-# if (length(failures) > 0 {
-#   waldo::compare(failures[[1]]$expected, failures[[1]]$actual)
-# }
+```{r}
+#| label: save-test-results
+
+fpath <- fs::path(DIRS$work, "tests_benefit_rules.csv")
+
+if (fs::file_exists(fpath)) {
+  fs::file_delete(fpath)
+}
+
+tibble(
+  test = "all bemefot rules tests passed",
+  passed = all_tests_passed(test_results)
+) |>
+  readr::write_csv(fpath)
 
 ```
