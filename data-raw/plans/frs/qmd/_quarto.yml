@@ -74,3 +74,12 @@ book:
 # reset_all("frs")
 # reset_all("frs", delete=TRUE)
 
+# ---
+# format:
+#   html:
+#     toc: true
+#     toc-depth: 4
+#     page-layout: full
+#     css: wider.css
+# ---    
+
