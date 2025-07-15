@@ -43,7 +43,8 @@ book:
       chapters:
         - benefit_rules.qmd
         - benefit_rules_test_cases.qmd
-        # - test_benefit_rules.qmd
+        - test_benefit_rules.qmd
+        - stage_benefit_rules_and_test_cases.qmd
     - part: "Retirees"
       chapters:
         - retirees.qmd
