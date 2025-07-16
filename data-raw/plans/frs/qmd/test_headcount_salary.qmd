@@ -1,0 +1,71 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---    
+
+# Tests: Headcount-salary data
+
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+
+```
+
+
+```{r}
+#| label: headcount-salary-tests
+
+testthat::local_edition(3)
+# library(testthat)
+
+# NOTE: We can only run the headcount_salary tests if a plan's headcount and salary data has row and column totals
+test_results <- testthat::test_file(
+  here::here("data-raw/plans/tests/testthat/test_headcount_salary.R"),
+  reporter = testthat::TapReporter$new()
+)
+
+```
+
+```{r}
+
+amortization_bases <- readRDS(fs::path(DIRS$work, "amortization_bases.rds"))
+
+```
+
+
+```{r}
+#| label: tests
+#| echo: true
+
+# # here::here("data-raw/plans/tests/testthat/test_headcount_salary.R"),
+
+# NOTE: We can only run the headcount_salary tests if a plan's headcount and salary data has row and column totals
+test_results <- testthat::test_file(
+  here::here("data-raw/plans/tests/testthat/test_headcount_salary.R"),
+  reporter = testthat::TapReporter$new()
+)
+
+```
+
+
+```{r}
+
+fpath <- fs::path(DIRS$work, "tests_amortization_bases.csv")
+
+if (fs::file_exists(fpath)) {
+  fs::file_delete(fpath)
+}
+
+tibble(
+  test = "all amortization_bases tests passed",
+  passed = test_results # all_tests_passed(test_results)
+) |>
+  readr::write_csv(fpath)
+
+```
