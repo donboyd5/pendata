@@ -13,9 +13,7 @@
 #  #' @keywords internal
 #' @return Returns invisible(NULL).
 buildit <- function() {
-  # before running, close any externally open files (e.g., Excel) that are in project folders
-
-  # Clear existing package if loaded
+  # Detach if loaded
   if ("package:pendata" %in% search()) {
     detach("package:pendata", unload = TRUE, force = TRUE)
   }
@@ -23,19 +21,21 @@ buildit <- function() {
   # Remove installed package
   try(remove.packages("pendata"), silent = TRUE)
 
-  # Clear objects from memory
-  rm(list = ls(all.names = TRUE)) # Clears all objects
-  gc() # Triggers garbage collection
+  # Clear global environment
+  rm(list = ls(envir = .GlobalEnv), envir = .GlobalEnv)
+  gc()
 
-  # Rebuild and install
+  # Rebuild and install package
   devtools::document()
   devtools::install()
 
-  # Load the fresh package
+  # Load package and show version
   library(pendata)
-  packageVersion("pendata")
+  print(packageVersion("pendata"))
+
   invisible(NULL)
 }
+
 
 #' INTERNAL: Delete or List All Working and Final Files for a Pension Plan
 #'
