@@ -24,6 +24,29 @@ names(rawdata)
 ```{r}
 #| label: get-data
 
+# which sheets?
+sheets <- str_subset(names(rawdata), "retire_rates")
+
+# 6 sheets, each with own formatting
+list2env(rawdata[sheets], envir = .GlobalEnv) # put each sheet, including its info and data, into environment
+
+# alternatively put just the data into the environment
+data_list <- sheets |>
+  map(~ pluck(rawdata, .x, "data")) |> 
+  set_names(sheets)
+list2env(data_list, envir = .GlobalEnv)
+
+sheets |>
+  map(~ pluck(rawdata, .x, "data")) |> 
+  set_names(sheets) |> 
+  list2env(envir = .GlobalEnv)
+
+rm(list=ls(pattern="retire_rates"))
+
+# drop and normal tibbles each have 11 columns
+
+
+
 sheet <- "retirees_disability"
 disb_info <- rawdata[[sheet]]$info
 disb_data <- rawdata[[sheet]]$data
