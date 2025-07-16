@@ -50,6 +50,11 @@ book:
         - retirees.qmd
         - test_retirees.qmd
         - stage_retirees.qmd
+    - part: "Retirement Rates"
+      chapters:
+        - retirement_rates.qmd
+        # - test_retirement_rates.qmd
+        # - stage_retirement_rates.qmd        
     - part: "Salary & Headcount"
       chapters:
         - headcount_salary.qmd

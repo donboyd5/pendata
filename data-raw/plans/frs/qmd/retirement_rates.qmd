@@ -1,0 +1,75 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---    
+
+# Prepare: Retirement Rates
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+
+rawdata <- readRDS(fs::path(DIRS$work, "frs_inputs_raw.rds"))
+names(rawdata)
+
+```
+
+## Get retirement rate data
+
+```{r}
+#| label: get-data
+
+sheet <- "retirees_disability"
+disb_info <- rawdata[[sheet]]$info
+disb_data <- rawdata[[sheet]]$data
+
+sheet <- "retirees_normearly"
+ne_info <- rawdata[[sheet]]$info
+ne_data <- rawdata[[sheet]]$data
+
+retirees1 <- bind_rows(disb_data, ne_data) |>
+  rename(age_label = age)
+retirees1
+
+```
+
+
+## Clean retirement rate data
+
+-       add age bounds
+-       convert to numeric
+-       keep totals until after testing
+
+```{r}
+
+# define bounds
+(agelabel <- retirees1$age_label |> unique())
+agelb <- c(CONSTANTS$minage, seq(50, 80, 5), CONSTANTS$minage)
+ageub <- c(seq(49, 79, 5), CONSTANTS$maxage, CONSTANTS$maxage)
+cbind(agelabel, agelb, ageub)
+
+ages <- tibble(age_label = agelabel, age_lb = agelb, age_ub = ageub)
+
+retirees2 <- retirees1 |>
+  left_join(ages, by = join_by(age_label)) |>
+  mutate(count = as.integer(count), benefits = as.numeric(benefits))
+
+
+```
+
+## Save to working folder
+
+```{r}
+#| output: true
+
+skimr::skim(retirees2)
+retirees2
+
+# saveRDS(retirees2, fs::path(DIRS$work, "retirees_with_totals.rds"))
+
+```
