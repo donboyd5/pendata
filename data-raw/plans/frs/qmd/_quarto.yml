@@ -43,12 +43,18 @@ book:
       chapters:
         - benefit_rules.qmd
         - benefit_rules_test_cases.qmd
-        # - test_benefit_rules.qmd
+        - test_benefit_rules.qmd
+        - stage_benefit_rules_and_test_cases.qmd
     - part: "Retirees"
       chapters:
         - retirees.qmd
         - test_retirees.qmd
         - stage_retirees.qmd
+    # - part: "Retirement Rates"
+    #   chapters:
+    #     - retirement_rates.qmd
+        # - test_retirement_rates.qmd
+        # - stage_retirement_rates.qmd        
     - part: "Salary & Headcount"
       chapters:
         - headcount_salary.qmd
@@ -68,8 +74,18 @@ book:
 # usethis::create_package("E:/R_projects/Reason/pendata")
 
 # source(here::here("data-raw/R/buildit.R"))
+# source(here::here("data-raw", "R", "setup.R"))
 
-# source(here::here("data-raw", "R", "functions_reset.R"))
+# source(here::here("R", "internal_functions.R"))
 # reset_all("frs")
 # reset_all("frs", delete=TRUE)
+
+# ---
+# format:
+#   html:
+#     toc: true
+#     toc-depth: 4
+#     page-layout: full
+#     css: wider.css
+# ---    
 

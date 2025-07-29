@@ -6,7 +6,8 @@
 *.Rproj
 desktop.ini
 
-# folders
+# package folders that should be ignored
+/man/
 
 # ignore selected folders anywhere they appear
 _freeze/

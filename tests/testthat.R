@@ -7,11 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
+library(pendata)
 
-# Source your functions
-# source(here::here("R", "benefit-functions.R"))
-# source(here::here("R", "lookup-functions.R"))
-# source(here::here("R", "data-extraction.R"))
-
-# Run tests
-# test_check("your-project-name")
+test_check("pendata")

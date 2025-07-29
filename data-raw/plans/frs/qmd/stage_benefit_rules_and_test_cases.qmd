@@ -1,0 +1,42 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---    
+
+# Stage: Amortization bases
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+
+```
+
+
+```{r}
+#| eval: true
+
+fpath <- fs::path(DIRS$work, "tests_benefit_rules.csv")
+status <- readr::read_csv(fpath)
+
+if (!all(status$passed)) {
+  stop("retiree tests failure")
+}
+
+benefit_rules <- readRDS(fs::path(DIRS$work, "benefit_rules.rds"))
+benefit_rules_test_cases <- readRDS(fs::path(
+  DIRS$work,
+  "benefit_rules_test_cases.rds"
+))
+
+saveRDS(benefit_rules, fs::path(DIRS$staged, "benefit_rules.rds"))
+saveRDS(
+  benefit_rules_test_cases,
+  fs::path(DIRS$staged, "benefit_rules_test_cases.rds")
+)
+
+```

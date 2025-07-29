@@ -3,19 +3,20 @@ library(testthat)
 library(dplyr)
 
 fname <- paste0(PLAN_CONSTANTS$plan, "_inputs_raw.rds")
-input_data_list <- readRDS(fs::path(DIRS$xddir, fname))
+rawdata <- readRDS(fs::path(DIRS$work, fname))
+# names(rawdata)
 
 # Source benefit-multiplier functions
-source(fs::path(DIRS$plandir, "R", "benefit_functions.R"))
-source(fs::path(DIRS$plandir, "R", "lookup_functions.R"))
+source(fs::path(DIRS$plan_dir, "R", "benefit_functions.R"))
+source(fs::path(DIRS$plan_dir, "R", "lookup_functions.R"))
 
-benefit_rules <- input_data_list[["benefit_rules"]]$data |>
+benefit_rules <- rawdata[["benefit_rules"]]$data |>
   mutate(
     across(c(dist_age_min_ge:dist_year_max_lt, benmult), as.numeric),
     early_retirement = as.logical(early_retirement)
   )
 
-test_cases <- input_data_list[["benefit_rules_test"]]$data |>
+test_cases <- rawdata[["benefit_rules_test_cases"]]$data |>
   mutate(
     across(dist_age:expected_benmult, as.numeric),
     early_retirement = as.logical(early_retirement)

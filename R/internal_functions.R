@@ -1,3 +1,50 @@
+#' INTERNAL: Build the Package
+#'
+#' This function:
+#'
+#' - unloads pendata if loaded
+#' - removes pendata if installed
+#' - clears objects from memory
+#' - collects garbage
+#' - documents pendata
+#' - installs pendata
+#' - loads pendata and gives its version
+#'
+#  #' @keywords internal
+#' @return Returns invisible(NULL).
+buildit <- function() {
+  # Detach if loaded
+  if ("package:pendata" %in% search()) {
+    detach("package:pendata", unload = TRUE, force = TRUE)
+  }
+
+  # Remove installed package
+  try(remove.packages("pendata"), silent = TRUE)
+
+  # Clear global environment
+  rm(list = ls(envir = .GlobalEnv), envir = .GlobalEnv)
+  gc()
+
+  # Rebuild and install package
+  devtools::document()
+  devtools::install()
+
+  # Load package and show version
+  library(pendata)
+  print(packageVersion("pendata"))
+
+  invisible(NULL)
+}
+
+
+#' INTERNAL: Delete or List All Working and Final Files for a Pension Plan
+#'
+#' If called with "delete = TRUE", delete all files in the plan's `work_data` and `staged_data` folders, and delete its final file in the package `data` folder. If `delete` is FALSE (default), list the files available to be deleted.
+#'
+#' @param plan Short name for the plan (character).
+#' @param delete TRUE or FALSE (logical).
+#'
+#' @return Returns invisible(NULL).
 reset_all <- function(plan, delete = FALSE) {
   source(here::here("data-raw", "R", "functions_folders.R"))
   DIRS <- set_plan_dirs(plan)
@@ -52,7 +99,7 @@ reset_all <- function(plan, delete = FALSE) {
       paste0(
         'Files below are available to delete. To delete, call `reset_all("',
         plan,
-        '", delete = TRUE).`\n'
+        '", delete = TRUE)`.\n'
       )
     )
     purrr::walk(files, message)
