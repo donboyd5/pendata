@@ -74,8 +74,9 @@ book:
 # usethis::create_package("E:/R_projects/Reason/pendata")
 
 # source(here::here("data-raw/R/buildit.R"))
-
 # source(here::here("data-raw", "R", "setup.R"))
+
+# source(here::here("R", "internal_functions.R"))
 # reset_all("frs")
 # reset_all("frs", delete=TRUE)
 
