@@ -7,7 +7,7 @@ format:
     css: wider.css
 ---    
 
-# Stage: Amortization bases
+# Stage: Retirees
 
 ```{r}
 #| label: setup
