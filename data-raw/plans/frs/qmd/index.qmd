@@ -9,28 +9,13 @@ This quarto subproject is part of the repo `pendata`, which provides public pens
 
 The steps are:
 
--   *Outside* of this package, analysts put ALL data for a plan into an Excel file and, following rules laid out elsewhere, and copy that Excel file into the `extracted_data` folder for the plan. For example, the file for FRS is "data-raw\plans\frs\extracted_data\frs_extracted_data_v5.xlsm".
+- *Outside* of this package, analysts put ALL data for a plan into an Excel file and, following rules laid out elsewhere, and copy that Excel file into the `extracted_data` folder for the plan. For example, the file for FRS is "data-raw\plans\frs\extracted_data\frs_extracted_data_v5.xlsm".
 
--   Render a quarto project that is specific to the plan in question. (A quarto project is a set of `.qmd` markdown files plus a `_quarto.yml` "recipe" file that says which files will be rendered, in what order.):
-    - The quarto files for FRS are in `data-raw\plans\frs\qmd`. 
-    - Render the project from a terminal by cd'ing to the qmd folder and entering "quarto render". 
-    - Rendering will (1) prepare a plan's data for `pendata` and (2) prepare a plan-specific *local* webpage that describes the results of data preparation.
-    - Usually it will make sense before rendering to delete all working, staged, and final files for the plan -- e.g., `reset_all("frs", delete = TRUE)`. To see a list of files without deleting them, from the console run `reset_all("frs")`. (Before running `reset_all()`, make sure you have done `source(here::here("R", "setup.R"))`.)
+- Render a quarto project that is specific to the plan in question. (A quarto project is a set of `.qmd` markdown files plus a `_quarto.yml` "recipe" file that says which files will be rendered, in what order.)
 
--   After a plan has been rendered, rebuild the `pendata` package to include the plan by running, from the console, `buildit()`.
+- Build the package
 
-## What happens during rendering?
-
-The first rendering step reads all sheets in the extracted data Excel file, puts their metadata and data into a list, and writes the list to the plan's working data folder. This takes a few seconds but makes subsequent access to the sheets very fast.
-
-The quarto project then goes processes the tables in the list. In general, each table will go through 3 steps:
-
--   *Data preparation*: Get the data in a sheet and reformat it to be consistent with what `pendata` requires
--   *Testing*: Apply tests to the data to look for potential errors. The quarto project will stop immediately if any test fails.
--   *Staging*: If the data passes tests, write the reformatted table to a staging area.
-
-After all tables have been prepared, tested, and staged, the quarto project assembles a list of all staged data and saves it in the data folder of the package, ensuring it will be included in the package when built.
-
+- See the *Steps* chapter for details.
 
 ## TODO:
 
