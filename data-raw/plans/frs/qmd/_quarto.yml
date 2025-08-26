@@ -29,6 +29,7 @@ book:
     collapse-level: 1
   chapters:
     - index.qmd
+    - steps.qmd
     - part: "Extract Data"
       chapters:
         - get_and_save_extracted_data.qmd
@@ -50,11 +51,11 @@ book:
         - retirees.qmd
         - test_retirees.qmd
         - stage_retirees.qmd
-    # - part: "Retirement Rates"
-    #   chapters:
-    #     - retirement_rates.qmd
-        # - test_retirement_rates.qmd
-        # - stage_retirement_rates.qmd        
+    - part: "Retirement Rates"
+      chapters:
+        - retirement_rates.qmd
+        - test_retirement_rates.qmd
+        - stage_retirement_rates.qmd        
     - part: "Salary & Headcount"
       chapters:
         - headcount_salary.qmd
@@ -73,7 +74,6 @@ book:
 # library(devtools)  # Includes usethis
 # usethis::create_package("E:/R_projects/Reason/pendata")
 
-# source(here::here("data-raw/R/buildit.R"))
 # source(here::here("data-raw", "R", "setup.R"))
 
 # source(here::here("R", "internal_functions.R"))

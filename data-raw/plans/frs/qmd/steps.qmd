@@ -1,0 +1,48 @@
+---
+editor_options:
+  chunk_output_type: console
+---
+
+# Steps
+
+Load functions needed for re-rendering and for package building:
+   *source(here::here("R", "internal_functions.R"))*
+
+##  Completely re-render a plan from scratch (e.g., frs):
+
+-   see which files should be deleted for complete reset: *reset_all("frs")*
+-   delete the files: *reset_all("frs", delete=TRUE)*
+-   open terminal in the plan qmd folder: *reset_all("frs", delete=TRUE)*
+-   in the terminal, do full re-render of the plan: *quarto render*
+
+This does a soup-to-nuts preparation of data for a single plan:
+
+-   get the data from the plan spreadsheet
+    -   read all sheets in the extracted data Excel file
+    -   put their metadata and data into a list
+    -   write the list to the plan's working data folder
+    -   this takes a few seconds but makes subsequent access to the sheets very fast
+-   prepare the plan data, generally in 3 steps:
+    -   *Data preparation*: Get the data in a sheet and reformat it to be consistent with what `pendata` requires
+    -   *Testing*: Apply tests to the data to look for potential errors. The quarto project will stop immediately if any test fails.
+    -   *Staging*: If the data passes tests, write the reformatted table to a staging area.
+-   save package-ready data to an interim folder
+-   assembles all of the package-ready data files into a plan list
+-   save the final plan list to the package data folder (e.g., frs.rda will be saved to the top-level data folder), so that it will be included in the package when built
+
+## Build the package with the updated plan data
+
+-   make sure the internal functions have been sourced: *source(here::here("R", "internal_functions.R"))*
+-   from the console, run: *buildit()*
+
+This function:
+
+-   unloads the *pendata* package if loaded
+-   uninstalls the package
+-   clears the global environment
+-   rebuilds and installs the *pendata* package
+-   loads the package
+-   prints the package version
+
+You can now do something like: "plan <- pendata::frs" or "plan <- pendata::txtrs" and use the plan in penmodel.
+
