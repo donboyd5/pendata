@@ -1,0 +1,51 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---    
+
+# Stage: Retirees
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+
+```
+
+
+```{r}
+#| eval: false
+
+fpath <- fs::path(DIRS$work, "tests_retirees.csv")
+status <- readr::read_csv(fpath)
+
+if (!all(status$passed)) {
+  stop("retiree tests failure")
+}
+
+retirees1 <- readRDS(fs::path(DIRS$work, "retirees_with_totals.rds"))
+
+retirees <- retirees1 |>
+  filter(age_label != "Total") |>
+  select(type, age_label, age_lb, age_ub, count, benefits)
+
+# saveRDS(retirees, fs::path(DIRS$staged, "retirees.rds"))
+
+# retirees <- retirees1 |>
+#   filter(age_label != "Total") |>   select(type, age_label, age_lb, age_ub, count, benefits)
+
+# fname <- "retirees.rds"
+#   file_copy(
+#     fs::path(DIRS$work, fname),
+#     fs::path(DIRS$stage, fname),
+#     overwrite = TRUE
+#   )
+# } else {
+#   stop("retiree tests failure")
+# }
+
+```

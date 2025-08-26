@@ -1,0 +1,25 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---    
+
+# Tests: Retirement rates
+
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+
+```
+
+```{r}
+#| eval: false
+
+retirees <- readRDS(fs::path(DIRS$work, "retirees_with_totals.rds")) # UPDATE THIS
+
+```
