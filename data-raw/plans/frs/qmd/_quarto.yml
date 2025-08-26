@@ -29,6 +29,7 @@ book:
     collapse-level: 1
   chapters:
     - index.qmd
+    - steps.qmd
     - part: "Extract Data"
       chapters:
         - get_and_save_extracted_data.qmd

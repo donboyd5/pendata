@@ -1,0 +1,42 @@
+---
+editor_options:
+  chunk_output_type: console
+---
+
+# Steps
+
+Load functions needed for re-rendering and for package building:
+   *source(here::here("R", "internal_functions.R"))*
+
+##  Completely re-render a plan from scratch (e.g., frs):
+
+-   see which files should be deleted for complete reset: *reset_all("frs")*
+-   delete the files: *reset_all("frs", delete=TRUE)*
+-   open terminal in the plan qmd folder: *reset_all("frs", delete=TRUE)*
+-   in the terminal, do full re-render of the plan: *quarto render*
+
+This does a soup-to-nuts preparation of data for a single plan:
+
+-   gets the data from the plan spreadsheet
+-   reformats the data creating interim files as needed
+-   runs tests on the data
+-   saves package-ready data to an interim folder
+-   assembles all of the package-ready data files into a plan list
+-   saves the final plan list to the package data folder (e.g., frs.rda will be saved to the top-level data folder)
+
+## Build the package with the updated plan data
+
+-   make sure the internal functions have been sourced: *source(here::here("R", "internal_functions.R"))*
+-   from the console, run: *buildit()*
+
+This function:
+
+-   unloads the *pendata* package if loaded
+-   uninstalls the package
+-   clears the global environment
+-   rebuilds and installs the *pendata* package
+-   loads the package
+-   prints the package version
+
+You can now do something like: "plan <- pendata::frs" or "plan <- pendata::txtrs" and use the plan in penmodel.
+
