@@ -1,0 +1,98 @@
+# Workflow Instructions {.unnumbered}
+
+## Project Overview
+
+This Quarto book serves as the primary communication and documentation hub for the pension data package preparation project. The `claude` folder contains all our collaborative documentation, workflow instructions, and project tracking.
+
+## Quick Start Instructions for Claude
+
+**At the start of each new conversation, simply tell Claude:**
+
+```
+Read claude/quickstart.qmd
+```
+
+This will provide all necessary permissions and instructions. The quickstart file contains:
+
+- All file reading permissions for the project
+- Workflow instructions
+- Important notes about capabilities
+
+## Workflow Guidelines
+
+### Communication Structure
+
+1. **This file (index.qmd)**: Contains workflow instructions and quick-start guide
+2. **qa.qmd**: Running log of our discussions and decisions
+3. **todo.qmd**: Future tasks and project roadmap
+4. **Topic chapters**: Specific documentation for various aspects of the project
+
+### Git Workflow
+
+- The git repository root is at `E:/R_projects/Reason/pendata/`
+- Current branch should be checked before making changes
+- Commit messages should be descriptive and follow conventional commit standards
+- Always check git status before and after changes
+
+### Working Principles
+
+1. **Documentation First**: Document decisions and rationale in the appropriate .qmd file
+2. **Safe Git Practices**: Always verify branch and status before commits
+3. **Clear Communication**: Update qa.qmd with important discussions
+4. **Task Tracking**: Keep todo.qmd current with pending and completed tasks
+
+### File Organization
+
+- `/data-raw/claude/`: Our communication and documentation hub
+- `/data-raw/plans/`: Individual pension plan processing folders
+  - Each plan has its own subfolder (e.g., `frs/`, `txtrs/`)
+  - Contains .qmd files for processing raw data
+  - Contains `extracted_data/` folders with source files
+- `/data/`: Processed .rda files (one per plan, e.g., `frs.rda`, `txtrs.rda`)
+- `/R/`: R package functions
+- `/man/`: Package documentation (auto-generated)
+- `/tests/`: Package tests
+
+## Data Processing Workflow
+
+The pension data package (`pendata`) performs two essential functions:
+
+1. **Process Raw Data**: Takes raw pension plan data and converts it to uniform formats
+2. **Create Package Data**: Produces finished .rda files (one per plan) in the `/data/` folder
+
+### Current Plans in Development
+
+- **Florida Retirement System (FRS)**: Very far along but not complete
+- **Texas Teachers Retirement System (TxTRS)**: Barely started
+- **Future**: 10-20 additional plans planned
+
+### Processing Pipeline
+
+1. **Source Data**: External .xlsm files in `/data-raw/plans/[plan]/extracted_data/`
+2. **Processing Scripts**: .qmd files in `/data-raw/plans/[plan]/`
+3. **Interim Files**: Generated during processing
+4. **Final Output**: .rda file in `/data/` folder
+
+### Standardization Goals
+
+- Make processing as uniform as possible across plans
+- Reuse code wherever feasible
+- Handle plan-specific idiosyncrasies appropriately
+- Note: Complete uniformity isn't possible due to plan differences
+
+## Permissions and Capabilities
+
+Claude has permission to:
+- Read and modify files within the project
+- Execute git commands for version control
+- Create and update documentation
+- Process and analyze data files
+- Run R scripts and tests
+
+## Best Practices
+
+1. Always document significant changes in qa.qmd
+2. Update todo.qmd when tasks are completed or new ones identified
+3. Create topic-specific chapters for complex subjects
+4. Maintain clean, well-commented code
+5. Follow R package development best practices

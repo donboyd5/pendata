@@ -1,0 +1,22 @@
+project:
+  type: book
+  output-dir: _book
+
+book:
+  title: "Pension data package preparation"
+  author: 
+    - "User"
+    - "Claude"
+  date: today
+  chapters:
+    - index.qmd
+    - qa.qmd
+    - todo.qmd
+    - quickstart.qmd
+    - frs_analysis.qmd
+  
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3

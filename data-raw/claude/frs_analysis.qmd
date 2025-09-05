@@ -1,0 +1,102 @@
+# FRS Processing Analysis
+
+## Current State Assessment
+
+### Processing Pipeline Overview
+
+The FRS processing follows this workflow:
+
+1. **Data Extraction** (`get_and_save_extracted_data.qmd`)
+   - Reads from `frs_extracted_data_v5.xlsm`
+   - Saves to work_data folder
+
+2. **Component Processing** (7 main components):
+   - Amortization Bases
+   - Benefit Rules & Test Cases
+   - Retirees
+   - Retirement Rates *(missing from staged_data)*
+   - Headcount & Salary
+   - Salary Growth
+   - Withdrawals
+
+3. **Assembly** (`assemble_list.qmd`)
+   - Collects all staged .rds files
+   - Creates final `frs.rda` in data folder
+
+### Current Staged Components
+
+Files currently in staged_data:
+- ✅ amortization_bases.rds
+- ✅ benefit_rules.rds
+- ✅ benefit_rules_test_cases.rds
+- ✅ headcount_salary.rds
+- ✅ retirees.rds
+- ✅ salarygrowth.rds
+- ✅ withdrawal.rds
+- ❌ **retirement_rates.rds** (MISSING!)
+
+## Identified Gaps and Issues
+
+### 1. Missing Retirement Rates in Staged Data
+**Critical Issue**: The retirement_rates component has processing scripts but no output in staged_data.
+- Files exist: `retirement_rates.qmd`, `test_retirement_rates.qmd`, `stage_retirement_rates.qmd`
+- Need to investigate why staging isn't producing output
+
+### 2. Incomplete Processing Chain
+From _quarto.yml, these components lack complete test/stage steps:
+- **Headcount & Salary**: Has processing but no explicit test/stage files
+- **Salary Growth**: Has processing but no explicit test/stage files  
+- **Withdrawals**: Has processing but no explicit test/stage files
+
+### 3. Data Validation Gaps
+- No comprehensive validation that all required fields are present
+- No cross-component consistency checks
+- Limited documentation of expected data formats
+
+### 4. Process Documentation Issues
+- TODO items in index.qmd need addressing:
+  - Define classes and longer class names separately
+  - Deal with calibration constants
+  - Multiple NA columns in amortization_bases (marked DONE but needs verification)
+
+## Recommendations
+
+### Immediate Actions Required
+
+1. **Fix Retirement Rates Processing**
+   - Debug why `stage_retirement_rates.qmd` isn't producing output
+   - Ensure retirement_rates.rds gets created in staged_data
+
+2. **Complete Processing Chain**
+   - Add test files for headcount_salary, salary_growth, withdrawal
+   - Add stage files where missing
+   - Ensure all components follow the same pattern
+
+3. **Add Validation Framework**
+   - Create a validation script that checks all components
+   - Verify data types, required fields, value ranges
+   - Add cross-component consistency checks
+
+### Standardization Opportunities
+
+1. **Common Functions**
+   - Extract repeated patterns from processing scripts
+   - Create shared validation functions
+   - Standardize error handling
+
+2. **Consistent Structure**
+   - All components should follow: process → test → stage pattern
+   - Use consistent naming conventions
+   - Standardize data formats across components
+
+3. **Template Creation**
+   - Create template .qmd files for new plans
+   - Document required fields and formats
+   - Build reusable test suites
+
+## Next Steps
+
+1. Investigate and fix retirement_rates staging issue
+2. Add missing test/stage files for incomplete components
+3. Create comprehensive validation suite
+4. Extract and document common patterns for reuse with TxTRS
