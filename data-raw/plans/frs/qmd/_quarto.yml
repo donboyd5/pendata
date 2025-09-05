@@ -46,6 +46,9 @@ book:
         - benefit_rules_test_cases.qmd
         - test_benefit_rules.qmd
         - stage_benefit_rules_and_test_cases.qmd
+    - part: "Constants"
+      chapters:
+        - constants.qmd
     - part: "Retirees"
       chapters:
         - retirees.qmd
@@ -68,6 +71,8 @@ book:
     - part: "Assemble list for `pendata` package"
       chapters:
         - assemble_list.qmd
+
+# read steps.qmd for how to build from scratch
 
 # creating a package
 # install.packages(c("devtools", "usethis", "roxygen2", "testthat", "pkgdown"))

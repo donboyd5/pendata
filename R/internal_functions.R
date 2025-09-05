@@ -30,6 +30,7 @@ buildit <- function() {
   devtools::install()
 
   # Load package and show version
+  print("loading pendata and printing version...")
   library(pendata)
   print(packageVersion("pendata"))
 

@@ -9,7 +9,7 @@ This quarto subproject is part of the repo `pendata`, which provides public pens
 
 The steps are:
 
-- *Outside* of this package, analysts put ALL data for a plan into an Excel file and, following rules laid out elsewhere, and copy that Excel file into the `extracted_data` folder for the plan. For example, the file for FRS is "data-raw\plans\frs\extracted_data\frs_extracted_data_v5.xlsm".
+- *Outside* of this package, analysts put ALL data for a plan into an Excel file and, following rules laid out elsewhere, and copy that Excel file into the `extracted_data` folder for the plan. For example, the file for FRS is "data-raw\plans\frs\extracted_data\frs_extracted_data_v6.xlsm".
 
 - Render a quarto project that is specific to the plan in question. (A quarto project is a set of `.qmd` markdown files plus a `_quarto.yml` "recipe" file that says which files will be rendered, in what order.)
 
