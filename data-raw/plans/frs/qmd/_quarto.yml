@@ -9,7 +9,8 @@ format:
     code-fold: true
     number-depth: 5
     toc-depth: 5
-    toc-expand: false
+    toc-expand: true
+    collapse-level: 1
 
 editor_options:
   chunk_output_type: console
@@ -87,4 +88,13 @@ book:
 #     page-layout: full
 #     css: wider.css
 # ---    
+
+
+# stop 
+# ```{r}
+# #| label: stop
+# #| echo: false
+
+# knitr::knit_exit()
+# ```
 

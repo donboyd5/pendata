@@ -1,0 +1,84 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---
+
+# Constants
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+
+```
+
+```{r}
+#| label: get-raw-data
+
+# get the list of raw extracted data
+rawdata <- readRDS(fs::path(DIRS$work, "frs_inputs_raw.rds"))
+names(rawdata)
+
+```
+
+
+```{r}
+#| label: data-for-experimentation
+
+sheet <- "constants_assumptions"
+info <- rawdata[[sheet]]$info
+data <- rawdata[[sheet]]$data
+
+```
+
+## Clean up the data
+
+```{r}
+#| label: clean-data
+
+count(data, datatype)
+data |> filter(is.na(datatype)) # make sure all of these recs are all NAs
+
+data2 <- data |>
+  filter(!is.na(type)) |>
+  mutate(
+    vnumeric = ifelse(datatype == "numeric", as.numeric(value), NA_real_),
+    vstring = ifelse(datatype == "string", value, NA_character_),
+    vlogical = ifelse(datatype == "logical", as.logical(value), NA)
+  )
+
+data2 |> filter(!is.na(vlogical))
+data2 |> filter(!is.na(vstring))
+data2 |> filter(!is.na(vnumeric))
+
+```
+
+## Show the cleaned data
+
+```{r}
+#| label: show-data
+#| output: true
+#| column: page
+
+DT::datatable(
+  data2,
+  width = "100%",
+  options = list(scrollX = TRUE, scrollY = '1500px', pageLength = 20),
+  filter = "top"
+)
+
+# # datatable(ptargets, options = list(scrollX = TRUE, scrollY = '400px', paging = TRUE))
+
+# datatable(
+#   ptargets |>
+#     select(-table_description),
+#   options = list(scrollX = TRUE, scrollY = '1500px', pageLength = 20),
+#   filter = "top"
+# ) |>
+#   formatCurrency(columns = c("ptarget"), currency = "", digits = 0)
+
+```
