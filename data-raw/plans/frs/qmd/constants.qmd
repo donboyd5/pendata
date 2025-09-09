@@ -37,6 +37,8 @@ data <- rawdata[[sheet]]$data
 
 ## Clean up the data
 
+### Determine variable types
+
 ```{r}
 #| label: clean-data
 
@@ -57,7 +59,39 @@ data2 |> filter(!is.na(vnumeric))
 
 ```
 
-## Show the cleaned data
+### Recover original Reason variable names
+
+```{r}
+#| label: Reason-names
+
+count(data2, class)
+
+prefixes <- c(
+  "admin",
+  "eco",
+  "eco_eso_judges",
+  "eso",
+  "judges",
+  "non_special",
+  "regular",
+  "senior_management",
+  "special"
+)
+
+data3 <- data2 |>
+  mutate(
+    original = case_when(
+      class %in% prefixes ~ paste0(class, "_", variable),
+      class == "all" ~ variable,
+      .default = NA_character_
+    )
+  ) |>
+  relocate(original, .after = variable)
+
+
+```
+
+## Show the slightly cleaned data
 
 ```{r}
 #| label: show-data
@@ -65,7 +99,7 @@ data2 |> filter(!is.na(vnumeric))
 #| column: page
 
 DT::datatable(
-  data2,
+  data3,
   width = "100%",
   options = list(scrollX = TRUE, scrollY = '1500px', pageLength = 20),
   filter = "top"
@@ -88,9 +122,69 @@ DT::datatable(
 ```{r}
 #| output: true
 
-skimr::skim(data2)
-data2
+skimr::skim(data3)
+data3
 
-saveRDS(data2, fs::path(DIRS$work, "constants_cleaned.rds"))
+saveRDS(data3, fs::path(DIRS$work, "constants_cleaned.rds"))
 
 ```
+
+```{r}
+#| label: stop
+#| echo: false
+
+knitr::knit_exit()
+```
+
+```{r}
+#| eval: false
+
+
+# mylist is a flat list, mylist_split is split by datatype
+mylist <- data3 |>
+  filter(!is.na(original)) |>
+  filter(datatype %in% c("numeric", "string", "logical")) |>
+  rowwise() |>
+  mutate(
+    value = list(
+      if (datatype == "numeric") {
+        vnumeric
+      } else if (datatype == "string") {
+        vstring
+      } else if (datatype == "logical") {
+        vlogical
+      } else {
+        NULL
+      }
+    )
+  ) |>
+  ungroup() |>
+  select(vname = original, value) |>
+  deframe()
+
+types <- c("numeric", "string", "logical")
+
+mylist_split <- data3 |>
+  filter(!is.na(original), datatype %in% types) |>
+  rowwise() |>
+  mutate(
+    value = list(
+      if (datatype == "numeric") {
+        vnumeric
+      } else if (datatype == "string") {
+        vstring
+      } else {
+        vlogical
+      }
+    )
+  ) |>
+  ungroup() |>
+  select(datatype, vname = original, value) |>
+  group_split(datatype) |>
+  (\(lst) set_names(lst, map_chr(lst, ~ unique(.x$datatype))))() |>
+  map(~ deframe(.x[, c("vname", "value")]))
+
+flatlist <- purrr::flatten(mylist_split)
+
+```
+
