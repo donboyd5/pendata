@@ -50,6 +50,8 @@ book:
     - part: "Constants"
       chapters:
         - constants.qmd
+        - test_constants.qmd
+        - stage_constants.qmd
     - part: "Retirees"
       chapters:
         - retirees.qmd
