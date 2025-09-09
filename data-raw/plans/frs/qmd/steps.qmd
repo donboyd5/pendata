@@ -6,13 +6,20 @@ editor_options:
 # Steps
 
 Load functions needed for re-rendering and for package building:
+
    source(here::here("R", "internal_functions.R"))
 
 ##  Completely re-render a plan from scratch (e.g., frs):
 
 -   make sure data-raw/plan_config.json has plan set to the plan of interest, and xd_filename set to the proper extracted data filename for the plan
--   see which files should be deleted for complete reset: *reset_all("frs")*
--   delete the files: *reset_all("frs", delete=TRUE)*
+-   see which files should be deleted for complete reset: 
+
+    reset_all("frs")
+
+-   delete the files:
+
+    reset_all("frs", delete=TRUE)
+
 -   open terminal in the plan qmd folder
 -   in the terminal, do full re-render of the plan: *quarto render*
 

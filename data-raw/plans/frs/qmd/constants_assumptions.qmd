@@ -159,6 +159,8 @@ list_flat <- purrr::flatten(list_split)
 ```{r}
 #| output: true
 
+saveRDS(data3, fs::path(DIRS$work, "constants_assumptions_tbl.rds"))
+
 saveRDS(list_flat, fs::path(DIRS$work, "constants_assumptions.rds"))
 
 ```

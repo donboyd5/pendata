@@ -30,6 +30,12 @@ if (status$passed) {
     fs::path(DIRS$stage, fname),
     overwrite = TRUE
   )
+  fname <- "constants_assumptions_tbl.rds"
+  file_copy(
+    fs::path(DIRS$work, fname),
+    fs::path(DIRS$stage, fname),
+    overwrite = TRUE
+  )  
 } else {
   stop("constants_assumptions failure")
 }
