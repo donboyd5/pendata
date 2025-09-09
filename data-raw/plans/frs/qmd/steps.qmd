@@ -6,7 +6,7 @@ editor_options:
 # Steps
 
 Load functions needed for re-rendering and for package building:
-   *source(here::here("R", "internal_functions.R"))*
+   source(here::here("R", "internal_functions.R"))
 
 ##  Completely re-render a plan from scratch (e.g., frs):
 
