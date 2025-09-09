@@ -20,18 +20,18 @@ source(here::here("data-raw", "R", "setup.R"))
 ```{r}
 #| eval: true
 
-fpath <- fs::path(DIRS$work, "tests_constants.csv")
+fpath <- fs::path(DIRS$work, "tests_constants_assumptions.csv")
 status <- readr::read_csv(fpath)
 
 if (status$passed) {
-  fname <- "constants.rds"
+  fname <- "constants_assumptions.rds"
   file_copy(
     fs::path(DIRS$work, fname),
     fs::path(DIRS$stage, fname),
     overwrite = TRUE
   )
 } else {
-  stop("constants failure")
+  stop("constants_assumptions failure")
 }
 
 ```

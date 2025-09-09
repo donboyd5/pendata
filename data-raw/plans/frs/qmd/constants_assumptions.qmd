@@ -88,6 +88,8 @@ data3 <- data2 |>
   ) |>
   relocate(original, .after = variable)
 
+skimr::skim(data3)
+data3
 
 ```
 
@@ -117,15 +119,47 @@ DT::datatable(
 
 ```
 
+## Convert from data frame to a list
+
+```{r}
+
+# in case we want it, make a list categorized by data type
+
+types <- c("numeric", "string", "logical")
+
+list_split <- data3 |>
+  filter(!is.na(original), datatype %in% types) |>
+  rowwise() |>
+  mutate(
+    value = list(
+      if (datatype == "numeric") {
+        vnumeric
+      } else if (datatype == "string") {
+        vstring
+      } else {
+        vlogical
+      }
+    )
+  ) |>
+  ungroup() |>
+  select(datatype, vname = original, value) |>
+  group_split(datatype) |>
+  (\(lst) set_names(lst, map_chr(lst, ~ unique(.x$datatype))))() |>
+  map(~ deframe(.x[, c("vname", "value")]))
+
+# flatten the list
+list_flat <- purrr::flatten(list_split)
+
+
+```
+
+
 ## Save cleaned constants data to working folder
 
 ```{r}
 #| output: true
 
-skimr::skim(data3)
-data3
-
-saveRDS(data3, fs::path(DIRS$work, "constants_cleaned.rds"))
+saveRDS(list_flat, fs::path(DIRS$work, "constants_assumptions.rds"))
 
 ```
 
@@ -138,7 +172,6 @@ knitr::knit_exit()
 
 ```{r}
 #| eval: false
-
 
 # mylist is a flat list, mylist_split is split by datatype
 mylist <- data3 |>
