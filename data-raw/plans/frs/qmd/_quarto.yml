@@ -49,9 +49,9 @@ book:
         - stage_benefit_rules_and_test_cases.qmd
     - part: "Constants"
       chapters:
-        - constants.qmd
-        - test_constants.qmd
-        - stage_constants.qmd
+        - constants_assumptions.qmd
+        - test_constants_assumptions.qmd
+        - stage_constants_assumptions.qmd
     - part: "Retirees"
       chapters:
         - retirees.qmd
