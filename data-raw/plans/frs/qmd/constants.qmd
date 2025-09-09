@@ -82,3 +82,15 @@ DT::datatable(
 #   formatCurrency(columns = c("ptarget"), currency = "", digits = 0)
 
 ```
+
+## Save cleaned constants data to working folder
+
+```{r}
+#| output: true
+
+skimr::skim(data2)
+data2
+
+saveRDS(data2, fs::path(DIRS$work, "constants_cleaned.rds"))
+
+```
