@@ -78,7 +78,7 @@ skimr::skim(amo2)
 ```
 
 
-## After all tests are passed save file to staging area
+## Save cleaned amortization bases data to working folder
 
 ```{r}
 #| label: clean-and-save
