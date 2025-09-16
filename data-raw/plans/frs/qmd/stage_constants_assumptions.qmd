@@ -1,0 +1,43 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---    
+
+# Stage: Constants
+
+```{r}
+#| label: setup
+
+source(here::here("data-raw", "R", "setup.R"))
+
+```
+
+
+```{r}
+#| eval: true
+
+fpath <- fs::path(DIRS$work, "tests_constants_assumptions.csv")
+status <- readr::read_csv(fpath)
+
+if (status$passed) {
+  fname <- "constants_assumptions.rds"
+  file_copy(
+    fs::path(DIRS$work, fname),
+    fs::path(DIRS$stage, fname),
+    overwrite = TRUE
+  )
+  fname <- "constants_assumptions_tbl.rds"
+  file_copy(
+    fs::path(DIRS$work, fname),
+    fs::path(DIRS$stage, fname),
+    overwrite = TRUE
+  )  
+} else {
+  stop("constants_assumptions failure")
+}
+
+```

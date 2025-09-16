@@ -1,0 +1,95 @@
+# Q&A and Discussion Log
+
+## Purpose
+
+This document maintains a running log of our discussions, decisions, and Q&A sessions throughout the pension data package preparation project.
+
+---
+
+## Session: 2025-09-02
+
+### Initial Setup
+
+**Discussion**: Setting up the claude folder as a Quarto book project for communication and documentation.
+
+**Decisions Made**:
+1. Created Quarto book structure with four initial chapters
+2. Established workflow where User provides instructions and Claude reads .qmd files at session start
+3. Confirmed git repository structure (root at E:/R_projects/Reason/pendata/)
+4. Claude has permissions to make changes following safe git practices
+
+**Key Points**:
+- Authentication is already handled
+- Main communication hub is the data-raw/claude folder
+- Project is an R data package called "pendata"
+- Current git branch: get-constants
+
+### Project Structure Confirmed
+
+The project is structured as an R package with:
+- `/data/`: Processed data files
+- `/data-raw/`: Raw data and processing scripts
+- `/R/`: Package functions
+- `/man/`: Documentation
+- `/tests/`: Tests
+- `/data-raw/claude/`: Our communication hub
+
+### Project Scope and Goals
+
+**Discussion**: Clarified the core purpose and structure of the pendata package.
+
+**Key Insights**:
+1. **Two Essential Functions**:
+   - Process raw pension plan data into uniform formats
+   - Create finished .rda files (one per plan) in the `/data/` folder
+
+2. **Current Focus Plans**:
+   - **Florida Retirement System (FRS)**: Very far along but not complete
+   - **Texas Teachers Retirement System (TxTRS)**: Barely started
+   - Future: 10-20 additional plans planned
+
+3. **Processing Structure**:
+   - Each plan has its own folder in `/data-raw/plans/`
+   - Raw data stored in `extracted_data/` subfolders (e.g., .xlsm files)
+   - Processing done via .qmd files in plan folders
+   - Output: single .rda file per plan in `/data/`
+
+4. **Standardization Strategy**:
+   - Make processing as uniform as possible across plans
+   - Reuse code wherever feasible
+   - Accept that complete uniformity isn't possible due to plan idiosyncrasies
+   - Focus on creating reusable components and patterns
+
+**Action Items**:
+- Get FRS and TxTRS plans finished in near term
+- Identify reusable code patterns across plans
+- Document plan-specific idiosyncrasies as they're discovered
+
+---
+
+### FRS Processing Review Results
+
+**Critical Finding**: The retirement_rates processing files contain wrong content!
+- `retirement_rates.qmd` - Actually processes retirees data, not retirement rates
+- `stage_retirement_rates.qmd` - Has title "Stage: Retirees" and code is commented out
+- `test_retirement_rates.qmd` - References retirees data, not retirement rates
+- No `retirement_rates.rds` file is created in staged_data
+
+**Other Gaps Identified**:
+1. Missing explicit test/stage files for:
+   - headcount_salary
+   - salary_growth  
+   - withdrawal
+2. Incomplete validation framework
+3. No cross-component consistency checks
+
+**Processing Pipeline Confirmed**:
+1. Extract data from Excel → work_data
+2. Process each component → test → stage
+3. Assemble all staged .rds files → final frs.rda
+
+---
+
+## Future Sessions
+
+New discussions will be added here chronologically with clear session dates and topics.

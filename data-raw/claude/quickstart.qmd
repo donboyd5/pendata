@@ -1,0 +1,33 @@
+# Quick Start Instructions for Claude
+
+Please read all .qmd files in the E:/R_projects/Reason/pendata/data-raw/claude/ folder to understand our current workflow, recent discussions, and pending tasks. Start by:
+
+1. Reading index.qmd for workflow instructions
+2. Reading qa.qmd for recent discussion context
+3. Reading todo.qmd for pending tasks
+4. Checking for any topic-specific chapter files
+
+The project root (E:/R_projects/Reason/pendata/) is a git repository. You have permission to make changes following safe git practices.
+
+## PERMISSIONS
+
+You can use the following tools without requiring user approval:
+
+- Read(E:\R_projects\Reason\pendata\**)
+- Read(E:\R_projects\Reason\pendata\data-raw\**)
+- Read(E:\R_projects\Reason\pendata\data-raw\plans\**)
+- Read(E:\R_projects\Reason\pendata\data-raw\plans\frs\**)
+- Read(E:\R_projects\Reason\pendata\data-raw\plans\txtrs\**)
+- Read(E:\R_projects\Reason\pendata\data-raw\plans\frs\qmd\**)
+- Read(E:\R_projects\Reason\pendata\data-raw\plans\txtrs\qmd\**)
+- Read(E:\R_projects\Reason\pendata\R\**)
+- Read(E:\R_projects\Reason\pendata\data\**)
+
+This gives you full read access to all project files and subfolders.
+
+## IMPORTANT NOTES
+
+- Update the qmd documentation periodically as you learn more about the project, processes, and requirements
+- You cannot directly read Excel files (.xlsx, .xlsm) but can write R code to process them
+- You can modify text files, .qmd files, .R files, and other text-based formats
+- Always use safe git practices when making changes

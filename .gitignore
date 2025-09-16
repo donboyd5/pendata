@@ -10,19 +10,20 @@ desktop.ini
 /man/
 
 # ignore selected folders anywhere they appear
-_freeze/
-old/  
-site_libs/
-_webpage/
+**/_book/
+**/_webpage/
+**/_freeze/
 
-# ignore all folders that end with text after the *
-*_files/
+**/*_files/
+**/old/  
+**/site_libs/
 
 # file types
 *.csv
 *.docx
 *.gdoc
 *.html
+*.mhtml
 *.pdf
 *.rds
 *.vdoc*

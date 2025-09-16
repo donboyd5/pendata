@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Write(**)",
+      "Edit(**)",
+      "Bash(*)",
+      "Bash(Rscript.exe:*)",
+      "Bash(python.exe:*)",
+      "Bash(quarto.exe:*)",
+      "Bash(R.exe:*)",
+      "LS(**)",
+      "Grep(**)",
+      "Glob(**)",
+      "WebFetch",
+      "MCP"
+    ],
+    "defaultMode": "acceptEdits"
+  }
+}

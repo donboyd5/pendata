@@ -6,13 +6,21 @@ editor_options:
 # Steps
 
 Load functions needed for re-rendering and for package building:
-   *source(here::here("R", "internal_functions.R"))*
+
+   source(here::here("R", "internal_functions.R"))
 
 ##  Completely re-render a plan from scratch (e.g., frs):
 
--   see which files should be deleted for complete reset: *reset_all("frs")*
--   delete the files: *reset_all("frs", delete=TRUE)*
--   open terminal in the plan qmd folder: *reset_all("frs", delete=TRUE)*
+-   make sure data-raw/plan_config.json has plan set to the plan of interest, and xd_filename set to the proper extracted data filename for the plan
+-   see which files should be deleted for complete reset: 
+
+    reset_all("frs")
+
+-   delete the files:
+
+    reset_all("frs", delete=TRUE)
+
+-   open terminal in the plan qmd folder
 -   in the terminal, do full re-render of the plan: *quarto render*
 
 This does a soup-to-nuts preparation of data for a single plan:
@@ -33,6 +41,7 @@ This does a soup-to-nuts preparation of data for a single plan:
 ## Build the package with the updated plan data
 
 -   make sure the internal functions have been sourced: *source(here::here("R", "internal_functions.R"))*
+-   be sure that no excel files in the project are open as that will lead to errors
 -   from the console, run: *buildit()*
 
 This function:

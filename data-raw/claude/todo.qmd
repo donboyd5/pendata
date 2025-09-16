@@ -1,0 +1,76 @@
+# TODO and Future Plans
+
+## Current Status
+
+As of 2025-09-02:
+- ✅ Quarto book project structure created
+- ✅ Workflow documentation established
+- ✅ Initial chapters created (index, qa, todo)
+- 🔄 Working on branch: get-constants
+
+## Immediate Tasks
+
+### 🔴 Priority: Complete FRS and TxTRS Plans
+
+#### Florida Retirement System (FRS)
+- [ ] Review current FRS processing scripts in /data-raw/plans/frs/
+- [ ] Identify remaining tasks to complete FRS processing
+- [ ] Validate FRS data output quality
+- [ ] Generate final frs.rda file
+- [ ] Document FRS-specific processing requirements
+
+#### Texas Teachers Retirement System (TxTRS)
+- [ ] Review current TxTRS processing status in /data-raw/plans/txtrs/
+- [ ] Identify data sources and extraction requirements
+- [ ] Create/update TxTRS processing scripts
+- [ ] Generate final txtrs.rda file
+- [ ] Document TxTRS-specific processing requirements
+
+### Code Standardization
+- [ ] Identify common processing patterns across FRS and TxTRS
+- [ ] Create reusable functions for common operations
+- [ ] Document plan-specific idiosyncrasies
+- [ ] Establish template for future plans
+
+### Documentation
+- [ ] Create topic-specific chapters as needed
+- [ ] Document data schema and structure
+- [ ] Add data validation procedures
+- [ ] Create user guide for package functions
+
+## Future Enhancements
+
+### Package Infrastructure
+- [ ] Enhance test coverage
+- [ ] Add data validation functions
+- [ ] Create data update workflows
+- [ ] Add package vignettes
+
+### Data Processing
+- [ ] Standardize data cleaning procedures
+- [ ] Implement data quality checks
+- [ ] Add data versioning system
+- [ ] Create reproducible processing pipeline
+
+## Long-term Goals
+
+1. **Comprehensive Documentation**: Full documentation of all data sources, processing steps, and package functions
+2. **Automated Workflows**: Automated data updates and validation
+3. **Quality Assurance**: Robust testing and validation procedures
+4. **User Experience**: Intuitive functions and clear documentation for end users
+
+## Notes
+
+- Priority items will be marked with 🔴
+- In-progress items marked with 🔄
+- Completed items marked with ✅
+- Items requiring discussion marked with 💬
+
+## Session Tasks Log
+
+### 2025-09-02
+- ✅ Set up Quarto book project structure
+- ✅ Created initial documentation chapters
+- ✅ Established workflow guidelines
+- ✅ Updated documentation with project scope and goals
+- ✅ Identified FRS and TxTRS as priority plans
