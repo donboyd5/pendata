@@ -34,3 +34,5 @@ desktop.ini
 
 # specific files to ignore even if a rule above does not gitignore it
 data-raw/plans/frs/work/reason/Florida FRS model input_djb.R
+data-raw/gang/frs_data_env_bf_cal.RData
+data-raw/gang/params_bf_cal.RData
