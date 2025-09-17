@@ -27,61 +27,111 @@ names(rawdata)
 
 # which sheets?
 sheets <- str_subset(names(rawdata), "retire_rates")
-
-# 6 sheets, each with own formatting
-# list2env(rawdata[sheets], envir = .GlobalEnv) # put each sheet, including its info and data, into environment
-
-# alternatively put just the data into the environment
 data_list <- sheets |>
   map(~ pluck(rawdata, .x, "data")) |>
   set_names(sheets)
-list2env(data_list, envir = .GlobalEnv)
 
-sheets |>
-  map(~ pluck(rawdata, .x, "data")) |>
-  set_names(sheets) |>
-  list2env(envir = .GlobalEnv)
+# alternatively put just the data into the environment
+# list2env(data_list, envir = .GlobalEnv)
 
-# rm(list = ls(pattern = "retire_rates")) # remove individual items
-
+# 6 sheets, each with own formatting
 # drop and normal tibbles each have 11 columns
+# columns:
+# drop 1 and 2: age, + 10
+#       regular
+#         k12 instructional female, male
+#         not k12 instructional female, male
+#       special risk female, male
+#       leo female, male
+#       other female, male
 
-sheet <- "retirees_disability"
-disb_info <- rawdata[[sheet]]$info
-disb_data <- rawdata[[sheet]]$data
+# normal: age, +10
+#         regular
+#           k12 instructional, female, male
+#           k12 not instructional, female, male
+#         special, female, male
+#         elected, female, male
+#         senior_management, female, male
 
-sheet <- "retirees_normearly"
-ne_info <- rawdata[[sheet]]$info
-ne_data <- rawdata[[sheet]]$data
+# note that drop and normal are the same
 
-retirees1 <- bind_rows(disb_data, ne_data) |>
-  rename(age_label = age)
-retirees1
+# early 1 and 2: age, + 8
+#        regular
+#          not k12 instructional female, male
+#        special risk, female, male
+#        elected, female, male
+#        senior_management, female, male
+
+# we'll create variable names that are class_subclass_gender:
+
+
+get_long <- function(sheet) {
+  # construct column names as class_subclass_gender
+  # class_subclass prefixes
+  dropnorm <- c("regular_k12", "regular_notk12", "special_all", "leo_all", "other_all")
+  early <- c("regular_notk12", "special_all", "elected_all", "seniormanagement_all")
+  
+  retire_type <- case_when(
+    str_detect(sheet, "drop") ~ "drop",
+    str_detect(sheet, "early") ~ "early",
+    str_detect(sheet, "normal") ~ "normal",
+    .default = "ERROR")
+
+  tier <- case_when(
+    str_ends(sheet, "tier1") ~ "tier1",
+    str_ends(sheet, "tier2") ~ "tier2",
+    .default = "ERROR" )                          
+
+  if(str_detect(sheet, "drop|normal")) {prefixes <- dropnorm } else prefixes <- early
+  genders <- c("female", "male") 
+  # combine prefixes and genders in the order they appear in Excel columns
+  f <- function(prefix, genders) outer(prefixes, genders, paste, sep = "_") |> t() |> as.vector()  
+  colnames <- c("age", f(prefixes, genders))
+
+  # data_list is in the global environment
+  data_list[[sheet]] |> 
+    set_names(colnames) |> 
+    pivot_longer(cols = -age) |> 
+    mutate(sheet={{sheet}},
+    retire_type = retire_type,
+    tier = tier)
+}
+
+# get_long(sheet)  |> str_subset("drop|normal")
+
+df1 <- purrr::map(sheets, get_long) |> 
+  list_rbind()
+
+glimpse(df1)
+count(df1, age) # 70-79 convert to 75
+count(df1, name) # separate into class, subclass, gender (sex?) -- regular, special, leo, other; separate seniormanagement
+count(df1, retire_type)
+count(df1, tier)
+count(df1, value)
 
 ```
 
 
 ## Clean retirement rate data
 
--       add age bounds
--       convert to numeric
--       keep totals until after testing
+-       convert age to integer
+-       convert value to numeric
 
 ```{r}
 #| eval: false
 
-# define bounds
-(agelabel <- retirees1$age_label |> unique())
-agelb <- c(CONSTANTS$minage, seq(50, 80, 5), CONSTANTS$minage)
-ageub <- c(seq(49, 79, 5), CONSTANTS$maxage, CONSTANTS$maxage)
-cbind(agelabel, agelb, ageub)
+retrate2 <- df1 |>
+  mutate(age = ifelse(age=="70-79", "75", age),
+  age = as.integer(age)) |> 
+    separate_wider_delim(name, delim="_", names = c("class", "subclass", "gender")) |> 
+    mutate(class = ifelse(class=="seniormanagement", "senior_management", class),
+    value=as.numeric(value)) |> 
+      select(class, subclass, gender, tier, retire_type, value, sheet)
 
-ages <- tibble(age_label = agelabel, age_lb = agelb, age_ub = ageub)
-
-retirees2 <- retirees1 |>
-  left_join(ages, by = join_by(age_label)) |>
-  mutate(count = as.integer(count), benefits = as.numeric(benefits))
-
+count(retrate2, age)
+count(retrate2, class, subclass, gender)
+count(retrate2, tier)
+count(retrate2, sheet)
 
 ```
 
@@ -91,9 +141,9 @@ retirees2 <- retirees1 |>
 #| output: true
 #| eval: false
 
-skimr::skim(retirees2)
-retirees2
+skimr::skim(retrate2)
+retrate2
 
-# saveRDS(retirees2, fs::path(DIRS$work, "retirees_with_totals.rds"))
+saveRDS(retrate2, fs::path(DIRS$work, "retirement_rates.rds"))
 
 ```

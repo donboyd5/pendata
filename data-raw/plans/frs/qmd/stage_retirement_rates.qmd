@@ -18,22 +18,22 @@ source(here::here("data-raw", "R", "setup.R"))
 
 
 ```{r}
-#| eval: false
+#| eval: true
 
-fpath <- fs::path(DIRS$work, "tests_retirees.csv")
-status <- readr::read_csv(fpath)
+# fpath <- fs::path(DIRS$work, "tests_retirement_rates.csv")
+# status <- readr::read_csv(fpath)
 
-if (!all(status$passed)) {
-  stop("retiree tests failure")
-}
+# if (!all(status$passed)) {
+#   stop("retirement rates tests failure")
+# }
 
-retirees1 <- readRDS(fs::path(DIRS$work, "retirees_with_totals.rds"))
+retirement_rates <- readRDS(fs::path(DIRS$work, "tests_retirement_rates.csv"))
 
-retirees <- retirees1 |>
-  filter(age_label != "Total") |>
-  select(type, age_label, age_lb, age_ub, count, benefits)
+# retirees <- retirees1 |>
+#   filter(age_label != "Total") |>
+#   select(type, age_label, age_lb, age_ub, count, benefits)
 
-# saveRDS(retirees, fs::path(DIRS$staged, "retirees.rds"))
+saveRDS(retirement_rates, fs::path(DIRS$staged, "retirement_rates.rds"))
 
 # retirees <- retirees1 |>
 #   filter(age_label != "Total") |>   select(type, age_label, age_lb, age_ub, count, benefits)

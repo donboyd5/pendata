@@ -1,0 +1,70 @@
+# quarto environment variables
+
+```{r}
+
+# getwd() # pendata interactive; "E:/R_projects/Reason/pendata/data-raw/plans/frs/qmd" terminal
+# Sys.getenv("QUARTO_PROJECT_ROOT") # "" interactive; "E:\\R_projects\\Reason\\pendata\\data-raw\\plans\\frs\\qmd"" terminal
+# this.path::this.dir()
+
+# non-robust way to find the quarto project root that will work interactively and during renders from terminal
+QROOT <- Sys.getenv("QUARTO_PROJECT_ROOT") # during project renders
+if(QROOT=="") QROOT <- this.path::this.dir() # during interactive work
+source(fs::path(QROOT, "hello.R"))
+
+```
+
+
+```{r stop_here, echo=FALSE}
+knitr::knit_exit()
+```
+
+```{r}
+
+# environmental vars
+evars <- Sys.getenv()
+# only has QUARTO_R when interactive
+
+# but when qmd is rendered it has:
+#  [60] "QUARTO_BIN_PATH"                
+#  [61] "QUARTO_DENO"                     "QUARTO_DOCUMENT_FILE"           
+#  [63] "QUARTO_DOCUMENT_PATH"            "QUARTO_EXECUTE_INFO"            
+#  [65] "QUARTO_PROFILE"                  "QUARTO_PROJECT_ROOT"            
+#  [67] "QUARTO_R"                        "QUARTO_SHARE_PATH" 
+
+show the qvars
+qnames <- names(evars) |> stringr::str_subset("QUARTO")
+evars[qnames]
+
+getwd()
+basename(getwd())
+
+this.path::this.path() 
+this.path::this.dir()       # directory of the script
+here::here()
+here::dr_here()
+library(rprojroot)
+
+root <- rprojroot::has_file(".git/index")
+root$find_file("DESCRIPTION")
+
+root <- rprojroot::has_file("_quarto.yml")
+root$find_file("_quarto.yml")
+root$find_file()
+thisfile()
+whereami::thisfile()
+
+qroot <- Sys.getenv("QUARTO_PROJECT_ROOT")
+if(qroot=="") qroot <- this.path::this.dir()  
+source(fs::path(qroot, "hello.R"))
+
+# Sys.getenv("QUARTO_PROJECT_ROOT") # QUARTO_PROJECT_ROOT	Root of the project, or the directory of the file if not in project mode
+# [1] "E:\\R_projects\\Reason\\pendata\\data-raw\\plans\\frs\\qmd"
+
+# Sys.getenv("QUARTO_DOCUMENT_PATH") # QUARTO_DOCUMENT_PATH	Directory of the document being rendered
+# [1] "."
+
+# Sys.getenv("QUARTO_DOCUMENT_FILE") # QUARTO_DOCUMENT_FILE	Name of the file being rendered
+# [1] "paths.qmd"
+
+```
+

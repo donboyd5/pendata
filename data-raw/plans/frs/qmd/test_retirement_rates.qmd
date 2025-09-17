@@ -20,6 +20,8 @@ source(here::here("data-raw", "R", "setup.R"))
 ```{r}
 #| eval: false
 
-retirees <- readRDS(fs::path(DIRS$work, "retirees_with_totals.rds")) # UPDATE THIS
+retire_rates <- readRDS(fs::path(DIRS$work, "retirement_rates.rds"))
+
+# run tests...
 
 ```
