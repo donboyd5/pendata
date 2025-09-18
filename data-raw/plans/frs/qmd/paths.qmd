@@ -31,7 +31,7 @@ evars <- Sys.getenv()
 #  [65] "QUARTO_PROFILE"                  "QUARTO_PROJECT_ROOT"            
 #  [67] "QUARTO_R"                        "QUARTO_SHARE_PATH" 
 
-show the qvars
+# show the qvars
 qnames <- names(evars) |> stringr::str_subset("QUARTO")
 evars[qnames]
 

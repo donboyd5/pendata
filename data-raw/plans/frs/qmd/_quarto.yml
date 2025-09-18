@@ -76,6 +76,10 @@ book:
         - assemble_list.qmd
 
 # read steps.qmd for how to build from scratch
+# source(here::here("R", "internal_functions.R"))
+# reset_all("frs", delete=TRUE)
+# source(here::here("R", "internal_functions.R"))
+# plan <- pendata::frs
 
 # creating a package
 # install.packages(c("devtools", "usethis", "roxygen2", "testthat", "pkgdown"))

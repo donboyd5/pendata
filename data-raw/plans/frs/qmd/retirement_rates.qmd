@@ -10,13 +10,21 @@ format:
 # Prepare: Retirement Rates
 
 ```{r}
-#| label: setup
+#| eval: true
+#| output: true
 
-source(here::here("data-raw", "R", "setup.R"))
+# QROOT <- quarto_root()          # pins here::here() and returns the nearest Quarto root
+# QROOT               # shows the detected path
+pin_quarto_here()
+here::here()
+here::dr_here()     # shows what here() is pinned to and why
+# getwd()             # confirms your working dir didn’t get left changed
 
-rawdata <- readRDS(fs::path(DIRS$work, "frs_inputs_raw.rds"))
-names(rawdata)
+```
 
+```{r stop_here, echo=FALSE}
+
+knitr::knit_exit()
 ```
 
 ## Get retirement rate data
