@@ -47,7 +47,7 @@ buildit <- function() {
 #'
 #' @return Returns invisible(NULL).
 reset_all <- function(plan, delete = FALSE) {
-  source(here::here("data-raw", "R", "functions_folders.R"))
+  source(fs::path(GROOT, "data-raw", "R", "functions_folders.R"))
   DIRS <- set_plan_dirs(plan)
 
   data <- DIRS$data
