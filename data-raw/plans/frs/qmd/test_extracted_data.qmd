@@ -12,7 +12,8 @@ format:
 ```{r}
 #| label: setup
 
-source(here::here("data-raw", "R", "setup.R"))
+GROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+source(fs::path(GROOT, "data-raw", "R", "setup.R"))
 
 ```
 
@@ -34,7 +35,8 @@ input_data_list <- readRDS(fs::path(DIRS$work, fname))
 # here::here("data-raw/plans/tests/testthat/test_headcount_salary.R"),
 
 test_results <- testthat::test_file(
-  here::here("data-raw/plans/tests/testthat/test_extracted_sheets.R"),
+  # here::here("data-raw/plans/tests/testthat/test_extracted_sheets.R"),
+  fs::path(GROOT, "data-raw/plans/tests/testthat/test_extracted_sheets.R"),
   reporter = testthat::TapReporter$new()
 )
 
