@@ -15,7 +15,7 @@ format:
 
 ```{r}
 #| label: setup
-#| output: true
+#| output: false
 
 GROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
 source(fs::path(GROOT, "data-raw", "R", "setup.R"))
