@@ -15,11 +15,13 @@ format:
 
 ```{r}
 #| label: setup
+#| output: true
 
-source(here::here("data-raw", "R", "setup.R"))
-source(here::here("data-raw", "R", "functions_get_excel_data.R")) # only needed for this qmd file so not in setup
+GROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+source(fs::path(GROOT, "data-raw", "R", "setup.R"))
 
 ```
+
 
 ## Define sheets to get
 
