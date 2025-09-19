@@ -78,7 +78,7 @@ book:
 # read steps.qmd for how to build from scratch
 # source(here::here("R", "internal_functions.R"))
 # reset_all("frs", delete=TRUE)
-# source(here::here("R", "internal_functions.R"))
+# buildit()
 # plan <- pendata::frs
 
 # creating a package
