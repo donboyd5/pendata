@@ -1,7 +1,7 @@
 set_plan_dirs <- function(plan) {
   # Base directories
-  data <- here::here("data")
-  data_raw <- here::here("data-raw")
+  data <- fs::path(GROOT, "data")
+  data_raw <- fs::path(GROOT, "data-raw")
   all_plans_dir <- fs::path(data_raw, "plans")
   plan_dir <- fs::path(all_plans_dir, plan)
 
