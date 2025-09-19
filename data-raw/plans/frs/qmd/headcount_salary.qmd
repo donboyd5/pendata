@@ -12,7 +12,8 @@ format:
 ```{r}
 #| label: setup
 
-source(here::here("data-raw", "R", "setup.R"))
+GROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+source(fs::path(GROOT, "data-raw", "R", "setup.R"))
 
 ```
 
@@ -128,7 +129,7 @@ testthat::local_edition(3)
 
 # NOTE: We can only run the headcount_salary tests if a plan's headcount and salary data has row and column totals
 test_results <- testthat::test_file(
-  here::here("data-raw/plans/tests/testthat/test_headcount_salary.R"),
+  fs::path(GROOT, "data-raw/plans/tests/testthat/test_headcount_salary.R"),
   reporter = testthat::TapReporter$new()
 )
 
