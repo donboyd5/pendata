@@ -19,7 +19,7 @@ execute:
   eval: true
   echo: true
   output: false
-  freeze: auto  # auto: during global project renders, re-render only when source changes
+  freeze: false  # auto: during global project renders, re-render only when source changes
 
 book:
   title: "FRS: Prepare plan data in a consistent format"
@@ -76,8 +76,10 @@ book:
         - assemble_list.qmd
 
 # read steps.qmd for how to build from scratch
-# source(here::here("R", "internal_functions.R"))
+# GROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+# source(fs::path(GROOT, "R", "internal_functions.R"))
 # reset_all("frs", delete=TRUE)
+# then from proper terminal: quarto render
 # buildit()
 # plan <- pendata::frs
 
