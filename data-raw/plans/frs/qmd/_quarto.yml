@@ -62,18 +62,18 @@ book:
         - retirement_rates.qmd
         - test_retirement_rates.qmd
         - stage_retirement_rates.qmd        
-    # - part: "Salary & Headcount"
-    #   chapters:
-    #     - headcount_salary.qmd
-    # - part: "Salary growth"        
-    #   chapters:
-    #     - salary_growth.qmd        
-    # - part: "Withdrawals"
-    #   chapters:
-    #     - withdrawal.qmd
-    # - part: "Assemble list for `pendata` package"
-    #   chapters:
-    #     - assemble_list.qmd
+    - part: "Salary & Headcount"
+      chapters:
+        - headcount_salary.qmd
+    - part: "Salary growth"        
+      chapters:
+        - salary_growth.qmd        
+    - part: "Withdrawals"
+      chapters:
+        - withdrawal.qmd
+    - part: "Assemble list for `pendata` package"
+      chapters:
+        - assemble_list.qmd
 
 # read steps.qmd for how to build from scratch
 # source(here::here("R", "internal_functions.R"))

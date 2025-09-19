@@ -12,7 +12,8 @@ format:
 ```{r}
 #| label: setup
 
-source(here::here("data-raw", "R", "setup.R"))
+GROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+source(fs::path(GROOT, "data-raw", "R", "setup.R"))
 
 ```
 
@@ -33,7 +34,7 @@ plan <- append(list(plan_shortname = PLAN_CONSTANTS$plan), plan)
 
 assign(PLAN_CONSTANTS$plan, plan) # Assign 'plan' to the new name (no intermediate variable)
 save_name <- paste0(PLAN_CONSTANTS$plan, ".rda")
-fpath <- here::here("data", save_name)
+fpath <- fs::path(GROOT, "data", save_name)
 save(list = PLAN_CONSTANTS$plan, file = fpath, compress = "xz")
 
 # devtools::load_all()
