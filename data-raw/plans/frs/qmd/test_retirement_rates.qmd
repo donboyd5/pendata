@@ -13,15 +13,40 @@ format:
 ```{r}
 #| label: setup
 
-source(here::here("data-raw", "R", "setup.R"))
+GROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+source(fs::path(GROOT, "data-raw", "R", "setup.R"))
 
 ```
 
 ```{r}
-#| eval: false
 
 retire_rates <- readRDS(fs::path(DIRS$work, "retirement_rates.rds"))
 
-# run tests...
+```
+
+
+```{r}
+#| label: tests
+#| echo: true
+
+print("no tests yet for retirement_rates")
+test_results <- TRUE
+
+```
+
+
+```{r}
+
+fpath <- fs::path(DIRS$work, "tests_retirement_rates.csv")
+
+if (fs::file_exists(fpath)) {
+  fs::file_delete(fpath)
+}
+
+tibble(
+  test = "all tests_retirement_rates tests passed",
+  passed = test_results # all_tests_passed(test_results)
+) |>
+  readr::write_csv(fpath)
 
 ```

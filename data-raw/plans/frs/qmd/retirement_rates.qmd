@@ -11,27 +11,20 @@ format:
 
 ```{r}
 #| eval: true
-#| output: true
+#| output: false
 
-# QROOT <- quarto_root()          # pins here::here() and returns the nearest Quarto root
-# QROOT               # shows the detected path
-pin_quarto_here()
-here::here()
-here::dr_here()     # shows what here() is pinned to and why
-# getwd()             # confirms your working dir didn’t get left changed
+GROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+source(fs::path(GROOT, "data-raw", "R", "setup.R"))
 
-```
+rawdata <- readRDS(fs::path(DIRS$work, "frs_inputs_raw.rds"))
+names(rawdata)
 
-```{r stop_here, echo=FALSE}
-
-knitr::knit_exit()
 ```
 
 ## Get retirement rate data
 
 ```{r}
 #| label: get-data
-#| eval: false
 
 # which sheets?
 sheets <- str_subset(names(rawdata), "retire_rates")
@@ -39,39 +32,7 @@ data_list <- sheets |>
   map(~ pluck(rawdata, .x, "data")) |>
   set_names(sheets)
 
-# alternatively put just the data into the environment
-# list2env(data_list, envir = .GlobalEnv)
-
-# 6 sheets, each with own formatting
-# drop and normal tibbles each have 11 columns
-# columns:
-# drop 1 and 2: age, + 10
-#       regular
-#         k12 instructional female, male
-#         not k12 instructional female, male
-#       special risk female, male
-#       leo female, male
-#       other female, male
-
-# normal: age, +10
-#         regular
-#           k12 instructional, female, male
-#           k12 not instructional, female, male
-#         special, female, male
-#         elected, female, male
-#         senior_management, female, male
-
-# note that drop and normal are the same
-
-# early 1 and 2: age, + 8
-#        regular
-#          not k12 instructional female, male
-#        special risk, female, male
-#        elected, female, male
-#        senior_management, female, male
-
 # we'll create variable names that are class_subclass_gender:
-
 
 get_long <- function(sheet) {
   # construct column names as class_subclass_gender
@@ -126,7 +87,6 @@ count(df1, value)
 -       convert value to numeric
 
 ```{r}
-#| eval: false
 
 retrate2 <- df1 |>
   mutate(age = ifelse(age=="70-79", "75", age),
@@ -134,7 +94,7 @@ retrate2 <- df1 |>
     separate_wider_delim(name, delim="_", names = c("class", "subclass", "gender")) |> 
     mutate(class = ifelse(class=="seniormanagement", "senior_management", class),
     value=as.numeric(value)) |> 
-      select(class, subclass, gender, tier, retire_type, value, sheet)
+  select(class, subclass, gender, age, tier, retire_type, value, sheet)
 
 count(retrate2, age)
 count(retrate2, class, subclass, gender)
@@ -147,7 +107,6 @@ count(retrate2, sheet)
 
 ```{r}
 #| output: true
-#| eval: false
 
 skimr::skim(retrate2)
 retrate2

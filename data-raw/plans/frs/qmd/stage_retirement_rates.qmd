@@ -12,7 +12,8 @@ format:
 ```{r}
 #| label: setup
 
-source(here::here("data-raw", "R", "setup.R"))
+GROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+source(fs::path(GROOT, "data-raw", "R", "setup.R"))
 
 ```
 
@@ -20,32 +21,15 @@ source(here::here("data-raw", "R", "setup.R"))
 ```{r}
 #| eval: true
 
-# fpath <- fs::path(DIRS$work, "tests_retirement_rates.csv")
-# status <- readr::read_csv(fpath)
+fpath <- fs::path(DIRS$work, "tests_retirement_rates.csv")
+status <- readr::read_csv(fpath)
 
-# if (!all(status$passed)) {
-#   stop("retirement rates tests failure")
-# }
+if (!all(status$passed)) {
+  stop("retiree tests failure")
+}
 
-retirement_rates <- readRDS(fs::path(DIRS$work, "tests_retirement_rates.csv"))
-
-# retirees <- retirees1 |>
-#   filter(age_label != "Total") |>
-#   select(type, age_label, age_lb, age_ub, count, benefits)
+retirement_rates <- readRDS(fs::path(DIRS$work, "retirement_rates.rds"))
 
 saveRDS(retirement_rates, fs::path(DIRS$staged, "retirement_rates.rds"))
-
-# retirees <- retirees1 |>
-#   filter(age_label != "Total") |>   select(type, age_label, age_lb, age_ub, count, benefits)
-
-# fname <- "retirees.rds"
-#   file_copy(
-#     fs::path(DIRS$work, fname),
-#     fs::path(DIRS$stage, fname),
-#     overwrite = TRUE
-#   )
-# } else {
-#   stop("retiree tests failure")
-# }
 
 ```
