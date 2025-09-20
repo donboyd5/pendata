@@ -1,0 +1,74 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---
+
+# Make params -- a temporary step
+
+## Setup, get preliminary list, and target data
+
+```{r}
+#| label: setup
+
+GROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+source(fs::path(GROOT, "data-raw", "R", "setup.R"))
+
+```
+
+
+```{r}
+#| label: get-prelim-list
+
+list_name <- paste0(PLAN_CONSTANTS$plan, ".rda")
+fpath <- fs::path(DIRS$work, list_name)
+load(fpath)
+
+```
+
+## Load the "target" data from Gang
+```{r}
+#| label: get-paramsg
+
+# C:\Users\donbo\Documents\R_Projects\pendata\data-raw\gang\params_bf_cal.RData
+fpath <- fs::path(GROOT, "data-raw", "gang", "params_bf_cal.RData")
+load(fpath) # loads params, an environment
+paramsg <- params
+rm(params)
+
+```
+
+```{r}
+#| label: get-frsg
+
+# C:\Users\donbo\Documents\R_Projects\pendata\data-raw\gang\params_bf_cal.RData
+fpath <- fs::path(GROOT, "data-raw", "gang", "frs_data_env_bf_cal.RData")
+load(fpath) # loads frs_data_env, an environment
+# 268 objects
+frs_info <- tibble(obj=1:length(names(frs_data_env)), name=names(frs_data_env)) |> 
+    mutate(type=case_when(str_detect(name, "table") ~ "table",
+    str_sub(name, -1)=="_" ~ "global",
+    .default = "other"))
+
+count(frs_info, type)
+
+```
+
+
+
+## Save final list
+
+```{r}
+#| label: save-final-list
+#| eval: false
+
+
+# later use this:
+# save_name <- paste0(PLAN_CONSTANTS$plan, ".rda")
+# fpath <- fs::path(GROOT, "data", save_name)
+# save(list = PLAN_CONSTANTS$plan, file = fpath, compress = "xz")
+
+```
