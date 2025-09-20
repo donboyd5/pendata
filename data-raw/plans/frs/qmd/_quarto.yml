@@ -74,6 +74,9 @@ book:
     - part: "Assemble list for `pendata` package"
       chapters:
         - assemble_list.qmd
+    - part: "Make params"
+      chapters:
+        - make_params.qmd
 
 # read steps.qmd for how to build from scratch
 # GROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
