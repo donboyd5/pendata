@@ -23,13 +23,31 @@ source(fs::path(GROOT, "data-raw", "R", "setup.R"))
 ```{r}
 #| label: get-prelim-list
 
-list_name <- paste0(PLAN_CONSTANTS$plan, ".rda")
+list_name <- "frs.rda"
 fpath <- fs::path(DIRS$work, list_name)
 load(fpath)
 
 ```
 
-## Load the "target" data from Gang
+```{r}
+
+# categorize my frs data
+
+frsd_info <- tibble(
+  obj = 1:length(names(frs_data_env)),
+  name = names(frs_data_env)
+) |>
+  mutate(
+    type = case_when(
+      str_detect(name, "table") ~ "table",
+      str_sub(name, -1) == "_" ~ "global",
+      .default = "other"
+    )
+  )
+
+```
+
+## Load and categorize the "target" data from Gang
 ```{r}
 #| label: get-paramsg
 
@@ -38,6 +56,21 @@ fpath <- fs::path(GROOT, "data-raw", "gang", "params_bf_cal.RData")
 load(fpath) # loads params, an environment
 paramsg <- params
 rm(params)
+
+paramsg_info <- tibble(
+  obj = 1:length(names(paramsg)),
+  name = names(paramsg)
+) |>
+  mutate(
+    type = case_when(
+      str_detect(name, "table") ~ "table",
+      str_sub(name, -1) == "_" ~ "global",
+      .default = "other"
+    )
+  )
+
+count(paramsg_info, type)
+paramsg_info |> filter(type == "other")
 
 ```
 
@@ -48,15 +81,53 @@ rm(params)
 fpath <- fs::path(GROOT, "data-raw", "gang", "frs_data_env_bf_cal.RData")
 load(fpath) # loads frs_data_env, an environment
 # 268 objects
-frs_info <- tibble(obj=1:length(names(frs_data_env)), name=names(frs_data_env)) |> 
-    mutate(type=case_when(str_detect(name, "table") ~ "table",
-    str_sub(name, -1)=="_" ~ "global",
-    .default = "other"))
+frsg_info <- tibble(
+  obj = 1:length(names(frs_data_env)),
+  name = names(frs_data_env)
+) |>
+  mutate(
+    type = case_when(
+      str_detect(name, "table") ~ "table",
+      str_sub(name, -1) == "_" ~ "global",
+      .default = "other"
+    )
+  )
 
-count(frs_info, type)
+count(frsg_info, type)
 
 ```
 
+## Create paramsg counterpart
+
+```{r}
+#| label: params-globals
+
+# what globals does Gang have in params?
+pglobals <- paramsg_info |>
+  filter(type == "global") |>
+  arrange(name) |>
+  pull(name) # 110 globals
+pglobals
+
+# what globals do I have in frs?
+dglobals <- names(frs$constants_assumptions) |> sort() # 110 items
+
+# compare the two sets of globals
+setdiff(pglobals, dglobals)
+setdiff(pglobals, dglobals)
+# [1] "age_range_" "class_name_" "class_names_" "class_names_no_drop_frs_" "class_names_no_frs_" "entry_year_range_"
+# [7] "max_age_" "max_year_" "min_age_" "min_year_" "model_period_" "model_return_"
+# [13] "nc_cal_" "new_year_" "return_2023_" "return_scen_" "return_scenarios_original_" "start_year_"
+# [19] "term_rate_" "year_range_" "yos_range_"
+
+setdiff(dglobals, pglobals)
+#  [1] "admin_model_al_" "admin_model_norm_cost_" "admin_val_al_" "eco_model_al_" "eco_model_norm_cost_"
+#  [6] "eco_val_al_" "eso_model_al_" "eso_model_norm_cost_" "eso_val_al_" "judges_model_al_"
+# [11] "judges_model_norm_cost_" "judges_val_al_" "regular_model_al_" "regular_model_norm_cost_" "regular_val_al_"
+# [16] "senior_management_model_al_" "senior_management_model_norm_cost_" "senior_management_val_al_" "special_model_al_" "special_model_norm_cost_"
+# [21] "special_val_al_"
+
+```
 
 
 ## Save final list
@@ -64,7 +135,6 @@ count(frs_info, type)
 ```{r}
 #| label: save-final-list
 #| eval: false
-
 
 # later use this:
 # save_name <- paste0(PLAN_CONSTANTS$plan, ".rda")
