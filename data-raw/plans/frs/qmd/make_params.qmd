@@ -16,6 +16,7 @@ format:
 
 GROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
 source(fs::path(GROOT, "data-raw", "R", "setup.R"))
+library(btools)
 
 ```
 
@@ -30,7 +31,6 @@ load(fpath)
 ```
 
 ```{r}
-
 # categorize my frs data
 
 frsd_info <- tibble(
@@ -44,6 +44,8 @@ frsd_info <- tibble(
       .default = "other"
     )
   )
+
+count(frsd_info, type)
 
 ```
 
@@ -111,10 +113,10 @@ pglobals
 
 # what globals do I have in frs?
 dglobals <- names(frs$constants_assumptions) |> sort() # 110 items
+dglobals
 
 # compare the two sets of globals
-setdiff(pglobals, dglobals)
-setdiff(pglobals, dglobals)
+(missing_global_names <- setdiff(pglobals, dglobals)) # 21 missing globals
 # [1] "age_range_" "class_name_" "class_names_" "class_names_no_drop_frs_" "class_names_no_frs_" "entry_year_range_"
 # [7] "max_age_" "max_year_" "min_age_" "min_year_" "model_period_" "model_return_"
 # [13] "nc_cal_" "new_year_" "return_2023_" "return_scen_" "return_scenarios_original_" "start_year_"
@@ -126,6 +128,113 @@ setdiff(dglobals, pglobals)
 # [11] "judges_model_norm_cost_" "judges_val_al_" "regular_model_al_" "regular_model_norm_cost_" "regular_val_al_"
 # [16] "senior_management_model_al_" "senior_management_model_norm_cost_" "senior_management_val_al_" "special_model_al_" "special_model_norm_cost_"
 # [21] "special_val_al_"
+
+```
+
+```{r}
+#| label: fillin-missing-globals
+
+# some of the missing globals are tibbles, we won't worry about them yet
+missing_globals <- mget(missing_global_names, envir = paramsg, inherits = FALSE)
+
+fglob <- list()
+# model items and assumptions -- these normally would not be included in pendata
+fglob$model_period_ <- 30
+fglob$model_return_ <- .067
+fglob$return_2023_ <- .067
+fglob$return_scen_ <- "assumption"
+fglob$return_scenarios_original_ <- paramsg$return_scenarios_original_
+
+# class names
+fglob$class_names_no_drop_frs_ <- unique(frs$headcount_salary$class)
+fglob$class_names_no_drop_frs_ <- fglob$class_names_no_drop_frs_[order(match(
+  fglob$class_names_no_drop_frs_,
+  paramsg$class_names_no_drop_frs_
+))] # put in Gang's order
+
+fglob$class_names_no_frs_ <- c(fglob$class_names_no_drop_frs_, "drop")
+fglob$class_names_ <- c(fglob$class_names_no_frs_, "frs")
+fglob$class_name_ <- fglob$class_names_[1]
+
+# age items
+fglob$min_age_ <- CONSTANTS$minage
+fglob$max_age_ <- CONSTANTS$maxage
+fglob$age_range_ <- fglob$min_age_:fglob$max_age_
+
+# year items
+fglob$min_year_ <- 1970
+fglob$max_year_ <- 2154
+fglob$year_range_ <- fglob$min_year_:fglob$max_year_
+fglob$entry_year_range_ <- fglob$min_year_:2052
+fglob$new_year_ <- 2024
+fglob$start_year_ <- 2022
+
+# yos items
+fglob$yos_range_ <- CONSTANTS$minyos:CONSTANTS$maxyos
+
+(togo <- setdiff(missing_global_names, names(fglob)))
+missing_globals[togo]
+
+# construct the calibration factors nc_cal_
+fca <- frs$constants_assumptions
+vals <- str_subset(names(fca), "val_norm_cost_") |> sort()
+text <- str_subset(names(fca), "nc_cal_") |> sort()
+# fca[vals]
+# fca[text]
+fglob$nc_cal_ <- tibble(
+  vname = vals,
+  vnc = unlist(fca[vals]),
+  vname2 = text,
+  textvals = unlist(fca[text])
+) |>
+  mutate(
+    class = str_remove(vname, "_val_norm_cost_"),
+    calfactor = as.numeric(stringr::str_extract(textvals, "[0-9.]+$")),
+    nc_cal_ = vnc / calfactor
+  ) |>
+  select(class, nc_cal_)
+
+# $nc_cal_
+# # A tibble: 7 × 2
+#   class             nc_cal_
+#   <chr>               <dbl>
+# 1 admin               1.40
+# 2 eco                 0.828
+# 3 eso                 0.940
+# 4 judges              0.917
+# 5 regular             0.985
+# 6 senior_management   0.961
+# 7 special             0.985
+
+(togo <- setdiff(missing_global_names, names(fglob)))
+missing_globals[togo]
+
+fglob$term_rate_ <- paramsg$term_rate_ # use Gang's now -- mine contains values constructed later in the process!
+
+# finally, construct the term rate table
+# it has male and female but pendata should only give total what total would it give
+check <- paramsg$term_rate_ |>
+  summarise(rate = mean(rate), .by = c(yos, class, age)) |>
+  arrange(yos, class, age)
+# compare to what I have
+count(frs$withdrawal, age_label)
+check2 <- frs$withdrawal |>
+  select(yos = yos_lb, class, age = age_label, rate = value) |>
+  mutate(age = ifelse(age == "55+", "over_55", age)) |>
+  arrange(yos, class, age)
+
+comp <- bind_rows(
+  check |> mutate(type = "gang"),
+  check2 |> mutate(type = "don")
+) |>
+  pivot_wider(names_from = type, values_from = rate) |>
+  mutate(diff = don - gang) |>
+  arrange(class, yos, age)
+comp
+
+temp <- comp |> filter(is.na(gang) | is.na(don))
+# gang does not have admin yos 31 -- apparently I gave yos_lb 31 label to 30+
+temp2 <- paramsg$term_rate_ |> filter(class == "admin")
 
 ```
 
