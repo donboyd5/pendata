@@ -132,6 +132,13 @@ setdiff(dglobals, pglobals)
 ```
 
 ```{r}
+#| label: check-matching-globals
+
+
+
+```
+
+```{r}
 #| label: fillin-missing-globals
 
 # some of the missing globals are tibbles, we won't worry about them yet
@@ -238,6 +245,28 @@ temp2 <- paramsg$term_rate_ |> filter(class == "admin")
 
 ```
 
+```{r}
+#| label: params-tables
+
+# what globals does Gang have in params?
+ptables <- paramsg_info |>
+  filter(type == "table") |>
+  arrange(name) |>
+  pull(name) # 110 globals
+ptables
+
+# what tables do I have in frs?
+dtables <- names(frs$constants_assumptions) |> sort() # 110 items
+dtables
+
+# headcount salary
+names(paramsg) |> str_subset("headcount")
+
+# compare the two sets of globals
+(missing_global_names <- setdiff(pglobals, dglobals)) # 21 missing globals
+missing_globals <- mget(missing_global_names, envir = paramsg, inherits = FALSE)
+
+```
 
 ## Save final list
 
