@@ -126,18 +126,13 @@ pglobals <- paramsg_info |>
   filter(type == "global") |>
   arrange(name) |>
   pull(name) # 110 globals
-pglobals
+pglobals # gang's globals
 
 # what globals do I have in frs?
 dglobals <- names(frs$constants_assumptions) |> sort() # 110 items
-dglobals
+dglobals # my globals
 
 # compare the two sets of globals
-(missing_global_names <- setdiff(pglobals, dglobals)) # 21 missing globals
-# [1] "age_range_" "class_name_" "class_names_" "class_names_no_drop_frs_" "class_names_no_frs_" "entry_year_range_"
-# [7] "max_age_" "max_year_" "min_age_" "min_year_" "model_period_" "model_return_"
-# [13] "nc_cal_" "new_year_" "return_2023_" "return_scen_" "return_scenarios_original_" "start_year_"
-# [19] "term_rate_" "year_range_" "yos_range_"
 
 setdiff(dglobals, pglobals)
 #  [1] "admin_model_al_" "admin_model_norm_cost_" "admin_val_al_" "eco_model_al_" "eco_model_norm_cost_"
@@ -151,10 +146,69 @@ setdiff(dglobals, pglobals)
 ```{r}
 #| label: check-matching-globals
 
+(matching_global_names <- intersect(pglobals, dglobals))
+
+gang_globals <- mget(matching_global_names, envir = paramsg, inherits = FALSE)
+don_globals <- frs$constants_assumptions[matching_global_names]
+
+gmatches <- enframe(gang_globals, name = "name", value = "gang") |>
+  mutate(gang = unlist(gang))
+
+dmatches <- enframe(don_globals, name = "name", value = "don") |>
+  mutate(don = unlist(don))
+
+gdmatches <- left_join(gmatches, dmatches, by = join_by(name))
+
+tofix <- gdmatches |>
+  filter(don != gang)
+
+constants_vec <- unlist(frs$constants_assumptions)
+constants_vec["ben_payment_ratio_"] <- paramsg$ben_payment_ratio_ # I am missing this -- why? djb
+tofix2 <- tofix |>
+  separate_wider_delim(
+    cols = don,
+    names = c("var1", "operator", "var2"),
+    delim = " ",
+    too_few = "align_start",
+    cols_remove = FALSE
+  ) |>
+  mutate(
+    val1 = case_when(
+      str_detect(var1, "^\\s*-?\\d*\\.?\\d+(e[+-]?\\d+)?\\s*$") ~
+        as.numeric(var1),
+      var1 %in% names(constants_vec) ~ as.numeric(constants_vec[var1]),
+      .default = NA_real_
+    ),
+    val2 = case_when(
+      str_detect(var2, "^\\s*-?\\d*\\.?\\d+(e[+-]?\\d+)?\\s*$") ~
+        as.numeric(var2),
+      var2 %in% names(constants_vec) ~ as.numeric(constants_vec[var2]),
+      .default = NA_real_
+    ),
+    don2 = case_when(
+      operator == "*" ~ val1 * val2,
+      operator == "-" ~ val1 - val2,
+      operator == "/" ~ val1 / val2,
+      is.na(operator) ~ val1,
+      .default = NA_real_
+    )
+  ) |>
+  mutate(diff = don2 - as.numeric(gang)) |>
+  arrange(desc(abs(diff)))
+tofix2
+
+frs$constants_assumptions["admin_outflow_"]
+
 ```
 
 ```{r}
 #| label: fillin-missing-globals
+
+(missing_global_names <- setdiff(pglobals, dglobals)) # 21 missing globals
+# [1] "age_range_" "class_name_" "class_names_" "class_names_no_drop_frs_" "class_names_no_frs_" "entry_year_range_"
+# [7] "max_age_" "max_year_" "min_age_" "min_year_" "model_period_" "model_return_"
+# [13] "nc_cal_" "new_year_" "return_2023_" "return_scen_" "return_scenarios_original_" "start_year_"
+# [19] "term_rate_" "year_range_" "yos_range_"
 
 # some of the missing globals are tibbles, we won't worry about them yet
 missing_globals <- mget(missing_global_names, envir = paramsg, inherits = FALSE)
