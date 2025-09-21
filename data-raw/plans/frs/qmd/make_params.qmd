@@ -143,6 +143,8 @@ setdiff(dglobals, pglobals)
 
 ```
 
+## Matching globals
+
 ```{r}
 #| label: check-matching-globals
 
@@ -185,7 +187,7 @@ tofix2 <- tofix |>
       var2 %in% names(constants_vec) ~ as.numeric(constants_vec[var2]),
       .default = NA_real_
     ),
-    don2 = case_when(
+    fixed = case_when(
       operator == "*" ~ val1 * val2,
       operator == "-" ~ val1 - val2,
       operator == "/" ~ val1 / val2,
@@ -193,13 +195,23 @@ tofix2 <- tofix |>
       .default = NA_real_
     )
   ) |>
-  mutate(diff = don2 - as.numeric(gang)) |>
+  mutate(diff = fixed - as.numeric(gang)) |>
   arrange(desc(abs(diff)))
 tofix2
 
 frs$constants_assumptions["admin_outflow_"]
 
+
+# fixed_matches
+all_matches <- frs$constants_assumptions[matching_global_names]
+names_of_fixvalues <- tofix2 |> pull(name)
+fixed_values <- tofix2 |> pull(fixed)
+fixed_matches <- all_matches
+fixed_matches[names_of_fixvalues] <- fixed_values
+
 ```
+
+## Missing globals
 
 ```{r}
 #| label: fillin-missing-globals
