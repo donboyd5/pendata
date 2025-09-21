@@ -326,6 +326,8 @@ temp2 <- paramsg$term_rate_ |> filter(class == "admin")
 
 ```
 
+## Construct needed tables
+
 ```{r}
 #| label: params-tables
 
@@ -344,16 +346,84 @@ dtables
 names(paramsg) |> str_subset("headcount")
 
 # compare the two sets of globals
-(missing_global_names <- setdiff(pglobals, dglobals)) # 21 missing globals
-missing_globals <- mget(missing_global_names, envir = paramsg, inherits = FALSE)
+# (missing_global_names <- setdiff(pglobals, dglobals)) # 21 missing globals
+# missing_globals <- mget(missing_global_names, envir = paramsg, inherits = FALSE)
 
 ```
 
-## Construct params from parts
+### Work on the stacked tables
 
 ```{r}
+ns(paramsg)
+ns(frs)
+paramsg$headcount_table_
+# A tibble: 847 × 4
+#     age class     yos count
+#   <dbl> <chr>   <dbl> <dbl>
+# 1    20 regular     2   754
+paramsg$salary_table_
+# # A tibble: 847 × 4
+#      age class     yos salary
+#    <dbl> <chr>   <dbl>  <dbl>
+#  1    20 regular     2  14714
+#  2    20 regular     7     NA
+count(paramsg$salary_table_, age)
+# age     n
+#    <dbl> <int>
+#  1    20    77
+#  2    22    77
+#  3    27    77
+#  4    32    77
+#  5    37    77
+#  6    42    77
+#  7    47    77
+#  8    52    77
+#  9    57    77
+# 10    62    77
+# 11    67    77
 
-fixed_matches # matching globals, fixed
+frs$headcount_salary
+# A tibble: 847 × 9
+#    class age_label age_lb age_ub yos_label yos_lb yos_ub headcount salary
+#    <chr> <chr>      <dbl>  <dbl> <chr>      <dbl>  <dbl>     <dbl>  <dbl>
+#  1 admin Under 20      18     19 Under 5        0      4         0      0
+#  2 admin Under 20      18     19 5 to 10        5      9         0      0
+count(frs$headcount_salary, age_lb, age_ub, age_label)
+# A tibble: 11 × 4
+#    age_lb age_ub age_label     n
+#     <dbl>  <dbl> <chr>     <int>
+#  1     18     19 Under 20     77
+#  2     20     24 20 to 24     77
+#  3     25     29 25 to 29     77
+#  4     30     34 30 to 34     77
+#  5     35     39 35 to 39     77
+#  6     40     44 40 to 44     77
+#  7     45     49 45 to 49     77
+#  8     50     54 50 to 54     77
+#  9     55     59 55 to 59     77
+# 10     60     64 60 to 64     77
+# 11     65    120 65 & Up      77
+
+prep <- frs$headcount_salary |>
+  mutate(
+    age = case_when(
+      age_lb == 18 ~ 20,
+      age_lb == 65 ~ 67,
+      .default = (age_lb + age_ub) / 2
+    )
+  ) # now do yos!!
+count(prep, age, age_lb, age_ub, age_label)
+tables <- list()
+tables$salary_table_ <- prep |> 
+  select(age, class, yos_lb, salary)
+```
+  
+  
+  ## Construct params from parts
+  
+  ```{r}
+
+  fixed_matches # matching globals, fixed
 fglob # missing globals
 # to come: # missing tables
 # to come: # other
