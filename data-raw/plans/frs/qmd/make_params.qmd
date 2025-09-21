@@ -349,6 +349,52 @@ missing_globals <- mget(missing_global_names, envir = paramsg, inherits = FALSE)
 
 ```
 
+## Construct params from parts
+
+```{r}
+
+fixed_matches # matching globals, fixed
+fglob # missing globals
+# to come: # missing tables
+# to come: # other
+
+# params that SHOULD match gang's params -- paramsg
+# note that I am NOT forcing types to match
+params <- c(fixed_matches, fglob)
+
+names_params <- names(params)
+
+# Compare each element by name using sapply and identical
+f <- function(n) {
+  # print(n)
+  # print(paramsg[[n]])
+  # print(params[[n]])
+  pmatch <- identical(paramsg[[n]], params[[n]])
+  if (!pmatch) {
+    print(n)
+    print(paramsg[[n]])
+    print(params[[n]])
+  }
+  pmatch
+}
+comparison <- sapply(names_params, f)
+comparison
+
+f2 <- function(n) {
+  print(n)
+  print(str(paramsg[[n]]))
+  print(str(params[[n]]))
+}
+names_not_matching <- names_params[!comparison]
+purrr::walk(names_not_matching, f2)
+f2("min_age_")
+
+# frs$params <- params
+# convert to environment, then we can save
+
+```
+
+
 ## Save final list
 
 ```{r}
