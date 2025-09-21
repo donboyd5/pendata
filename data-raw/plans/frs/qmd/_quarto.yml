@@ -101,11 +101,9 @@ book:
 # ---    
 
 
-# stop 
+# stop  -- type qstop to get the following
 # ```{r}
-# #| label: stop
 # #| echo: false
-
 # knitr::knit_exit()
 # ```
 
