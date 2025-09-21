@@ -34,6 +34,7 @@ sheet <- "constants_assumptions"
 info <- rawdata[[sheet]]$info
 data <- rawdata[[sheet]]$data
 
+
 ```
 
 ## Clean up the data
@@ -94,6 +95,52 @@ data3
 
 ```
 
+
+## Create any new items needed
+
+```{r}
+
+# ben_payment_ratio_ <- pension_payment_/(pension_payment_ + contribution_refunds_ + disbursement_to_ip_ + admin_expense_)
+bpr <- data3 |>
+  filter(
+    variable %in%
+      c(
+        "pension_payment_",
+        "contribution_refunds_",
+        "disbursement_to_ip_",
+        "admin_expense_"
+      )
+  ) |>
+  select(variable, vnumeric) |>
+  pivot_wider(names_from = variable, values_from = vnumeric) |>
+  mutate(
+    ben_payment_ratio_ = pension_payment_ /
+      (pension_payment_ +
+        contribution_refunds_ +
+        disbursement_to_ip_ +
+        admin_expense_)
+  ) |>
+  pull(ben_payment_ratio_)
+
+
+data4 <- data3 |>
+  mutate(
+    vnumeric = if_else(
+      variable == "ben_payment_ratio_",
+      bpr,
+      vnumeric
+    ),
+    datatype = if_else(
+      variable == "ben_payment_ratio_",
+      "numeric",
+      datatype
+    )
+  )
+
+
+```
+
+
 ## Show the slightly cleaned data
 
 ```{r}
@@ -102,7 +149,7 @@ data3
 #| column: page
 
 DT::datatable(
-  data3,
+  data4,
   width = "100%",
   options = list(scrollX = TRUE, scrollY = '1500px', pageLength = 20),
   filter = "top"
@@ -120,6 +167,8 @@ DT::datatable(
 
 ```
 
+
+
 ## Convert from data frame to a list
 
 ```{r}
@@ -128,7 +177,7 @@ DT::datatable(
 
 types <- c("numeric", "string", "logical")
 
-list_split <- data3 |>
+list_split <- data4 |>
   filter(!is.na(original), datatype %in% types) |>
   rowwise() |>
   mutate(
@@ -154,20 +203,18 @@ list_flat <- purrr::flatten(list_split)
 
 ```
 
-
 ## Save cleaned constants data to working folder
 
 ```{r}
 #| output: true
 
-saveRDS(data3, fs::path(DIRS$work, "constants_assumptions_tbl.rds"))
+saveRDS(data4, fs::path(DIRS$work, "constants_assumptions_tbl.rds"))
 
 saveRDS(list_flat, fs::path(DIRS$work, "constants_assumptions.rds"))
 
 ```
 
 ```{r}
-#| label: stop
 #| echo: false
 
 knitr::knit_exit()
@@ -221,6 +268,8 @@ mylist_split <- data3 |>
   map(~ deframe(.x[, c("vname", "value")]))
 
 flatlist <- purrr::flatten(mylist_split)
+
+# ben_payment_ratio_ <- pension_payment_/(pension_payment_ + contribution_refunds_ + disbursement_to_ip_ + admin_expense_)
 
 ```
 
