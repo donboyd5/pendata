@@ -22,7 +22,9 @@ library(btools)
 
 
 ```{r}
-#| label: get-prelim-list
+#| label: get-my-prelim-list
+
+# get list from working folder
 
 list_name <- "frs.rda"
 fpath <- fs::path(DIRS$work, list_name)
@@ -30,12 +32,13 @@ load(fpath)
 
 ```
 
+
 ```{r}
-# categorize my frs data
+#| label: categorize-my-frs-data
 
 frsd_info <- tibble(
-  obj = 1:length(names(frs_data_env)),
-  name = names(frs_data_env)
+  obj = 1:length(names(frs)),
+  name = names(frs)
 ) |>
   mutate(
     type = case_when(
@@ -47,11 +50,13 @@ frsd_info <- tibble(
 
 count(frsd_info, type)
 
+
 ```
+
 
 ## Load and categorize the "target" data from Gang
 ```{r}
-#| label: get-paramsg
+#| label: get-params-gang
 
 # C:\Users\donbo\Documents\R_Projects\pendata\data-raw\gang\params_bf_cal.RData
 fpath <- fs::path(GROOT, "data-raw", "gang", "params_bf_cal.RData")
@@ -72,12 +77,18 @@ paramsg_info <- tibble(
   )
 
 count(paramsg_info, type)
+#   type       n
+#   <chr>  <int>
+# 1 global   110
+# 2 other      5
+# 3 table     52
+
 paramsg_info |> filter(type == "other")
 
 ```
 
 ```{r}
-#| label: get-frsg
+#| label: get-frs-gang
 
 # C:\Users\donbo\Documents\R_Projects\pendata\data-raw\gang\params_bf_cal.RData
 fpath <- fs::path(GROOT, "data-raw", "gang", "frs_data_env_bf_cal.RData")
@@ -97,9 +108,15 @@ frsg_info <- tibble(
 
 count(frsg_info, type)
 
+#   type       n
+#   <chr>  <int>
+# 1 global    72
+# 2 other     34
+# 3 table    162
+
 ```
 
-## Create paramsg counterpart
+## Create paramsg counterpart from my frs list
 
 ```{r}
 #| label: params-globals
@@ -133,8 +150,6 @@ setdiff(dglobals, pglobals)
 
 ```{r}
 #| label: check-matching-globals
-
-
 
 ```
 
