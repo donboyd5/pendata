@@ -546,7 +546,7 @@ setdiff(names(paramsg), names(params))
 ```
 
 
-## Convert params list to params environment and add to frs list
+## Convert params list to params environment
 
 ```{r}
 
@@ -562,7 +562,7 @@ params_env
 ## Get "target" frs_data_env_bf_cal data from Gang and add to the list
 ```{r}
 #| label: get-frs-gang
-#| eval: true
+#| eval: false
 
 # we don't need this now maybe later put in a separate qmd file
 
@@ -595,7 +595,7 @@ load(fpath) # loads frs_data_env, an environment
 
 
 
-## Save final updated frs list
+## Save final frs list and individual environments
 
 ```{r}
 #| label: save-final-list
@@ -606,11 +606,17 @@ fpath <- fs::path(DIRS$work, "frs.rda")
 load(fpath)
 
 frs$params_env <- params_env
-frs$frs_data_env <- frs_data_env
+# frs$frs_data_env <- frs_data_env
 
-save_name <- "frs.rda"
 fpath <- fs::path(GROOT, "data", "frs.rda")
 save(list = "frs", file = fpath, compress = "xz")
+
+# fpath <- fs::path(GROOT, "data", "frs_params_env.rda")
+# save(list = "frs_params_env", file = fpath, compress = "xz")
+
+# frs_data_env is too big to save!!
+# fpath <- fs::path(GROOT, "data", "frs_data_env.rda")
+# save(list = "frs_data_env", file = fpath, compress = "xz")
 
 ```
 
