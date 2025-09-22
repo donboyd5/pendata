@@ -20,6 +20,7 @@ library(btools)
 
 ```
 
+## Load and examine my frs data
 
 ```{r}
 #| label: get-my-prelim-list
@@ -50,11 +51,9 @@ frsd_info <- tibble(
 
 count(frsd_info, type)
 
-
 ```
 
-
-## Load and categorize the "target" params data from Gang
+## Load and categorize the "target" params data from Gang -- globals, tables, other
 ```{r}
 #| label: get-params-gang
 
@@ -88,7 +87,7 @@ paramsg_info |> filter(type == "other")
 ```
 
 
-## Create paramsg counterpart from my frs list
+## Globals
 
 ```{r}
 #| label: params-globals
@@ -115,7 +114,11 @@ setdiff(dglobals, pglobals)
 
 ```
 
-## Matching globals
+### Fix globals that are in both Gang's and my data but I haven't yet constructed values
+
+These really should be calculated in penmodel!
+
+Create fixed_matches -- which are all matches, including my now calculated values
 
 ```{r}
 #| label: check-matching-globals
@@ -183,10 +186,14 @@ fixed_matches[names_of_fixvalues] <- fixed_values
 
 ```
 
-## Missing globals
+### Create missing globals that are not in my data
+
+These are model assumptions and similar that should be defined when the model runs!
 
 ```{r}
 #| label: fillin-missing-globals
+
+# create fglob -- filled-in globals ----
 
 (missing_global_names <- setdiff(pglobals, dglobals)) # 21 missing globals
 # [1] "age_range_" "class_name_" "class_names_" "class_names_no_drop_frs_" "class_names_no_frs_" "entry_year_range_"
@@ -269,10 +276,19 @@ fglob$nc_cal_ <- tibble(
 (togo <- setdiff(missing_global_names, names(fglob)))
 missing_globals[togo]
 
+# use Gang's term_rate_ tables ----
 fglob$term_rate_ <- paramsg$term_rate_ # use Gang's now -- mine contains values constructed later in the process!
 
 # finally, construct the term rate table
 # it has male and female but pendata should only give total what total would it give
+
+```
+
+### Some checks on missing globals
+
+```{r}
+#| eval: false
+
 check <- paramsg$term_rate_ |>
   summarise(rate = mean(rate), .by = c(yos, class, age)) |>
   arrange(yos, class, age)
@@ -298,10 +314,20 @@ temp2 <- paramsg$term_rate_ |> filter(class == "admin")
 
 ```
 
-## Construct needed tables
+### Combine matched globals and missing globals into globals list
 
 ```{r}
-#| label: params-tables
+
+globals <- c(fixed_matches, fglob)
+ns(globals) # 110 values
+
+```
+
+
+## Tables
+
+```{r}
+#| label: what-tables-are-in-params-and-my-frs
 
 # what globals does Gang have in params?
 ptables <- paramsg_info |>
@@ -314,23 +340,27 @@ ptables
 dtables <- names(frs$constants_assumptions) |> sort() # 110 items
 dtables
 
+```
+
+### Headcount and salary tables
+
+```{r}
+#| label: explore-tables
+
 # headcount salary
 names(paramsg) |> str_subset("headcount") # headcount_table_ is the main one
 names(paramsg) |> str_subset("salary") # salary_table_ is the main one
 
-# compare the two sets of globals
-# (missing_global_names <- setdiff(pglobals, dglobals)) # 21 missing globals
-# missing_globals <- mget(missing_global_names, envir = paramsg, inherits = FALSE)
-
 ```
 
-### Work on the stacked tables
+Put age and yos on the file to match how Reason defines them.
 
 ```{r}
-#| label: headcount_table_
+#| label: prep-age-yos-for-headcount-salary
 
 ns(paramsg)
 ns(frs)
+# gang's headcount and salary table(s) ----
 paramsg$headcount_table_
 # A tibble: 847 × 4
 #     age class     yos count
@@ -357,9 +387,7 @@ count(paramsg$salary_table_, age)
 # 10    62    77
 # 11    67    77
 
-count(paramsg$salary_table_, age)
-
-> count(paramsg$salary_table_, yos)
+count(paramsg$salary_table_, yos)
 # A tibble: 11 × 2
 #      yos     n
 #    <dbl> <int>
@@ -420,27 +448,59 @@ prep <- frs$headcount_salary |>
       age_lb == 65 ~ 67,
       .default = (age_lb + age_ub) / 2
     ),
-    yos=yos_lb + 2)
+    yos = yos_lb + 2
+  )
 count(prep, age, age_lb, age_ub, age_label)
 count(prep, yos, yos_lb, yos_ub, yos_label)
-tables <- list()
-tables$salary_table_ <- prep |> 
-  select(age, class, yos_lb, salary)
+
 ```
-  
-  
-  ## Construct params from parts
-  
-  ```{r}
 
-  fixed_matches # matching globals, fixed
-fglob # missing globals
-# to come: # missing tables
-# to come: # other
+#### Match params format for headcount and salar ytables
 
-# params that SHOULD match gang's params -- paramsg
+Headcount table: age class yos count
+Salary table: age class yos salary
+
+NOTE that paramsg$salary_table_ has NA values where as paramsg$headcount_table_ has zeros!
+
+I AM USING ZEROES FOR BOTH TABLES.
+
+```{r}
+#| label: prepare-headcount-and-salary-stacked-tables
+
+headcount_table_ <- prep |>
+  select(age, class, yos, count = headcount)
+
+salary_table_ <- prep |>
+  select(age, class, yos, salary)
+
+```
+
+### Combine tables into a list
+
+```{r}
+#| label: combine-tables
+
+tables <- list()
+tables$headcount_table_ <- headcount_table_
+tables$salary_table_ <- salary_table_
+ns(tables)
+
+```
+
+  
+  
+## Construct params list from parts and examine
+  
+```{r}
+#| label: construct-params
+
 # note that I am NOT forcing types to match
-params <- c(fixed_matches, fglob)
+params <- c(globals, tables)
+
+```
+
+```{r}
+#| label: examine-params
 
 names_params <- names(params)
 
@@ -459,6 +519,7 @@ f <- function(n) {
 }
 comparison <- sapply(names_params, f)
 comparison
+comparison[!comparison]
 
 f2 <- function(n) {
   print(n)
@@ -469,22 +530,34 @@ names_not_matching <- names_params[!comparison]
 purrr::walk(names_not_matching, f2)
 f2("min_age_")
 
-# frs$params <- params
-# convert to environment, then we can save
-
 ```
 
+## Convert params list to params environment and add to frs list
+
+```{r}
+
+# frs$params <- params
+# convert to environment, then we can save
+params_env <- list2env(params)
+ns(params_env)
+params_env
+
+
+```
 
 ## Save final list
 
 ```{r}
 #| label: save-final-list
-#| eval: false
+#| eval: true
 
-# later use this:
-# save_name <- paste0(PLAN_CONSTANTS$plan, ".rda")
-# fpath <- fs::path(GROOT, "data", save_name)
-# save(list = PLAN_CONSTANTS$plan, file = fpath, compress = "xz")
+# reload frs from the work folder (just to be safe) ----
+fpath <- fs::path(DIRS$work, "frs.rda")
+load(fpath)
+frs$params_env <- params_env
+save_name <- "frs.rda"
+fpath <- fs::path(GROOT, "data", "frs.rda")
+save(list = "frs", file = fpath, compress = "xz")
 
 ```
 
@@ -494,7 +567,7 @@ knitr::knit_exit()
 ```
 
 
-## Load and categorize the "target" frs_data_env_bf_cal data from Gang
+## OLD: Load and categorize the "target" frs_data_env_bf_cal data from Gang
 ```{r}
 #| label: get-frs-gang
 #| eval: false
