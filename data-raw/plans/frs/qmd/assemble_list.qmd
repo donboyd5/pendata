@@ -19,6 +19,7 @@ source(fs::path(GROOT, "data-raw", "R", "setup.R"))
 
 
 ```{r}
+#| label: assemble-list
 
 rds_files <- fs::dir_ls(DIRS$staged, glob = "*.rds")
 
@@ -33,12 +34,23 @@ plan <- rds_files |>
 plan <- append(list(plan_shortname = PLAN_CONSTANTS$plan), plan)
 
 assign(PLAN_CONSTANTS$plan, plan) # Assign 'plan' to the new name (no intermediate variable)
-save_name <- paste0(PLAN_CONSTANTS$plan, ".rda")
-fpath <- fs::path(GROOT, "data", save_name)
-
-save(list = PLAN_CONSTANTS$plan, file = fpath, compress = "xz")
 
 # devtools::load_all()
 # check <- pendata::frs
+
+```
+
+
+```{r}
+#| label: prelim-save-list
+
+save_name <- paste0(PLAN_CONSTANTS$plan, ".rda")
+fpath <- fs::path(DIRS$work, save_name)
+save(list = PLAN_CONSTANTS$plan, file = fpath, compress = "xz")
+
+# later use this:
+# save_name <- paste0(PLAN_CONSTANTS$plan, ".rda")
+# fpath <- fs::path(GROOT, "data", save_name)
+# save(list = PLAN_CONSTANTS$plan, file = fpath, compress = "xz")
 
 ```

@@ -1,0 +1,629 @@
+---
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    page-layout: full
+    css: wider.css
+---
+
+# Make params -- a temporary step
+
+## Setup, get preliminary list, and target data
+
+```{r}
+#| label: setup
+
+GROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+source(fs::path(GROOT, "data-raw", "R", "setup.R"))
+library(btools)
+
+```
+
+## Load and examine my frs data
+
+```{r}
+#| label: get-my-prelim-list
+
+# get list from working folder
+
+list_name <- "frs.rda"
+fpath <- fs::path(DIRS$work, list_name)
+load(fpath)
+
+```
+
+
+```{r}
+#| label: categorize-my-frs-data
+
+frsd_info <- tibble(
+  obj = 1:length(names(frs)),
+  name = names(frs)
+) |>
+  mutate(
+    type = case_when(
+      str_detect(name, "table") ~ "table",
+      str_sub(name, -1) == "_" ~ "global",
+      .default = "other"
+    )
+  )
+
+count(frsd_info, type)
+
+```
+
+## Load and categorize the "target" params data from Gang -- globals, tables, other
+```{r}
+#| label: get-params-gang
+
+# C:\Users\donbo\Documents\R_Projects\pendata\data-raw\gang\params_bf_cal.RData
+fpath <- fs::path(GROOT, "data-raw", "gang", "params_bf_cal.RData")
+load(fpath) # loads params, an environment
+paramsg <- params
+rm(params)
+
+paramsg_info <- tibble(
+  obj = 1:length(names(paramsg)),
+  name = names(paramsg)
+) |>
+  mutate(
+    type = case_when(
+      str_detect(name, "table") ~ "table",
+      str_sub(name, -1) == "_" ~ "global",
+      .default = "other"
+    )
+  )
+
+count(paramsg_info, type)
+#   type       n
+#   <chr>  <int>
+# 1 global   110
+# 2 other      5
+# 3 table     52
+
+paramsg_info |> filter(type == "other")
+
+```
+
+
+## Globals
+
+```{r}
+#| label: params-globals
+
+# what globals does Gang have in params?
+pglobals <- paramsg_info |>
+  filter(type == "global") |>
+  arrange(name) |>
+  pull(name) # 110 globals
+pglobals # gang's globals
+
+# what globals do I have in frs?
+dglobals <- names(frs$constants_assumptions) |> sort() # 110 items
+dglobals # my globals
+
+# compare the two sets of globals
+
+setdiff(dglobals, pglobals)
+#  [1] "admin_model_al_" "admin_model_norm_cost_" "admin_val_al_" "eco_model_al_" "eco_model_norm_cost_"
+#  [6] "eco_val_al_" "eso_model_al_" "eso_model_norm_cost_" "eso_val_al_" "judges_model_al_"
+# [11] "judges_model_norm_cost_" "judges_val_al_" "regular_model_al_" "regular_model_norm_cost_" "regular_val_al_"
+# [16] "senior_management_model_al_" "senior_management_model_norm_cost_" "senior_management_val_al_" "special_model_al_" "special_model_norm_cost_"
+# [21] "special_val_al_"
+
+```
+
+### Fix globals that are in both Gang's and my data but I haven't yet constructed values
+
+These really should be calculated in penmodel!
+
+Create fixed_matches -- which are all matches, including my now calculated values
+
+```{r}
+#| label: check-matching-globals
+
+(matching_global_names <- intersect(pglobals, dglobals))
+
+gang_globals <- mget(matching_global_names, envir = paramsg, inherits = FALSE)
+don_globals <- frs$constants_assumptions[matching_global_names]
+
+gmatches <- enframe(gang_globals, name = "name", value = "gang") |>
+  mutate(gang = unlist(gang))
+
+dmatches <- enframe(don_globals, name = "name", value = "don") |>
+  mutate(don = unlist(don))
+
+gdmatches <- left_join(gmatches, dmatches, by = join_by(name))
+
+tofix <- gdmatches |>
+  filter(don != gang)
+
+constants_vec <- unlist(frs$constants_assumptions)
+constants_vec["ben_payment_ratio_"] <- paramsg$ben_payment_ratio_ # I am missing this -- why? djb
+tofix2 <- tofix |>
+  separate_wider_delim(
+    cols = don,
+    names = c("var1", "operator", "var2"),
+    delim = " ",
+    too_few = "align_start",
+    cols_remove = FALSE
+  ) |>
+  mutate(
+    val1 = case_when(
+      str_detect(var1, "^\\s*-?\\d*\\.?\\d+(e[+-]?\\d+)?\\s*$") ~
+        as.numeric(var1),
+      var1 %in% names(constants_vec) ~ as.numeric(constants_vec[var1]),
+      .default = NA_real_
+    ),
+    val2 = case_when(
+      str_detect(var2, "^\\s*-?\\d*\\.?\\d+(e[+-]?\\d+)?\\s*$") ~
+        as.numeric(var2),
+      var2 %in% names(constants_vec) ~ as.numeric(constants_vec[var2]),
+      .default = NA_real_
+    ),
+    fixed = case_when(
+      operator == "*" ~ val1 * val2,
+      operator == "-" ~ val1 - val2,
+      operator == "/" ~ val1 / val2,
+      is.na(operator) ~ val1,
+      .default = NA_real_
+    )
+  ) |>
+  mutate(diff = fixed - as.numeric(gang)) |>
+  arrange(desc(abs(diff)))
+tofix2
+
+frs$constants_assumptions["admin_outflow_"]
+
+
+# fixed_matches
+all_matches <- frs$constants_assumptions[matching_global_names]
+names_of_fixvalues <- tofix2 |> pull(name)
+fixed_values <- tofix2 |> pull(fixed)
+fixed_matches <- all_matches
+fixed_matches[names_of_fixvalues] <- fixed_values
+
+```
+
+### Create missing globals that are not in my data
+
+These are model assumptions and similar that should be defined when the model runs!
+
+```{r}
+#| label: fillin-missing-globals
+
+# create fglob -- filled-in globals ----
+
+(missing_global_names <- setdiff(pglobals, dglobals)) # 21 missing globals
+# [1] "age_range_" "class_name_" "class_names_" "class_names_no_drop_frs_" "class_names_no_frs_" "entry_year_range_"
+# [7] "max_age_" "max_year_" "min_age_" "min_year_" "model_period_" "model_return_"
+# [13] "nc_cal_" "new_year_" "return_2023_" "return_scen_" "return_scenarios_original_" "start_year_"
+# [19] "term_rate_" "year_range_" "yos_range_"
+
+# some of the missing globals are tibbles, we won't worry about them yet
+missing_globals <- mget(missing_global_names, envir = paramsg, inherits = FALSE)
+
+fglob <- list()
+# model items and assumptions -- these normally would not be included in pendata
+fglob$model_period_ <- 30
+fglob$model_return_ <- .067
+fglob$return_2023_ <- .067
+fglob$return_scen_ <- "assumption"
+fglob$return_scenarios_original_ <- paramsg$return_scenarios_original_
+
+# class names
+fglob$class_names_no_drop_frs_ <- unique(frs$headcount_salary$class)
+fglob$class_names_no_drop_frs_ <- fglob$class_names_no_drop_frs_[order(match(
+  fglob$class_names_no_drop_frs_,
+  paramsg$class_names_no_drop_frs_
+))] # put in Gang's order
+
+fglob$class_names_no_frs_ <- c(fglob$class_names_no_drop_frs_, "drop")
+fglob$class_names_ <- c(fglob$class_names_no_frs_, "frs")
+fglob$class_name_ <- fglob$class_names_[1]
+
+# age items
+fglob$min_age_ <- CONSTANTS$minage
+fglob$max_age_ <- CONSTANTS$maxage
+fglob$age_range_ <- fglob$min_age_:fglob$max_age_
+
+# year items
+fglob$min_year_ <- 1970
+fglob$max_year_ <- 2154
+fglob$year_range_ <- fglob$min_year_:fglob$max_year_
+fglob$entry_year_range_ <- fglob$min_year_:2052
+fglob$new_year_ <- 2024
+fglob$start_year_ <- 2022
+
+# yos items
+fglob$yos_range_ <- CONSTANTS$minyos:CONSTANTS$maxyos
+
+(togo <- setdiff(missing_global_names, names(fglob)))
+missing_globals[togo]
+
+# construct the calibration factors nc_cal_
+fca <- frs$constants_assumptions
+vals <- str_subset(names(fca), "val_norm_cost_") |> sort()
+text <- str_subset(names(fca), "nc_cal_") |> sort()
+# fca[vals]
+# fca[text]
+fglob$nc_cal_ <- tibble(
+  vname = vals,
+  vnc = unlist(fca[vals]),
+  vname2 = text,
+  textvals = unlist(fca[text])
+) |>
+  mutate(
+    class = str_remove(vname, "_val_norm_cost_"),
+    calfactor = as.numeric(stringr::str_extract(textvals, "[0-9.]+$")),
+    nc_cal_ = vnc / calfactor
+  ) |>
+  select(class, nc_cal_)
+
+# $nc_cal_
+# # A tibble: 7 × 2
+#   class             nc_cal_
+#   <chr>               <dbl>
+# 1 admin               1.40
+# 2 eco                 0.828
+# 3 eso                 0.940
+# 4 judges              0.917
+# 5 regular             0.985
+# 6 senior_management   0.961
+# 7 special             0.985
+
+(togo <- setdiff(missing_global_names, names(fglob)))
+missing_globals[togo]
+
+# use Gang's term_rate_ tables ----
+fglob$term_rate_ <- paramsg$term_rate_ # use Gang's now -- mine contains values constructed later in the process!
+
+# finally, construct the term rate table
+# it has male and female but pendata should only give total what total would it give
+
+```
+
+### Some checks on missing globals
+
+```{r}
+#| eval: false
+
+check <- paramsg$term_rate_ |>
+  summarise(rate = mean(rate), .by = c(yos, class, age)) |>
+  arrange(yos, class, age)
+# compare to what I have
+count(frs$withdrawal, age_label)
+check2 <- frs$withdrawal |>
+  select(yos = yos_lb, class, age = age_label, rate = value) |>
+  mutate(age = ifelse(age == "55+", "over_55", age)) |>
+  arrange(yos, class, age)
+
+comp <- bind_rows(
+  check |> mutate(type = "gang"),
+  check2 |> mutate(type = "don")
+) |>
+  pivot_wider(names_from = type, values_from = rate) |>
+  mutate(diff = don - gang) |>
+  arrange(class, yos, age)
+comp
+
+temp <- comp |> filter(is.na(gang) | is.na(don))
+# gang does not have admin yos 31 -- apparently I gave yos_lb 31 label to 30+
+temp2 <- paramsg$term_rate_ |> filter(class == "admin")
+
+```
+
+### Combine matched globals and missing globals into globals list
+
+```{r}
+
+globals <- c(fixed_matches, fglob)
+ns(globals) # 110 values
+
+```
+
+
+## Tables
+
+```{r}
+#| label: what-tables-are-in-params-and-my-frs
+
+# what globals does Gang have in params?
+ptables <- paramsg_info |>
+  filter(type == "table") |>
+  arrange(name) |>
+  pull(name) # 110 globals
+ptables
+
+# what tables do I have in frs?
+dtables <- names(frs$constants_assumptions) |> sort() # 110 items
+dtables
+
+```
+
+### Headcount and salary tables
+
+```{r}
+#| label: explore-tables
+
+# headcount salary
+names(paramsg) |> str_subset("headcount") # headcount_table_ is the main one
+names(paramsg) |> str_subset("salary") # salary_table_ is the main one
+
+```
+
+Put age and yos on the file to match how Reason defines them.
+
+```{r}
+#| label: prep-age-yos-for-headcount-salary
+
+ns(paramsg)
+ns(frs)
+# gang's headcount and salary table(s) ----
+paramsg$headcount_table_
+# A tibble: 847 × 4
+#     age class     yos count
+#   <dbl> <chr>   <dbl> <dbl>
+# 1    20 regular     2   754
+paramsg$salary_table_
+# # A tibble: 847 × 4
+#      age class     yos salary
+#    <dbl> <chr>   <dbl>  <dbl>
+#  1    20 regular     2  14714
+#  2    20 regular     7     NA
+count(paramsg$salary_table_, age)
+# age     n
+#    <dbl> <int>
+#  1    20    77
+#  2    22    77
+#  3    27    77
+#  4    32    77
+#  5    37    77
+#  6    42    77
+#  7    47    77
+#  8    52    77
+#  9    57    77
+# 10    62    77
+# 11    67    77
+
+count(paramsg$salary_table_, yos)
+# A tibble: 11 × 2
+#      yos     n
+#    <dbl> <int>
+#  1     2    77
+#  2     7    77
+#  3    12    77
+#  4    17    77
+#  5    22    77
+#  6    27    77
+#  7    32    77
+#  8    37    77
+#  9    42    77
+# 10    47    77
+# 11    52    77
+
+frs$headcount_salary
+# A tibble: 847 × 9
+#    class age_label age_lb age_ub yos_label yos_lb yos_ub headcount salary
+#    <chr> <chr>      <dbl>  <dbl> <chr>      <dbl>  <dbl>     <dbl>  <dbl>
+#  1 admin Under 20      18     19 Under 5        0      4         0      0
+#  2 admin Under 20      18     19 5 to 10        5      9         0      0
+count(frs$headcount_salary, age_lb, age_ub, age_label)
+# A tibble: 11 × 4
+#    age_lb age_ub age_label     n
+#     <dbl>  <dbl> <chr>     <int>
+#  1     18     19 Under 20     77
+#  2     20     24 20 to 24     77
+#  3     25     29 25 to 29     77
+#  4     30     34 30 to 34     77
+#  5     35     39 35 to 39     77
+#  6     40     44 40 to 44     77
+#  7     45     49 45 to 49     77
+#  8     50     54 50 to 54     77
+#  9     55     59 55 to 59     77
+# 10     60     64 60 to 64     77
+# 11     65    120 65 & Up      77
+
+count(frs$headcount_salary, yos_lb, yos_ub, yos_label)
+#    yos_lb yos_ub yos_label     n
+#     <dbl>  <dbl> <chr>     <int>
+#  1      0      4 Under 5      77
+#  2      5      9 5 to 10      77
+#  3     10     14 10 to 15     77
+#  4     15     19 15 to 20     77
+#  5     20     24 20 to 25     77
+#  6     25     29 25 to 30     77
+#  7     30     34 30 to 35     77
+#  8     35     39 35 to 40     77
+#  9     40     44 40 to 45     77
+# 10     45     49 45 to 50     77
+# 11     50     70 50 & Up      77
+# becomes 2-52 by 5 which is yos_lb + 2
+
+prep <- frs$headcount_salary |>
+  mutate(
+    age = case_when(
+      age_lb == 18 ~ 20,
+      age_lb == 65 ~ 67,
+      .default = (age_lb + age_ub) / 2
+    ),
+    yos = yos_lb + 2
+  )
+count(prep, age, age_lb, age_ub, age_label)
+count(prep, yos, yos_lb, yos_ub, yos_label)
+
+```
+
+#### Match params format for headcount and salar ytables
+
+Headcount table: age class yos count
+Salary table: age class yos salary
+
+NOTE that paramsg$salary_table_ has NA values where as paramsg$headcount_table_ has zeros!
+
+I AM USING ZEROES FOR BOTH TABLES.
+
+```{r}
+#| label: prepare-headcount-and-salary-stacked-tables
+
+headcount_table_ <- prep |>
+  select(age, class, yos, count = headcount)
+
+salary_table_ <- prep |>
+  select(age, class, yos, salary)
+
+```
+
+### Combine tables into a list
+
+```{r}
+#| label: combine-tables
+
+tables <- list()
+tables$headcount_table_ <- headcount_table_
+tables$salary_table_ <- salary_table_
+ns(tables)
+
+```
+
+  
+  
+## Construct params list from parts and examine
+  
+```{r}
+#| label: construct-params
+
+# note that I am NOT forcing types to match
+params <- c(globals, tables)
+
+```
+
+```{r}
+#| label: examine-params
+
+names_params <- names(params)
+
+# Compare each element by name using sapply and identical
+f <- function(n) {
+  # print(n)
+  # print(paramsg[[n]])
+  # print(params[[n]])
+  pmatch <- identical(paramsg[[n]], params[[n]])
+  if (!pmatch) {
+    print(n)
+    print(paramsg[[n]])
+    print(params[[n]])
+  }
+  pmatch
+}
+comparison <- sapply(names_params, f)
+comparison
+comparison[!comparison]
+
+f2 <- function(n) {
+  print(n)
+  print(str(paramsg[[n]]))
+  print(str(params[[n]]))
+}
+names_not_matching <- names_params[!comparison]
+purrr::walk(names_not_matching, f2)
+f2("min_age_")
+
+```
+
+## Fill in any params in Gang's but not yet in mine
+
+```{r}
+#| label: final-params-fillin
+
+(extra_params_should_be_empty <- setdiff(names(params), names(paramsg))) # should be nothing here!
+still_missing <- setdiff(names(paramsg), names(params))
+
+params[still_missing] <- mget(still_missing, envir = paramsg)
+setdiff(names(paramsg), names(params))
+
+```
+
+
+## Convert params list to params environment
+
+```{r}
+
+# frs$params <- params
+# convert to environment, then we can save
+params_env <- list2env(params)
+ns(params_env)
+params_env
+
+```
+
+
+## Get "target" frs_data_env_bf_cal data from Gang and add to the list
+```{r}
+#| label: get-frs-gang
+#| eval: false
+
+# we don't need this now maybe later put in a separate qmd file
+
+# C:\Users\donbo\Documents\R_Projects\pendata\data-raw\gang\params_bf_cal.RData
+fpath <- fs::path(GROOT, "data-raw", "gang", "frs_data_env_bf_cal.RData")
+load(fpath) # loads frs_data_env, an environment
+
+# # 268 objects
+# frsg_info <- tibble(
+#   obj = 1:length(names(frs_data_env)),
+#   name = names(frs_data_env)
+# ) |>
+#   mutate(
+#     type = case_when(
+#       str_detect(name, "table") ~ "table",
+#       str_sub(name, -1) == "_" ~ "global",
+#       .default = "other"
+#     )
+#   )
+
+# count(frsg_info, type)
+
+#   type       n
+#   <chr>  <int>
+# 1 global    72
+# 2 other     34
+# 3 table    162
+
+```
+
+
+
+## Save final frs list and individual environments
+
+```{r}
+#| label: save-final-list
+#| eval: true
+
+# reload frs from the work folder (just to be safe) ----
+fpath <- fs::path(DIRS$work, "frs.rda")
+load(fpath)
+
+frs$params_env <- params_env
+# frs$frs_data_env <- frs_data_env
+
+fpath <- fs::path(GROOT, "data", "frs.rda")
+save(list = "frs", file = fpath, compress = "xz")
+
+# fpath <- fs::path(GROOT, "data", "frs_params_env.rda")
+# save(list = "frs_params_env", file = fpath, compress = "xz")
+
+# frs_data_env is too big to save!!
+# fpath <- fs::path(GROOT, "data", "frs_data_env.rda")
+# save(list = "frs_data_env", file = fpath, compress = "xz")
+
+```
+
+
+
+```{r}
+#| echo: false
+knitr::knit_exit()
+```
+

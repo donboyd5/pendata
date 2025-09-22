@@ -74,14 +74,21 @@ book:
     - part: "Assemble list for `pendata` package"
       chapters:
         - assemble_list.qmd
+    - part: "Make params"
+      chapters:
+        - make_params.qmd
 
-# read steps.qmd for how to build from scratch
+# build from scratch (see steps.qmd for details)
+# CONSOLE:
 # GROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
 # source(fs::path(GROOT, "R", "internal_functions.R"))
 # reset_all("frs", delete=TRUE)
-# then from proper terminal: quarto render
+# TERMINAL (data-raw/plans/frs/qmd)
+# quarto render
+#  CONSOLE
 # buildit()
 # plan <- pendata::frs
+
 
 # creating a package
 # install.packages(c("devtools", "usethis", "roxygen2", "testthat", "pkgdown"))
@@ -98,11 +105,9 @@ book:
 # ---    
 
 
-# stop 
+# stop  -- type qstop to get the following
 # ```{r}
-# #| label: stop
 # #| echo: false
-
 # knitr::knit_exit()
 # ```
 
