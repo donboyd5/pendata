@@ -532,6 +532,20 @@ f2("min_age_")
 
 ```
 
+## Fill in any params in Gang's but not yet in mine
+
+```{r}
+#| label: final-params-fillin
+
+(extra_params_should_be_empty <- setdiff(names(params), names(paramsg))) # should be nothing here!
+still_missing <- setdiff(names(paramsg), names(params))
+
+params[still_missing] <- mget(still_missing, envir = paramsg)
+setdiff(names(paramsg), names(params))
+
+```
+
+
 ## Convert params list to params environment and add to frs list
 
 ```{r}
@@ -542,55 +556,34 @@ params_env <- list2env(params)
 ns(params_env)
 params_env
 
-
-```
-
-## Save final list
-
-```{r}
-#| label: save-final-list
-#| eval: true
-
-# reload frs from the work folder (just to be safe) ----
-fpath <- fs::path(DIRS$work, "frs.rda")
-load(fpath)
-frs$params_env <- params_env
-save_name <- "frs.rda"
-fpath <- fs::path(GROOT, "data", "frs.rda")
-save(list = "frs", file = fpath, compress = "xz")
-
-```
-
-```{r}
-#| echo: false
-knitr::knit_exit()
 ```
 
 
-## OLD: Load and categorize the "target" frs_data_env_bf_cal data from Gang
+## Get "target" frs_data_env_bf_cal data from Gang and add to the list
 ```{r}
 #| label: get-frs-gang
-#| eval: false
+#| eval: true
 
 # we don't need this now maybe later put in a separate qmd file
 
 # C:\Users\donbo\Documents\R_Projects\pendata\data-raw\gang\params_bf_cal.RData
 fpath <- fs::path(GROOT, "data-raw", "gang", "frs_data_env_bf_cal.RData")
 load(fpath) # loads frs_data_env, an environment
-# 268 objects
-frsg_info <- tibble(
-  obj = 1:length(names(frs_data_env)),
-  name = names(frs_data_env)
-) |>
-  mutate(
-    type = case_when(
-      str_detect(name, "table") ~ "table",
-      str_sub(name, -1) == "_" ~ "global",
-      .default = "other"
-    )
-  )
 
-count(frsg_info, type)
+# # 268 objects
+# frsg_info <- tibble(
+#   obj = 1:length(names(frs_data_env)),
+#   name = names(frs_data_env)
+# ) |>
+#   mutate(
+#     type = case_when(
+#       str_detect(name, "table") ~ "table",
+#       str_sub(name, -1) == "_" ~ "global",
+#       .default = "other"
+#     )
+#   )
+
+# count(frsg_info, type)
 
 #   type       n
 #   <chr>  <int>
@@ -599,3 +592,32 @@ count(frsg_info, type)
 # 3 table    162
 
 ```
+
+
+
+## Save final updated frs list
+
+```{r}
+#| label: save-final-list
+#| eval: true
+
+# reload frs from the work folder (just to be safe) ----
+fpath <- fs::path(DIRS$work, "frs.rda")
+load(fpath)
+
+frs$params_env <- params_env
+frs$frs_data_env <- frs_data_env
+
+save_name <- "frs.rda"
+fpath <- fs::path(GROOT, "data", "frs.rda")
+save(list = "frs", file = fpath, compress = "xz")
+
+```
+
+
+
+```{r}
+#| echo: false
+knitr::knit_exit()
+```
+
