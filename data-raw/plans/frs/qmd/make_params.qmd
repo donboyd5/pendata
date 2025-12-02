@@ -62,6 +62,7 @@ fpath <- fs::path(GROOT, "data-raw", "gang", "params_bf_cal.RData")
 load(fpath) # loads params, an environment
 paramsg <- params
 rm(params)
+ns(paramsg)
 
 paramsg_info <- tibble(
   obj = 1:length(names(paramsg)),
@@ -487,10 +488,10 @@ ns(tables)
 
 ```
 
-  
-  
+
+
 ## Construct params list from parts and examine
-  
+
 ```{r}
 #| label: construct-params
 
@@ -569,6 +570,23 @@ params_env
 # C:\Users\donbo\Documents\R_Projects\pendata\data-raw\gang\params_bf_cal.RData
 fpath <- fs::path(GROOT, "data-raw", "gang", "frs_data_env_bf_cal.RData")
 load(fpath) # loads frs_data_env, an environment
+ns(frs_data_env)
+
+needed <- c(
+  "salary_headcount_table",
+  "mort_table",
+  "mort_retire_table",
+  "separation_rate_table",
+  "entrant_profile_table",
+  "dr_lookup",
+  "cola_lookup",
+  "ben_mult_lookup",
+  "reduce_factor_lookup",
+  "tier_table",
+  "fas_period_lookup"
+)
+setdiff(needed, ns(frs_data_env))
+
 
 # # 268 objects
 # frsg_info <- tibble(
@@ -605,6 +623,8 @@ load(fpath) # loads frs_data_env, an environment
 fpath <- fs::path(DIRS$work, "frs.rda")
 load(fpath)
 
+names(frs)
+
 frs$params_env <- params_env
 # frs$frs_data_env <- frs_data_env
 
@@ -626,4 +646,3 @@ save(list = "frs", file = fpath, compress = "xz")
 #| echo: false
 knitr::knit_exit()
 ```
-
