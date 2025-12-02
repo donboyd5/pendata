@@ -563,11 +563,9 @@ params_env
 ## Get "target" frs_data_env_bf_cal data from Gang and add to the list
 ```{r}
 #| label: get-frs-gang
-#| eval: false
+#| eval: true
 
-# we don't need this now maybe later put in a separate qmd file
-
-# C:\Users\donbo\Documents\R_Projects\pendata\data-raw\gang\params_bf_cal.RData
+# Load frs_data_env to extract needed objects
 fpath <- fs::path(GROOT, "data-raw", "gang", "frs_data_env_bf_cal.RData")
 load(fpath) # loads frs_data_env, an environment
 ns(frs_data_env)
@@ -585,8 +583,19 @@ needed <- c(
   "tier_table",
   "fas_period_lookup"
 )
-setdiff(needed, ns(frs_data_env))
 
+# Verify all needed objects exist in frs_data_env
+missing_objects <- setdiff(needed, ns(frs_data_env))
+if(length(missing_objects) > 0) {
+  stop("Missing objects in frs_data_env: ", paste(missing_objects, collapse = ", "))
+}
+
+# Extract the needed objects from frs_data_env
+needed_objects <- mget(needed, envir = frs_data_env, inherits = FALSE)
+
+# Verify we got all objects
+cat("Successfully extracted", length(needed_objects), "objects from frs_data_env:\n")
+print(names(needed_objects))
 
 # # 268 objects
 # frsg_info <- tibble(
@@ -625,11 +634,37 @@ load(fpath)
 
 names(frs)
 
+# Add params_env
 frs$params_env <- params_env
-# frs$frs_data_env <- frs_data_env
 
+# Add the needed objects from frs_data_env as individual named elements
+frs$salary_headcount_table <- needed_objects$salary_headcount_table
+frs$mort_table <- needed_objects$mort_table
+frs$mort_retire_table <- needed_objects$mort_retire_table
+frs$separation_rate_table <- needed_objects$separation_rate_table
+frs$entrant_profile_table <- needed_objects$entrant_profile_table
+frs$dr_lookup <- needed_objects$dr_lookup
+frs$cola_lookup <- needed_objects$cola_lookup
+frs$ben_mult_lookup <- needed_objects$ben_mult_lookup
+frs$reduce_factor_lookup <- needed_objects$reduce_factor_lookup
+frs$tier_table <- needed_objects$tier_table
+frs$fas_period_lookup <- needed_objects$fas_period_lookup
+
+# Verify all needed objects are now in frs
+cat("\nVerifying all needed objects are in frs:\n")
+for(obj_name in needed) {
+  if(obj_name %in% names(frs)) {
+    cat("  ✓", obj_name, "\n")
+  } else {
+    stop("ERROR: Missing object in frs: ", obj_name)
+  }
+}
+cat("\nAll", length(needed), "needed objects successfully added to frs!\n")
+
+# Save the updated frs object
 fpath <- fs::path(GROOT, "data", "frs.rda")
 save(list = "frs", file = fpath, compress = "xz")
+cat("\nSaved frs.rda to:", fpath, "\n")
 
 # fpath <- fs::path(GROOT, "data", "frs_params_env.rda")
 # save(list = "frs_params_env", file = fpath, compress = "xz")
