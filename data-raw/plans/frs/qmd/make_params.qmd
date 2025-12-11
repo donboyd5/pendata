@@ -586,15 +586,22 @@ needed <- c(
 
 # Verify all needed objects exist in frs_data_env
 missing_objects <- setdiff(needed, ns(frs_data_env))
-if(length(missing_objects) > 0) {
-  stop("Missing objects in frs_data_env: ", paste(missing_objects, collapse = ", "))
+if (length(missing_objects) > 0) {
+  stop(
+    "Missing objects in frs_data_env: ",
+    paste(missing_objects, collapse = ", ")
+  )
 }
 
 # Extract the needed objects from frs_data_env
 needed_objects <- mget(needed, envir = frs_data_env, inherits = FALSE)
 
 # Verify we got all objects
-cat("Successfully extracted", length(needed_objects), "objects from frs_data_env:\n")
+cat(
+  "Successfully extracted",
+  length(needed_objects),
+  "objects from frs_data_env:\n"
+)
 print(names(needed_objects))
 
 # # 268 objects
@@ -652,8 +659,8 @@ frs$fas_period_lookup <- needed_objects$fas_period_lookup
 
 # Verify all needed objects are now in frs
 cat("\nVerifying all needed objects are in frs:\n")
-for(obj_name in needed) {
-  if(obj_name %in% names(frs)) {
+for (obj_name in needed) {
+  if (obj_name %in% names(frs)) {
     cat("  ✓", obj_name, "\n")
   } else {
     stop("ERROR: Missing object in frs: ", obj_name)
