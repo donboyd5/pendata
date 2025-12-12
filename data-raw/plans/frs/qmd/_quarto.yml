@@ -1,6 +1,6 @@
 project:
   type: book
-  execute-dir: project  # quarto should look to the project root (pendata)  
+  execute-dir: project  # quarto should look to the project root (pendata)
   output-dir: _webpage
 
 format:
@@ -61,22 +61,22 @@ book:
       chapters:
         - retirement_rates.qmd
         - test_retirement_rates.qmd
-        - stage_retirement_rates.qmd        
+        - stage_retirement_rates.qmd
     - part: "Salary & Headcount"
       chapters:
         - headcount_salary.qmd
-    - part: "Salary growth"        
+    - part: "Salary growth"
       chapters:
-        - salary_growth.qmd        
+        - salary_growth.qmd
     - part: "Withdrawals"
       chapters:
         - withdrawal.qmd
     - part: "Assemble list for `pendata` package"
       chapters:
         - assemble_list.qmd
-    - part: "Make params"
-      chapters:
-        - make_params.qmd
+    # - part: "Make params"
+    #   chapters:
+    #     - make_params.qmd
 
 # build from scratch (see steps.qmd for details)
 # CONSOLE:
@@ -102,7 +102,7 @@ book:
 #     toc-depth: 4
 #     page-layout: full
 #     css: wider.css
-# ---    
+# ---
 
 
 # stop  -- type qstop to get the following
@@ -110,4 +110,3 @@ book:
 # #| echo: false
 # knitr::knit_exit()
 # ```
-

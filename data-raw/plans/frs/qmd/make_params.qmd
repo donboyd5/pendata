@@ -135,12 +135,13 @@ gmatches <- enframe(gang_globals, name = "name", value = "gang") |>
 dmatches <- enframe(don_globals, name = "name", value = "don") |>
   mutate(don = unlist(don))
 
-gdmatches <- left_join(gmatches, dmatches, by = join_by(name))
+gdmatches <- left_join(gmatches, dmatches, by = join_by(name)) # 89 items
 
 tofix <- gdmatches |>
-  filter(don != gang)
+  filter(don != gang) # 23 items out of 89 where my value does not match gang's
 
 constants_vec <- unlist(frs$constants_assumptions)
+# djb as of 12/12/2025 I actually do have ben_payment ratio so the next line may not be necessary
 constants_vec["ben_payment_ratio_"] <- paramsg$ben_payment_ratio_ # I am missing this -- why? djb
 tofix2 <- tofix |>
   separate_wider_delim(
@@ -641,32 +642,37 @@ load(fpath)
 
 names(frs)
 
-# Add params_env
-frs$params_env <- params_env
+## Move top-level frs objects (except plan_shortname) into params_env and
+## add Gang "needed" objects into params_env as individual entries
 
-# Add the needed objects from frs_data_env as individual named elements
-frs$salary_headcount_table <- needed_objects$salary_headcount_table
-frs$mort_table <- needed_objects$mort_table
-frs$mort_retire_table <- needed_objects$mort_retire_table
-frs$separation_rate_table <- needed_objects$separation_rate_table
-frs$entrant_profile_table <- needed_objects$entrant_profile_table
-frs$dr_lookup <- needed_objects$dr_lookup
-frs$cola_lookup <- needed_objects$cola_lookup
-frs$ben_mult_lookup <- needed_objects$ben_mult_lookup
-frs$reduce_factor_lookup <- needed_objects$reduce_factor_lookup
-frs$tier_table <- needed_objects$tier_table
-frs$fas_period_lookup <- needed_objects$fas_period_lookup
-
-# Verify all needed objects are now in frs
-cat("\nVerifying all needed objects are in frs:\n")
-for (obj_name in needed) {
-  if (obj_name %in% names(frs)) {
-    cat("  ✓", obj_name, "\n")
-  } else {
-    stop("ERROR: Missing object in frs: ", obj_name)
-  }
+# Move every top-level element of `frs` (except `plan_shortname`) into params_env
+top_names <- setdiff(names(frs), "plan_shortname")
+for (n in top_names) {
+  params_env[[n]] <- frs[[n]]
 }
-cat("\nAll", length(needed), "needed objects successfully added to frs!\n")
+
+# Add the needed objects from frs_data_env into params_env as individual named elements
+for (nm in names(needed_objects)) {
+  params_env[[nm]] <- needed_objects[[nm]]
+}
+
+# Ensure no duplication of plan_shortname
+if ("plan_shortname" %in% ls(params_env)) {
+  rm(list = "plan_shortname", envir = params_env)
+}
+
+# Convert params_env to a list for reliable saving in package data
+if (is.environment(params_env)) {
+  params_env_list <- as.list(params_env, all.names = TRUE)
+} else {
+  params_env_list <- params_env
+}
+
+# Rebuild frs to only contain plan_shortname and params_env (as a list)
+frs <- list(
+  plan_shortname = frs$plan_shortname,
+  params_env = params_env_list
+)
 
 # Save the updated frs object
 fpath <- fs::path(GROOT, "data", "frs.rda")
@@ -681,8 +687,6 @@ cat("\nSaved frs.rda to:", fpath, "\n")
 # save(list = "frs_data_env", file = fpath, compress = "xz")
 
 ```
-
-
 
 ```{r}
 #| echo: false
