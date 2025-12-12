@@ -38,7 +38,7 @@ load(fpath)
 #| label: categorize-my-frs-data
 
 frsd_info <- tibble(
-  obj = 1:length(names(frs)),
+  obj = seq_along(names(frs)),
   name = names(frs)
 ) |>
   mutate(
@@ -65,7 +65,7 @@ rm(params)
 ns(paramsg)
 
 paramsg_info <- tibble(
-  obj = 1:length(names(paramsg)),
+  obj = seq_along(names(paramsg)),
   name = names(paramsg)
 ) |>
   mutate(
