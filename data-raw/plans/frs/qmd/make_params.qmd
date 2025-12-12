@@ -208,8 +208,8 @@ missing_globals <- mget(missing_global_names, envir = paramsg, inherits = FALSE)
 fglob <- list()
 # model items and assumptions -- these normally would not be included in pendata
 fglob$model_period_ <- 30
-fglob$model_return_ <- .067
-fglob$return_2023_ <- .067
+fglob$model_return_ <- 0.067
+fglob$return_2023_ <- 0.067
 fglob$return_scen_ <- "assumption"
 fglob$return_scenarios_original_ <- paramsg$return_scenarios_original_
 
